@@ -1,0 +1,54 @@
+# Deployment Plan
+
+oEmbed版Web MVPを公開する前に決める項目と手順の整理です。本番デプロイはまだ実行しない。
+
+## 公開前に決めること
+
+- 公開先: 未設定
+- ドメイン: 未設定
+- 問い合わせ先: 未設定
+- プライバシーポリシーURL: 未設定
+- レート制限値: 未設定
+- ログ保存期間: 未設定
+
+## 本番環境で必要な設定
+
+- `PORT`
+- `RATE_LIMIT_PER_IP_PER_MINUTE`
+- `RATE_LIMIT_GLOBAL_PER_MINUTE`
+
+X API Bearer Tokenは不要。`.env` を作る場合もコミットしない。
+
+## 本番で守る制約
+
+- X_BEARER_TOKEN不要。
+- X API v2と `api.x.com` は使わない。
+- サーバー外向き通信先は `https://publish.x.com/oembed` のみ。
+- oEmbedへ渡すURLは validator が生成した `canonicalXPostUrl` のみ。
+- 入力URLを直接fetchしない。
+- X HTMLスクレイピング、OGP取得、短縮URL展開、メディアダウンロードをしない。
+- 魚拓は自動取得しない。
+- 投稿本文、mediaUrls、username、postId、HTML本文、JSON valuesをログに出さない。
+
+## 公開前チェック手順
+
+1. `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js` を実行する。
+2. `docs/pre-release-checklist.md` を再確認する。
+3. `docs/privacy-policy-draft.md` と `docs/support-page-draft.md` の未設定項目を埋める。
+4. 公開先の環境変数に `PORT` とレート制限値を設定する。
+5. 公開前に `/healthz` とWeb UIを確認する。
+
+## ロールバック方針
+
+- 公開直前のGit commitを記録する。
+- 問題があれば直前の安定版commitへ戻す。
+- レート制限値の変更で回避できる問題は、コード変更より先に設定値で対応する。
+- oEmbed側障害が疑われる場合は、取得不能として扱い、X API v2へ切り戻さない。
+
+## 既知の制限
+
+- userNumericIdは未取得。
+- media direct URLsは未取得。
+- oEmbedで取得できない投稿がある。
+- 投稿本文と投稿日は安全に抽出できない場合 `未取得`。
+- 魚拓はユーザー操作で外部リンクを開くだけ。

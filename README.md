@@ -90,6 +90,9 @@ node --test server/urlValidator.test.js server/extractServer.test.js server/oEmb
 - [テストケース](docs/test-cases.md)
 - [現状まとめ](docs/current-status.md)
 - [公開前チェックリスト](docs/pre-release-checklist.md)
+- [デプロイ準備](docs/deployment-plan.md)
+- [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
+- [サポートページドラフト](docs/support-page-draft.md)
 - [セキュリティ](SECURITY.md)
 
 ## 検証
