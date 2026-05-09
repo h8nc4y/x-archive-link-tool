@@ -1,0 +1,11 @@
+{
+  "name": "x-post-paste-text-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "manual:oembed-check": "node scripts/manualOEmbedCheck.js",
+    "start": "node server/extractServer.js",
+    "test": "node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js"
+  }
+}

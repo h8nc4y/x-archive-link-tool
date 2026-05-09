@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xポスト貼り付けテキスト生成</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel" aria-labelledby="app-title">
+        <header class="header">
+          <p class="eyebrow">Web MVP</p>
+          <h1 id="app-title">Xポスト貼り付けテキスト生成</h1>
+          <p class="lead">Xポスト共有URLを入力して、コピー用テキストを生成します。</p>
+        </header>
+
+        <form id="extract-form" class="form">
+          <label for="post-url">XポストURL</label>
+          <div class="input-row">
+            <input id="post-url" name="url" type="url" autocomplete="off" required>
+            <button id="submit-button" type="submit">取得</button>
+          </div>
+          <p id="error-message" class="message error" role="alert"></p>
+        </form>
+
+        <section id="archive-section" class="archive" hidden>
+          <h2>魚拓が必要な場合</h2>
+          <a id="gyotaku-link" target="_blank" rel="noopener">魚拓を取得する場合はこちら</a>
+          <label for="archive-url">取得後の魚拓URL</label>
+          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/...">
+        </section>
+
+        <section class="output" aria-labelledby="output-title">
+          <div class="output-header">
+            <h2 id="output-title">コピー用テキスト</h2>
+            <button id="copy-button" type="button" disabled>コピー</button>
+          </div>
+          <textarea id="copy-text" readonly rows="14"></textarea>
+          <p id="copy-message" class="message" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

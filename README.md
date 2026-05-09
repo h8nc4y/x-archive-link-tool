@@ -1,0 +1,99 @@
+# X Post Paste Text MVP
+
+Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです。
+
+Web UI と `POST /api/extract` は実装済みです。現在はローカルMVPで、本番公開は未実施です。iOSアプリ、DB、本番デプロイ設定は未実装です。
+
+## ローカル起動
+
+PowerShellでローカルポートを一時設定してから起動します。X API Bearer Tokenは不要です。
+
+```powershell
+$env:PORT="3000"
+npm start
+```
+
+ブラウザで `http://127.0.0.1:3000/` を開き、XポストURLを入力します。
+疎通確認だけなら `http://127.0.0.1:3000/healthz` を開き、`{"ok":true}` が返ることを確認します。
+
+`npm` が使えない場合の起動コマンド:
+
+```powershell
+$env:PORT="3000"
+node server/extractServer.js
+```
+
+## テスト
+
+```powershell
+npm test
+```
+
+`npm` が使えない場合:
+
+```powershell
+node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js
+```
+
+## 環境変数
+
+`.env.example` は見本です。`.env` は作成してもコミット禁止です。
+
+- `PORT`: ローカル起動ポート。既定値は `3000`。
+- `RATE_LIMIT_PER_IP_PER_MINUTE`: IP単位の1分あたり上限。既定値は `10`。
+- `RATE_LIMIT_GLOBAL_PER_MINUTE`: 全体の1分あたり上限。既定値は `60`。
+
+## MVP対象範囲
+
+- 入力はXのポスト共有URLのみ。
+- URLを安全に検証し、正規化した `canonicalXPostUrl` を扱う。
+- 出力項目は、アカウント名、`@username`、ユーザー数値ID、ポストURL、投稿日、本文、メディアURL、魚拓URL。
+- X API v2は使わず、公式oEmbed endpoint `https://publish.x.com/oembed` だけを使う。
+- oEmbedで取得できない項目があるため、ユーザー数値IDとメディア直接URLは未取得。
+- 投稿本文と投稿日はoEmbed HTMLから安全に抽出できる場合だけ表示し、抽出できない場合は `未取得`。
+- 魚拓は自動取得しない。
+- 「魚拓を取得する場合はこちら」リンクを表示するだけで、サーバーから魚拓を取得しない。
+- X API Bearer Tokenは使わない。
+- 入力URL、投稿本文、メディアURL、ユーザー情報はログに残さない方針。
+
+## 対象外
+
+- iOSアプリ
+- DB
+- 本番デプロイ設定
+- ユーザー入力URLのfetch
+- X HTMLスクレイピング
+- ブラウザ自動化によるX閲覧
+- ウェブ魚拓のサーバー取得
+- OGP取得、短縮URL展開、メディアダウンロード
+
+## よくある応答
+
+- token未設定: oEmbed版ではX API token不要のため、token未設定でも起動できます。
+- 不正URL: URL検証エラーになります。`https://x.com/{username}/status/{postId}` 形式を使ってください。
+- `404`: 対象ポストが見つからない、または取得できません。
+- `429`: レート制限に達しています。時間を置いて再試行してください。
+
+非公開、削除済み、埋め込み不可、oEmbed側制限などにより取得できない投稿があります。
+
+## 手動確認
+
+- 公開XポストURLを1件入力し、コピー用 `textarea` に結果が出ることを確認します。
+- 魚拓リンクは別タブで開くだけです。魚拓は自動取得されません。
+- 魚拓URL欄は `https://megalodon.jp/...` または `https://s{digits}.megalodon.jp/...` のみ有効です。
+- `.env`、投稿本文、メディアURLをGitやログに残さないでください。
+
+## ドキュメント
+
+- [要件](docs/requirements.md)
+- [API案](docs/api.md)
+- [テストケース](docs/test-cases.md)
+- [現状まとめ](docs/current-status.md)
+- [公開前チェックリスト](docs/pre-release-checklist.md)
+- [セキュリティ](SECURITY.md)
+
+## 検証
+
+```powershell
+npm test
+```

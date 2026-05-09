@@ -1,0 +1,133 @@
+const ARCHIVE_URL_PATTERN = /^https:\/\/(?:megalodon\.jp|s[0-9]+\.megalodon\.jp)\/.+/;
+
+export function buildGyotakuUrl(postUrl) {
+  return `https://gyo.tc/${postUrl}`;
+}
+
+export function isValidArchiveUrl(value) {
+  return ARCHIVE_URL_PATTERN.test(String(value || "").trim());
+}
+
+export function buildCopyText(post, archiveUrl = "") {
+  const validArchiveUrl = isValidArchiveUrl(archiveUrl) ? archiveUrl.trim() : "未取得";
+  const mediaUrls = Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls.join("\n") : "なし";
+
+  return [
+    `アカウント名：${post.accountName}`,
+    `アカウントID：@${post.username}`,
+    `ユーザー数値ID：${post.userNumericId}`,
+    `ポストURL：${post.postUrl}`,
+    `ポスト投稿日：${post.createdAt}`,
+    "",
+    "ポスト内容：",
+    post.text,
+    "",
+    "メディアURL：",
+    mediaUrls,
+    "",
+    "魚拓URL：",
+    validArchiveUrl
+  ].join("\n");
+}
+
+function setText(element, value) {
+  element.textContent = value;
+}
+
+function setupApp() {
+  const form = document.querySelector("#extract-form");
+  const urlInput = document.querySelector("#post-url");
+  const submitButton = document.querySelector("#submit-button");
+  const errorMessage = document.querySelector("#error-message");
+  const archiveSection = document.querySelector("#archive-section");
+  const gyotakuLink = document.querySelector("#gyotaku-link");
+  const archiveInput = document.querySelector("#archive-url");
+  const copyText = document.querySelector("#copy-text");
+  const copyButton = document.querySelector("#copy-button");
+  const copyMessage = document.querySelector("#copy-message");
+  let currentPost = null;
+
+  if (
+    !form ||
+    !urlInput ||
+    !submitButton ||
+    !errorMessage ||
+    !archiveSection ||
+    !gyotakuLink ||
+    !archiveInput ||
+    !copyText ||
+    !copyButton ||
+    !copyMessage
+  ) {
+    return;
+  }
+
+  function refreshCopyText() {
+    if (!currentPost) {
+      copyText.value = "";
+      copyButton.disabled = true;
+      return;
+    }
+
+    copyText.value = buildCopyText(currentPost, archiveInput.value);
+    copyButton.disabled = false;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setText(errorMessage, "");
+    setText(copyMessage, "");
+    submitButton.disabled = true;
+
+    try {
+      const response = await fetch("/api/extract", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: urlInput.value })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "取得に失敗しました。");
+      }
+
+      currentPost = payload;
+      archiveInput.value = "";
+      gyotakuLink.href = buildGyotakuUrl(payload.postUrl);
+      archiveSection.hidden = false;
+      refreshCopyText();
+    } catch (error) {
+      currentPost = null;
+      archiveSection.hidden = true;
+      refreshCopyText();
+      setText(errorMessage, error.message || "取得に失敗しました。");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  archiveInput.addEventListener("input", refreshCopyText);
+
+  copyButton.addEventListener("click", async () => {
+    if (!copyText.value) {
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(copyText.value);
+        setText(copyMessage, "コピーしました。");
+        return;
+      }
+    } catch {
+      // Fall through to manual selection.
+    }
+
+    copyText.select();
+    setText(copyMessage, "選択状態にしました。手動でコピーしてください。");
+  });
+}
+
+if (typeof document !== "undefined") {
+  setupApp();
+}
