@@ -32,11 +32,12 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 ## 初回デプロイ手動確認結果
 
 - Cloudflare Pages初回デプロイ: OK
+- Cloudflare Pages Deploymentsで `6745361` のproduction deployment成功: OK
 - トップ画面表示: OK
 - 公開X投稿URLを1件使用した抽出: OK
 - 魚拓URL生成: OK
 - コピー用テキスト生成: OK
-- 不正URL時のエラー表示: 未確認
+- 不正URL時のエラー表示: OK（表示例: `URL host is not allowed.`）
 - Cloudflare Logs重大エラー: 未確認
 
 ## 本番環境で必要な設定
