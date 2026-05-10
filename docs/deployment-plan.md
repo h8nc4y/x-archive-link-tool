@@ -34,13 +34,16 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - Cloudflare Pages初回デプロイ: OK
 - Cloudflare Pages Deploymentsで `6745361` のproduction deployment成功: OK
 - Cloudflare Pages Deploymentsで `77e937b` のproduction deployment成功: OK
+- Cloudflare Pages Deploymentsで `676a81c` のproduction deployment成功: OK
 - トップ画面表示: OK
 - 空欄送信時の必須入力表示: OK（ブラウザ標準の必須入力メッセージ）
 - 公開X投稿URLを1件使用した抽出: OK
 - 魚拓URL生成: OK
 - コピー用テキスト生成: OK
 - 不正URL時のエラー表示: OK（表示例: `URL host is not allowed.`）
-- Cloudflare Logs重大エラー: 未確認
+- Functions tabでリアルタイムログ確認: OK
+- `/api/extract` へのPOSTが Ok として記録: OK
+- Cloudflare Functionsログ重大エラー: なし（確認時点）
 
 ## 本番環境で必要な設定
 
