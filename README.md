@@ -2,9 +2,11 @@
 
 Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです。
 
-Web UI と `POST /api/extract` は実装済みです。現在はローカルMVPで、本番公開は未実施です。iOSアプリ、DB、本番デプロイ設定は未実装です。
+Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URLで初回デプロイ済みです。iOSアプリ、DB、独自ドメイン設定は未実装です。
 
-Cloudflare Pages無料URL（`*.pages.dev`）で試験公開する場合、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。
+公開URL: https://x-archive-link-tool.pages.dev
+
+Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。
 
 ## ローカル起動
 
