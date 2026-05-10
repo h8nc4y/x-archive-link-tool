@@ -127,6 +127,32 @@ test("API failure returns stale cache with warning", async () => {
   assert.equal(result.warnings.includes("最新取得に失敗したため期限切れキャッシュを返しました。"), true);
 });
 
+test("X API failure without stale cache falls back to oEmbed without leaking token", async () => {
+  const result = await extractPostWithCache(parsedUrl, {
+    env: { X_BEARER_TOKEN: "secret-token" },
+    cache: createMemoryPostCache(),
+    xApiProvider: async () => {
+      throw new Error("x api failed");
+    },
+    oEmbedProvider: async () => ({
+      accountName: "Fallback User",
+      username: "source_user",
+      userNumericId: "未取得",
+      postId: "123",
+      postUrl: "https://x.com/source_user/status/123",
+      createdAt: "未取得",
+      text: "未取得",
+      mediaUrls: []
+    })
+  });
+
+  assert.equal(result.source, "oembed");
+  assert.equal(result.cached, false);
+  assert.equal(result.authorName, "Fallback User");
+  assert.equal(result.warnings.includes("X API provider failed; used oEmbed fallback."), true);
+  assert.equal(JSON.stringify(result).includes("secret-token"), false);
+});
+
 test("token value is never included in response", async () => {
   const result = await extractPostWithCache(parsedUrl, {
     env: { X_BEARER_TOKEN: "secret-token" },

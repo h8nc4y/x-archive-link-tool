@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { handleExtractRequest } from "./extract.js";
+import { extractPostWithCache } from "../../server/extractService.js";
+import { createMemoryPostCache } from "../../server/postCache.js";
 
 function jsonRequest({ method = "POST", body = { url: "https://x.com/user/status/123" }, headers = {} } = {}) {
   const options = {
@@ -99,5 +101,37 @@ test("Cloudflare function rate limit returns 429", async () => {
 
   assert.equal(response.status, 429);
   assert.equal(response.headers.get("retry-after"), "60");
+  assertSecurityHeaders(response);
+});
+
+test("Cloudflare function returns oEmbed fallback instead of 502 when X API provider fails", async () => {
+  const response = await handleExtractRequest(jsonRequest(), {
+    env: { X_BEARER_TOKEN: "secret-token" },
+    rateLimiter: { check: () => ({ allowed: true }) },
+    extractPost: (parsed) =>
+      extractPostWithCache(parsed, {
+        env: { X_BEARER_TOKEN: "secret-token" },
+        cache: createMemoryPostCache(),
+        xApiProvider: async () => {
+          throw new Error("x api failed");
+        },
+        oEmbedProvider: async () => ({
+          accountName: "Fallback User",
+          username: "user",
+          userNumericId: "未取得",
+          postId: "123",
+          postUrl: "https://x.com/user/status/123",
+          createdAt: "未取得",
+          text: "未取得",
+          mediaUrls: []
+        })
+      })
+  });
+  const payload = await readJson(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.source, "oembed");
+  assert.equal(payload.warnings.includes("X API provider failed; used oEmbed fallback."), true);
+  assert.equal(JSON.stringify(payload).includes("secret-token"), false);
   assertSecurityHeaders(response);
 });

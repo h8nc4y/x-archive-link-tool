@@ -72,6 +72,7 @@
 - TTL内のcache hitではX API v2を呼ばない。
 - APIエラー、認証エラー、rate limitエラーは原則キャッシュしない。
 - 期限切れcacheがあり、最新取得に失敗した場合は `stale-cache` とwarnings付きで返す。
+- X API認証、権限、rate limit、上流エラー時は、可能ならoEmbed fallbackへ戻し、warning付きで返す。
 - Cloudflare Pages/Functionsのin-memory cacheは永続化ではない。本番永続cacheにCloudflare KV/D1等を使うかは未確認。
 
 ## 魚拓リンク仕様
