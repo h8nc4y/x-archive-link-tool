@@ -11,12 +11,12 @@ npm test
 `npm` が使えない場合:
 
 ```powershell
-node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js
+node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
 ```
 
 ## 2. 起動
 
-X API Bearer Tokenは不要です。PowerShellの環境変数としてローカルポートだけ一時設定します。
+X API Bearer Tokenは任意です。未設定時はoEmbed fallbackで動作します。PowerShellの環境変数としてローカルポートだけ一時設定します。
 
 ```powershell
 $env:PORT="3000"
@@ -126,7 +126,7 @@ if (-not $env:TEST_X_POST_URL) {
 
 ## 7. 確認済みのoEmbed版仕様
 
-- X_BEARER_TOKEN不要。
+- X_BEARER_TOKENは任意。未設定時はoEmbed fallback。
 - userNumericId は `未取得`。
 - mediaUrls は直接取得しないため空配列。Web UIでは `なし`。
 - 魚拓リンクは表示するが、魚拓は自動取得しない。

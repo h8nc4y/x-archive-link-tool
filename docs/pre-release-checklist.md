@@ -4,7 +4,7 @@
 
 ## ローカル確認
 
-- `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js` が成功する。
+- `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js` が成功する。
 - `node server/extractServer.js` でローカル起動できる。
 - `http://127.0.0.1:3000/healthz` が `{"ok":true}` を返す。
 - Web UIで公開XポストURLを1件入力し、コピー用 `textarea` に結果が出る。
@@ -12,8 +12,8 @@
 
 ## 仕様確認
 
-- X_BEARER_TOKEN は不要。
-- X API v2 と `api.x.com` は使わない。
+- X_BEARER_TOKEN は任意。設定時だけBring Your Own Token方式でX API v2を使う。
+- cache hit時はX API v2 providerを呼ばない。
 - サーバー外向き通信先は `https://publish.x.com/oembed` のみ。
 - oEmbedへ渡すURLは validator が生成した `canonicalXPostUrl` のみ。
 - 魚拓は自動取得しない。
@@ -22,7 +22,7 @@
 ## 取得できない項目
 
 - userNumericId は `未取得`。
-- media direct URLs は取得しない。
+- media direct URLs はX API v2取得時だけ返る。oEmbed fallbackでは取得しない。
 - mediaUrls は空配列。Web UIでは `なし`。
 - 投稿本文と投稿日は安全に抽出できない場合 `未取得`。
 

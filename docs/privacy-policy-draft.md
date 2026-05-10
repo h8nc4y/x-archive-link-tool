@@ -6,14 +6,17 @@
 
 - 入力されたXポストURLは、貼り付け用テキスト生成のため一時的に使用します。
 - 入力URLはvalidatorで検証し、`canonicalXPostUrl` に正規化します。
-- oEmbed取得のため、`canonicalXPostUrl` を `https://publish.x.com/oembed` へ送信します。
+- `X_BEARER_TOKEN` 設定時はX API v2取得のためpostIdを `https://api.x.com/2/tweets/{postId}` へ送信します。
+- `X_BEARER_TOKEN` 未設定時はoEmbed取得のため、`canonicalXPostUrl` を `https://publish.x.com/oembed` へ送信します。
+- API利用料削減のため、正規化済みの投稿情報をpostId単位でキャッシュします。
 
 ## 保存しない情報
 
 - DB保存はしません。
-- X投稿本文を保存しません。
-- メディアURLを保存しません。
-- ユーザー情報を保存しません。
+- DB保存は未実装です。
+- サーバーログにX投稿本文を保存しません。
+- サーバーログにメディアURLを保存しません。
+- サーバーログにユーザー情報を保存しません。
 - 魚拓URLをサーバーで取得または保存しません。
 
 ## ログ
@@ -24,7 +27,8 @@
 
 ## 外部サービス
 
-- oEmbed取得のため `https://publish.x.com/oembed` を使用します。
+- X API v2取得のため `https://api.x.com/2/tweets/{postId}` を使用する場合があります。
+- oEmbed fallback取得のため `https://publish.x.com/oembed` を使用します。
 - 魚拓リンクはユーザー操作で外部サイトを開きます。
 - 魚拓は自動取得しません。
 

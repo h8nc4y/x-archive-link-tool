@@ -5,12 +5,14 @@
 - 入力はXのポスト共有URLのみ。
 - URLを検証し、`canonicalXPostUrl` を生成する。
 - 貼り付け用テキスト出力項目を固定する。
-- X API v2は使わず、公式oEmbed endpoint `https://publish.x.com/oembed` だけを使う。
+- X API v2はBring Your Own Token方式で任意利用する。
+- `X_BEARER_TOKEN` 未設定時は公式oEmbed endpoint `https://publish.x.com/oembed` をfallbackとして使う。
+- 同じpostIdはcache-firstで扱い、cache hit時はX API v2を呼ばない。
 - oEmbed由来HTMLは画面にHTMLとして描画しない。
-- ユーザー数値IDとメディア直接URLは未取得とする。
+- oEmbed fallbackではユーザー数値IDとメディア直接URLは未取得とする。
 - 投稿日と本文は安全にプレーンテキスト抽出できる場合だけ扱い、抽出できない場合は `未取得` とする。
 - 魚拓は自動取得せず、リンクだけを表示する。
-- X API Bearer Tokenは使わない。
+- X API Bearer Tokenはサーバー側環境変数だけで扱い、クライアントへ返さない。
 
 ## 出力項目
 
@@ -35,8 +37,8 @@
 - 短縮URL展開
 - メディアダウンロード
 - X投稿本文、メディアURL、アカウント情報の保存
-- X API v2
-- `api.x.com`
+- ログインCookie、X内部GraphQL、guest token取得
+- quote/poll取得（P1/P2で検討）
 
 ## 入力URL仕様
 
@@ -47,18 +49,30 @@
 - `https://x.com/{username}/status/{postId}`
 - `https://twitter.com/{username}/status/{postId}`
 - `https://mobile.twitter.com/{username}/status/{postId}`
+- `https://x.com/i/web/status/{postId}`
 
 ## URL検証ルール
 
 - protocol: `https` only
 - exact hosts: `x.com`, `twitter.com`, `mobile.twitter.com`
-- path: `/{username}/status/{postId}`
+- path: `/{username}/status/{postId}` または `/i/web/status/{postId}`
 - username: `/^[A-Za-z0-9_]{1,15}$/`
 - postId: `/^[0-9]{1,19}$/` as string
 - query/hash are dropped
 - reject redirects, short URLs, other hosts, other paths
 
-`canonicalXPostUrl` は `https://x.com/{username}/status/{postId}` とする。
+`canonicalXPostUrl` はユーザー名付きURLでは `https://x.com/{username}/status/{postId}`、`/i/web/status/{postId}` では `https://x.com/i/web/status/{postId}` とする。
+
+## キャッシュ方針
+
+- cache keyは正規化したpostId。
+- TTL初期値は30日。
+- 成功レスポンスだけを保存する。
+- 保存対象は本文、投稿者、時刻、canonicalUrl、expandedUrls、media、mediaUrls、source、fetchedAt。
+- TTL内のcache hitではX API v2を呼ばない。
+- APIエラー、認証エラー、rate limitエラーは原則キャッシュしない。
+- 期限切れcacheがあり、最新取得に失敗した場合は `stale-cache` とwarnings付きで返す。
+- Cloudflare Pages/Functionsのin-memory cacheは永続化ではない。本番永続cacheにCloudflare KV/D1等を使うかは未確認。
 
 ## 魚拓リンク仕様
 

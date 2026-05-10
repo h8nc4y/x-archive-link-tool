@@ -31,6 +31,19 @@ export function parseXPostUrl(input) {
   }
 
   const parts = url.pathname.split("/");
+  if (parts.length === 5 && parts[0] === "" && parts[1] === "i" && parts[2] === "web" && parts[3] === "status") {
+    const postId = parts[4];
+    if (!POST_ID_PATTERN.test(postId)) {
+      throw new XPostUrlValidationError("Post ID is not valid.", "invalid_post_id");
+    }
+
+    return {
+      username: "未取得",
+      postId,
+      canonicalUrl: `https://x.com/i/web/status/${postId}`
+    };
+  }
+
   if (parts.length !== 4 || parts[0] !== "" || parts[2] !== "status") {
     throw new XPostUrlValidationError("URL path must be /{username}/status/{postId}.", "invalid_path");
   }

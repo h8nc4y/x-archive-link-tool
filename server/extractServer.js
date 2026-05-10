@@ -3,8 +3,10 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { parseXPostUrl, XPostUrlValidationError } from "./urlValidator.js";
-import { fetchXPost, OEmbedClientError } from "./oEmbedClient.js";
+import { OEmbedClientError } from "./oEmbedClient.js";
+import { createExtractPost } from "./extractService.js";
 import { createRateLimiter } from "./rateLimiter.js";
+import { XApiV2ClientError } from "./xApiV2Client.js";
 
 const MAX_BODY_BYTES = 1024;
 const SECURITY_HEADERS = {
@@ -102,7 +104,7 @@ async function readJsonBody(req) {
 export async function handleRequest(
   req,
   res,
-  { extractPost = fetchXPost, rateLimiter = null, logger = null, now = Date.now } = {}
+  { extractPost = createExtractPost(), rateLimiter = null, logger = null, now = Date.now } = {}
 ) {
   const startedAt = now();
   const requestUrl = new URL(req.url || "/", "http://localhost");
@@ -196,6 +198,11 @@ export async function handleRequest(
       return;
     }
 
+    if (error instanceof XApiV2ClientError) {
+      respond(error.statusCode, { error: error.message, code: error.code }, {}, error.code);
+      return;
+    }
+
     respond(500, { error: "Internal server error." }, {}, "internal_error");
   }
 }
@@ -205,9 +212,10 @@ export function createServer(options = {}) {
     options.rateLimiter === undefined
       ? createRateLimiter({ env: options.env, now: options.now })
       : options.rateLimiter;
+  const extractPost = options.extractPost || createExtractPost({ env: options.env, now: options.now });
 
   return http.createServer((req, res) => {
-    handleRequest(req, res, { ...options, rateLimiter });
+    handleRequest(req, res, { ...options, extractPost, rateLimiter });
   });
 }
 

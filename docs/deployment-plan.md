@@ -25,7 +25,7 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 - [ ] API実行基盤: Cloudflare Pages Functions / Workers
 - [ ] `/api/extract`: `functions/api/extract.js`
 - [ ] 独自ドメイン: 後回し
-- Environment variables: なし
+- Environment variables: `X_BEARER_TOKEN` は任意。未設定時はoEmbed fallback。
 
 Root directoryを `apps/web` にすると、リポジトリ直下の `functions/` が認識されない可能性があるため、空欄またはリポジトリルートのままにする。
 
@@ -50,15 +50,17 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - [ ] `PORT`: Cloudflare Pagesでは不要
 - [ ] `RATE_LIMIT_PER_IP_PER_MINUTE`: TODO/未設定
 - [ ] `RATE_LIMIT_GLOBAL_PER_MINUTE`: TODO/未設定
+- [ ] `X_BEARER_TOKEN`: 任意。Bring Your Own Token方式でX API v2を使う場合だけ設定。
 
-X API Bearer Tokenは不要。`.env` を作る場合もコミットしない。
+X API Bearer Tokenは必須ではない。`.env` を作る場合もコミットしない。
 
 ## 本番で守る制約
 
-- X_BEARER_TOKEN不要。
-- X API v2と `api.x.com` は使わない。
-- サーバー外向き通信先は `https://publish.x.com/oembed` のみ。
+- X_BEARER_TOKENは任意。設定時だけX API v2を使う。
+- X API v2はBring Your Own Token方式に限定する。
+- サーバー外向き通信先は `https://api.x.com/2/tweets/{postId}` または `https://publish.x.com/oembed` のみ。
 - oEmbedへ渡すURLは validator が生成した `canonicalXPostUrl` のみ。
+- cache hit時はX API v2を呼ばない。
 - 入力URLを直接fetchしない。
 - X HTMLスクレイピング、OGP取得、短縮URL展開、メディアダウンロードをしない。
 - 魚拓は自動取得しない。
@@ -79,12 +81,13 @@ X API Bearer Tokenは不要。`.env` を作る場合もコミットしない。
 - [ ] 問題があれば直前の安定版commitへ戻す。
 - [ ] ロールバック担当者と判断基準を決める: TODO/未設定
 - レート制限値の変更で回避できる問題は、コード変更より先に設定値で対応する。
-- oEmbed側障害が疑われる場合は、取得不能として扱い、X API v2へ切り戻さない。
+- X API v2側障害やoEmbed側障害が疑われる場合は、既存cacheがあればstale-cacheとして返す。
 
 ## 既知の制限
 
-- userNumericIdは未取得。
-- media direct URLsは未取得。
+- userNumericIdはoEmbed fallbackでは未取得。
+- media direct URLsはoEmbed fallbackでは未取得。
 - oEmbedで取得できない投稿がある。
 - 投稿本文と投稿日は安全に抽出できない場合 `未取得`。
 - 魚拓はユーザー操作で外部リンクを開くだけ。
+- Cloudflare Pages/Functionsのin-memory cacheは永続化ではない。本番永続cacheにCloudflare KV/D1等を使うかは未確認。

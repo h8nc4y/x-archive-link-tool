@@ -26,6 +26,14 @@ test("parses valid mobile.twitter.com URL and drops query", () => {
   });
 });
 
+test("parses i/web/status URL by postId", () => {
+  assert.deepEqual(parseXPostUrl("https://x.com/i/web/status/123?s=20"), {
+    username: "未取得",
+    postId: "123",
+    canonicalUrl: "https://x.com/i/web/status/123"
+  });
+});
+
 test("rejects invalid URLs", () => {
   const invalidUrls = [
     "http://x.com/user/status/123",

@@ -2,7 +2,7 @@
 
 ## 基本方針
 
-このMVPは、XポストURLを安全に検証し、サーバー側oEmbed clientで取得できる項目だけを取得する。サーバー外向き通信先は `https://publish.x.com/oembed` に限定し、oEmbedへ渡すURLはURL validatorで生成した `canonicalXPostUrl` のみとする。ユーザー入力URLのfetch、X HTMLスクレイピング、OGP取得、短縮URL展開、メディアダウンロードは行わない。
+このMVPは、XポストURLを安全に検証し、cache-firstで正規化済み情報を返す。`X_BEARER_TOKEN` が設定されている場合のみサーバー側でX API v2をBring Your Own Token方式で使い、未設定時はoEmbed fallbackを使う。サーバー外向き通信先は `https://api.x.com/2/tweets/{postId}` または `https://publish.x.com/oembed` に限定し、oEmbedへ渡すURLはURL validatorで生成した `canonicalXPostUrl` のみとする。ユーザー入力URLのfetch、X HTMLスクレイピング、OGP取得、短縮URL展開、メディアダウンロードは行わない。
 
 ## ログに残す情報
 
@@ -34,7 +34,8 @@
 ## セキュリティ禁止事項
 
 - ユーザー入力URLをサーバーでfetchしない。
-- `api.x.com` へ通信しない。
+- `X_BEARER_TOKEN` 未設定時に `api.x.com` へ通信しない。
+- cache hit時にX API v2 providerを呼ばない。
 - リダイレクトを追跡しない。
 - 短縮URLを展開しない。
 - XのHTMLをスクレイピングしない。
@@ -47,4 +48,4 @@
 
 ## 秘密情報
 
-X API Bearer Tokenは使わない。`.env` はコミットしない。
+X API Bearer Tokenはサーバー側環境変数 `X_BEARER_TOKEN` からのみ読む。必須ではなく、未設定時はoEmbed fallbackを使う。`.env` はコミットしない。

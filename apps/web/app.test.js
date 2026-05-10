@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCopyText, buildGyotakuUrl } from "./app.js";
+import { buildCopyText, buildGyotakuUrl, buildSourceMessage } from "./app.js";
 
 const basePost = {
   accountName: "Example",
@@ -53,4 +53,23 @@ test("buildCopyText does not add HTML markup around API fields", () => {
   assert.equal(text.includes("<p>"), false);
   assert.equal(text.includes("<br>"), false);
   assert.match(text, /ポスト内容：\n<script>alert\(1\)<\/script>/);
+});
+
+test("buildCopyText supports new API response aliases", () => {
+  const text = buildCopyText({
+    authorName: "Alias User",
+    username: "alias_user",
+    canonicalUrl: "https://x.com/i/web/status/123",
+    createdAt: "未取得",
+    text: "alias text",
+    mediaUrls: []
+  });
+
+  assert.match(text, /アカウント名：Alias User/);
+  assert.match(text, /ポストURL：https:\/\/x\.com\/i\/web\/status\/123/);
+});
+
+test("buildSourceMessage describes cache and oEmbed source", () => {
+  assert.equal(buildSourceMessage({ cached: true }), "キャッシュから表示しています。");
+  assert.equal(buildSourceMessage({ source: "oembed" }), "公式API未使用のため画像URLを取得できない場合があります。");
 });

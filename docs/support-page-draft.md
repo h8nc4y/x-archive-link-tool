@@ -23,12 +23,13 @@
 - `https://x.com/{username}/status/{postId}`
 - `https://twitter.com/{username}/status/{postId}`
 - `https://mobile.twitter.com/{username}/status/{postId}`
+- `https://x.com/i/web/status/{postId}`
 
 短縮URL、他host、余分なpath、http URLは受け付けません。
 
-## oEmbedで取得できない投稿
+## 取得方式による制限
 
-oEmbedで取得できない投稿は、このMVPでも取得できません。X API v2は使いません。
+X API Bearer Tokenが設定されている場合はX API v2から取得します。未設定時はoEmbed fallbackで取得するため、メディア直接URLを取得できない場合があります。
 
 ## 魚拓
 

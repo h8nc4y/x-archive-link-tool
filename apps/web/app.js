@@ -11,12 +11,16 @@ export function isValidArchiveUrl(value) {
 export function buildCopyText(post, archiveUrl = "") {
   const validArchiveUrl = isValidArchiveUrl(archiveUrl) ? archiveUrl.trim() : "未取得";
   const mediaUrls = Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls.join("\n") : "なし";
+  const accountName = post.accountName || post.authorName || "未取得";
+  const postUrl = post.postUrl || post.canonicalUrl || "未取得";
+  const userNumericId = post.userNumericId || "未取得";
+  const username = post.username || "未取得";
 
   return [
-    `アカウント名：${post.accountName}`,
-    `アカウントID：@${post.username}`,
-    `ユーザー数値ID：${post.userNumericId}`,
-    `ポストURL：${post.postUrl}`,
+    `アカウント名：${accountName}`,
+    `アカウントID：@${username}`,
+    `ユーザー数値ID：${userNumericId}`,
+    `ポストURL：${postUrl}`,
     `ポスト投稿日：${post.createdAt}`,
     "",
     "ポスト内容：",
@@ -28,6 +32,23 @@ export function buildCopyText(post, archiveUrl = "") {
     "魚拓URL：",
     validArchiveUrl
   ].join("\n");
+}
+
+export function buildSourceMessage(post) {
+  if (!post) {
+    return "";
+  }
+
+  const messages = [];
+  if (post.cached || post.source === "cache" || post.source === "stale-cache") {
+    messages.push("キャッシュから表示しています。");
+  }
+
+  if (post.source === "oembed") {
+    messages.push("公式API未使用のため画像URLを取得できない場合があります。");
+  }
+
+  return messages.join(" ");
 }
 
 function setText(element, value) {
@@ -45,6 +66,7 @@ function setupApp() {
   const copyText = document.querySelector("#copy-text");
   const copyButton = document.querySelector("#copy-button");
   const copyMessage = document.querySelector("#copy-message");
+  const sourceMessage = document.querySelector("#source-message");
   let currentPost = null;
 
   if (
@@ -57,7 +79,8 @@ function setupApp() {
     !archiveInput ||
     !copyText ||
     !copyButton ||
-    !copyMessage
+    !copyMessage ||
+    !sourceMessage
   ) {
     return;
   }
@@ -66,11 +89,13 @@ function setupApp() {
     if (!currentPost) {
       copyText.value = "";
       copyButton.disabled = true;
+      setText(sourceMessage, "");
       return;
     }
 
     copyText.value = buildCopyText(currentPost, archiveInput.value);
     copyButton.disabled = false;
+    setText(sourceMessage, buildSourceMessage(currentPost));
   }
 
   form.addEventListener("submit", async (event) => {
@@ -93,7 +118,7 @@ function setupApp() {
 
       currentPost = payload;
       archiveInput.value = "";
-      gyotakuLink.href = buildGyotakuUrl(payload.postUrl);
+      gyotakuLink.href = buildGyotakuUrl(payload.postUrl || payload.canonicalUrl);
       archiveSection.hidden = false;
       refreshCopyText();
     } catch (error) {

@@ -1,38 +1,39 @@
 # Current Status
 
-oEmbed版Web MVPの現在状態です。
+BYOT/oEmbed fallback版Web MVPの現在状態です。
 
 ## 現在できること
 
 - Xポスト共有URLを入力できる。
 - URLを検証し、`canonicalXPostUrl` に正規化できる。
-- 公式oEmbed endpoint `https://publish.x.com/oembed` から取得できる範囲を正規化できる。
+- `X_BEARER_TOKEN` 設定時はX API v2から取得できる範囲を正規化できる。
+- `X_BEARER_TOKEN` 未設定時は公式oEmbed endpoint `https://publish.x.com/oembed` から取得できる範囲を正規化できる。
+- postId単位のcache-firstで、cache hit時はX API v2を呼ばない。
 - Web UIでコピー用テキストを `textarea` に表示できる。
 - 魚拓リンクを外部リンクとして表示できる。
 - ローカルで `/healthz` を確認できる。
 
 ## 現在できないこと
 
-- 本番公開
 - iOSアプリ
 - DB保存
 - ユーザー認証
-- X API v2利用
-- `api.x.com` への通信
+- 本番永続cache
 - OGP取得、短縮URL展開、スクレイピング、メディアダウンロード
 - 魚拓の自動取得
 
 ## 仕様上あえて取得しないもの
 
-- X_BEARER_TOKEN
-- ユーザー数値ID
-- メディア直接URL
+- ログインCookie、X内部GraphQL、guest token
+- quote/poll
+- oEmbed fallback時のユーザー数値ID
+- oEmbed fallback時のメディア直接URL
 - oEmbed HTMLそのもの
 - 魚拓URLのサーバー取得結果
 
 ## 手動確認済み結果
 
-- oEmbed版Web MVPはローカルで起動できる。
+- Web MVPはローカルで起動できる。
 - Web UIでXポストURLを入力して取得できる。
 - コピー用 `textarea` に結果が表示される。
 - userNumericId は `未取得`。
