@@ -4,6 +4,8 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです
 
 Web UI と `POST /api/extract` は実装済みです。現在はローカルMVPで、本番公開は未実施です。iOSアプリ、DB、本番デプロイ設定は未実装です。
 
+Cloudflare Pages無料URL（`*.pages.dev`）で試験公開する場合、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。
+
 ## ローカル起動
 
 PowerShellでローカルポートを一時設定してから起動します。X API Bearer Tokenは不要です。
@@ -35,6 +37,12 @@ npm test
 node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js
 ```
 
+Cloudflare Pages Functions 用APIテストも含める場合:
+
+```powershell
+node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
+```
+
 ## 環境変数
 
 `.env.example` は見本です。`.env` は作成してもコミット禁止です。
@@ -42,6 +50,8 @@ node --test server/urlValidator.test.js server/extractServer.test.js server/oEmb
 - `PORT`: ローカル起動ポート。既定値は `3000`。
 - `RATE_LIMIT_PER_IP_PER_MINUTE`: IP単位の1分あたり上限。既定値は `10`。
 - `RATE_LIMIT_GLOBAL_PER_MINUTE`: 全体の1分あたり上限。既定値は `60`。
+
+Cloudflare Pagesでは `PORT` は不要です。試験公開時のbuild commandは不要/空欄、build output directoryは `apps/web` です。X API Bearer Tokenは不要です。
 
 ## MVP対象範囲
 
