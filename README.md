@@ -51,7 +51,7 @@ node --test server/urlValidator.test.js server/extractServer.test.js server/oEmb
 - `RATE_LIMIT_PER_IP_PER_MINUTE`: IP単位の1分あたり上限。既定値は `10`。
 - `RATE_LIMIT_GLOBAL_PER_MINUTE`: 全体の1分あたり上限。既定値は `60`。
 
-Cloudflare Pagesでは `PORT` は不要です。試験公開時のbuild commandは不要/空欄、build output directoryは `apps/web` です。X API Bearer Tokenは不要です。
+Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directoryは空欄/リポジトリルート、build commandは不要/空欄、build output directoryは `apps/web`、Functions directoryは `functions` です。Root directoryを `apps/web` にすると `/api/extract` のFunctionsが認識されない可能性があります。X API Bearer Tokenは不要です。
 
 ## MVP対象範囲
 
