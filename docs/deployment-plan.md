@@ -33,7 +33,9 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 
 - Cloudflare Pages初回デプロイ: OK
 - Cloudflare Pages Deploymentsで `6745361` のproduction deployment成功: OK
+- Cloudflare Pages Deploymentsで `77e937b` のproduction deployment成功: OK
 - トップ画面表示: OK
+- 空欄送信時の必須入力表示: OK（ブラウザ標準の必須入力メッセージ）
 - 公開X投稿URLを1件使用した抽出: OK
 - 魚拓URL生成: OK
 - コピー用テキスト生成: OK
