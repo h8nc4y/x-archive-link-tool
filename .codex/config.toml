@@ -1,0 +1,13 @@
+model_reasoning_effort = "medium"
+plan_mode_reasoning_effort = "high"
+model_reasoning_summary = "concise"
+model_verbosity = "low"
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+[agents]
+max_threads = 3
+max_depth = 1
+
+[features]
+goals = true
