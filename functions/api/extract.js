@@ -2,6 +2,7 @@ import { parseXPostUrl, XPostUrlValidationError } from "../../server/urlValidato
 import { OEmbedClientError } from "../../server/oEmbedClient.js";
 import { extractPostWithCache } from "../../server/extractService.js";
 import { createMemoryPostCache } from "../../server/postCache.js";
+import { createKvPostCache } from "../../server/kvPostCache.js";
 import { createRateLimiter } from "../../server/rateLimiter.js";
 import { XApiV2ClientError } from "../../server/xApiV2Client.js";
 
@@ -15,6 +16,7 @@ const SECURITY_HEADERS = {
 };
 const rateLimiters = new Map();
 const postCaches = new Map();
+const kvPostCaches = new WeakMap();
 
 class HttpError extends Error {
   constructor(statusCode, message) {
@@ -65,7 +67,20 @@ function getRateLimiter(env = {}) {
   return rateLimiter;
 }
 
+function isKvPostCacheBinding(value) {
+  return value && typeof value === "object" && typeof value.get === "function" && typeof value.put === "function";
+}
+
 function getPostCache(env = {}) {
+  if (isKvPostCacheBinding(env.X_POST_CACHE)) {
+    let kvCache = kvPostCaches.get(env.X_POST_CACHE);
+    if (!kvCache) {
+      kvCache = createKvPostCache(env.X_POST_CACHE);
+      kvPostCaches.set(env.X_POST_CACHE, kvCache);
+    }
+    return kvCache;
+  }
+
   const key = `${env.X_BEARER_TOKEN ? "x-api-v2" : "oembed"}:${env.RATE_LIMIT_PER_IP_PER_MINUTE || ""}:${env.RATE_LIMIT_GLOBAL_PER_MINUTE || ""}`;
   let cache = postCaches.get(key);
   if (!cache) {
@@ -79,7 +94,10 @@ function getClientIp(request) {
   return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
 }
 
-export async function handleExtractRequest(request, { env = {}, extractPost = null, rateLimiter = getRateLimiter(env) } = {}) {
+export async function handleExtractRequest(
+  request,
+  { env = {}, extractPost = null, rateLimiter = getRateLimiter(env), xApiProvider, oEmbedProvider } = {}
+) {
   if (request.method !== "POST") {
     return sendJson(405, { error: "Method not allowed." }, { allow: "POST" });
   }
@@ -110,7 +128,15 @@ export async function handleExtractRequest(request, { env = {}, extractPost = nu
     }
 
     const parsed = parseXPostUrl(body.url);
-    const extractor = extractPost || ((postUrl) => extractPostWithCache(postUrl, { env, cache: getPostCache(env) }));
+    const extractor =
+      extractPost ||
+      ((postUrl) =>
+        extractPostWithCache(postUrl, {
+          env,
+          cache: getPostCache(env),
+          xApiProvider,
+          oEmbedProvider
+        }));
     return sendJson(200, await extractor(parsed));
   } catch (error) {
     if (error instanceof XPostUrlValidationError) {

@@ -35,6 +35,42 @@ function assertSecurityHeaders(response) {
   assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
 }
 
+function providerPost(parsed, overrides = {}) {
+  return {
+    id: parsed.postId,
+    canonicalUrl: `https://x.com/i/web/status/${parsed.postId}`,
+    authorName: "Example",
+    username: parsed.username,
+    userNumericId: "42",
+    createdAt: "2026-05-10T00:00:00.000Z",
+    text: "fixture text",
+    expandedUrls: [],
+    media: [],
+    mediaUrls: [],
+    warnings: [],
+    ...overrides
+  };
+}
+
+function createMockKv({ failGet = false, failPut = false } = {}) {
+  const values = new Map();
+  return {
+    values,
+    async get(key) {
+      if (failGet) {
+        throw new Error("kv get failed");
+      }
+      return values.get(key) || null;
+    },
+    async put(key, value) {
+      if (failPut) {
+        throw new Error("kv put failed");
+      }
+      values.set(key, value);
+    }
+  };
+}
+
 test("Cloudflare function POST /api/extract returns normalized response without token", async () => {
   const response = await handleExtractRequest(jsonRequest(), {
     env: {},
@@ -168,4 +204,115 @@ test("Cloudflare function exposes only safe X API failure status in fallback war
   assert.equal(JSON.stringify(payload).includes("secret-token"), false);
   assert.equal(JSON.stringify(payload).includes("Authorization"), false);
   assertSecurityHeaders(response);
+});
+
+test("Cloudflare function uses KV cache hit without calling X API provider again", async () => {
+  const kv = createMockKv();
+  const env = { X_BEARER_TOKEN: "secret-token", X_POST_CACHE: kv };
+  const body = { url: "https://x.com/user/status/91001" };
+  let xApiCalls = 0;
+
+  const options = {
+    env,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    xApiProvider: async (parsed) => {
+      xApiCalls += 1;
+      return providerPost(parsed, { mediaUrls: ["https://pbs.twimg.com/media/one.jpg"] });
+    }
+  };
+  const first = await handleExtractRequest(jsonRequest({ body }), options);
+  const second = await handleExtractRequest(jsonRequest({ body }), options);
+  const firstPayload = await readJson(first);
+  const secondPayload = await readJson(second);
+
+  assert.equal(first.status, 200);
+  assert.equal(firstPayload.source, "x-api-v2");
+  assert.equal(firstPayload.cached, false);
+  assert.equal(second.status, 200);
+  assert.equal(secondPayload.source, "cache");
+  assert.equal(secondPayload.cached, true);
+  assert.equal(xApiCalls, 1);
+  assert.equal(kv.values.has("post:91001"), true);
+  assert.equal(JSON.stringify(secondPayload).includes("secret-token"), false);
+  assert.equal(JSON.stringify(secondPayload).includes("Authorization"), false);
+});
+
+test("Cloudflare function continues origin path when KV get fails without public warning", async () => {
+  const env = { X_BEARER_TOKEN: "secret-token", X_POST_CACHE: createMockKv({ failGet: true }) };
+  let xApiCalls = 0;
+  const response = await handleExtractRequest(jsonRequest({ body: { url: "https://x.com/user/status/91002" } }), {
+    env,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    xApiProvider: async (parsed) => {
+      xApiCalls += 1;
+      return providerPost(parsed);
+    }
+  });
+  const payload = await readJson(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.source, "x-api-v2");
+  assert.equal(xApiCalls, 1);
+  assert.deepEqual(payload.warnings, []);
+});
+
+test("Cloudflare function returns origin result when KV set fails without public warning", async () => {
+  const env = { X_BEARER_TOKEN: "secret-token", X_POST_CACHE: createMockKv({ failPut: true }) };
+  const response = await handleExtractRequest(jsonRequest({ body: { url: "https://x.com/user/status/91003" } }), {
+    env,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    xApiProvider: async (parsed) => providerPost(parsed)
+  });
+  const payload = await readJson(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.source, "x-api-v2");
+  assert.equal(payload.cached, false);
+  assert.deepEqual(payload.warnings, []);
+});
+
+test("Cloudflare function treats malformed KV payload as cache miss without public warning", async () => {
+  const kv = createMockKv();
+  kv.values.set("post:91004", "{not-json");
+  const env = { X_BEARER_TOKEN: "secret-token", X_POST_CACHE: kv };
+  let xApiCalls = 0;
+  const response = await handleExtractRequest(jsonRequest({ body: { url: "https://x.com/user/status/91004" } }), {
+    env,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    xApiProvider: async (parsed) => {
+      xApiCalls += 1;
+      return providerPost(parsed);
+    }
+  });
+  const payload = await readJson(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.source, "x-api-v2");
+  assert.equal(xApiCalls, 1);
+  assert.deepEqual(payload.warnings, []);
+});
+
+test("Cloudflare function keeps in-memory cache fallback when KV binding is missing", async () => {
+  const env = { X_BEARER_TOKEN: "secret-token" };
+  const body = { url: "https://x.com/user/status/91005" };
+  let xApiCalls = 0;
+  const options = {
+    env,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    xApiProvider: async (parsed) => {
+      xApiCalls += 1;
+      return providerPost(parsed);
+    }
+  };
+
+  const first = await handleExtractRequest(jsonRequest({ body }), options);
+  const second = await handleExtractRequest(jsonRequest({ body }), options);
+  const firstPayload = await readJson(first);
+  const secondPayload = await readJson(second);
+
+  assert.equal(first.status, 200);
+  assert.equal(firstPayload.source, "x-api-v2");
+  assert.equal(second.status, 200);
+  assert.equal(secondPayload.source, "cache");
+  assert.equal(xApiCalls, 1);
 });

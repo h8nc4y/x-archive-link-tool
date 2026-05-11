@@ -73,6 +73,22 @@ async function cachePost(cache, postId, post, ttlMs) {
   });
 }
 
+async function getCachedPost(cache, postId, options) {
+  try {
+    return await cache.get(postId, options);
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedPost(cache, postId, post, ttlMs) {
+  try {
+    await cachePost(cache, postId, post, ttlMs);
+  } catch {
+    // Cache is an optimization layer; origin success must not fail the request.
+  }
+}
+
 export async function extractPostWithCache(
   parsedUrl,
   {
@@ -85,7 +101,7 @@ export async function extractPostWithCache(
   } = {}
 ) {
   const postCache = cache || createMemoryPostCache({ now });
-  const cached = await postCache.get(parsedUrl.postId);
+  const cached = await getCachedPost(postCache, parsedUrl.postId);
   if (cached) {
     return fromCached(cached, "cache");
   }
@@ -105,10 +121,10 @@ export async function extractPostWithCache(
       ttlMs,
       warnings
     });
-    await cachePost(postCache, parsedUrl.postId, normalized, ttlMs);
+    await setCachedPost(postCache, parsedUrl.postId, normalized, ttlMs);
     return normalized;
   } catch (error) {
-    const stale = await postCache.get(parsedUrl.postId, { allowStale: true });
+    const stale = await getCachedPost(postCache, parsedUrl.postId, { allowStale: true });
     if (stale) {
       const stalePost = fromCached(stale, "stale-cache");
       stalePost.warnings = [...new Set([...(stalePost.warnings || []), STALE_CACHE_WARNING])];
@@ -123,7 +139,7 @@ export async function extractPostWithCache(
         ttlMs,
         warnings: [OEMBED_MEDIA_WARNING, getXApiFallbackWarning(error)]
       });
-      await cachePost(postCache, parsedUrl.postId, normalized, ttlMs);
+      await setCachedPost(postCache, parsedUrl.postId, normalized, ttlMs);
       return normalized;
     }
 
