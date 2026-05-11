@@ -73,7 +73,7 @@
 - APIエラー、認証エラー、rate limitエラーは原則キャッシュしない。
 - 期限切れcacheがあり、最新取得に失敗した場合は `stale-cache` とwarnings付きで返す。
 - X API認証、権限、rate limit、上流エラー時は、可能ならoEmbed fallbackへ戻し、warning付きで返す。
-- fallback warningには安全な範囲で上流HTTP statusだけを含める。401はBearer Token不正、403はApp権限/プラン/endpoint access不足、429はrate limit/usage capの可能性がある。
+- fallback warningには安全な範囲で上流HTTP statusだけを含める。401はBearer Token不正、402はX API credits / billing / payment required、403はApp権限/プラン/endpoint access不足、429はrate limit/usage capの可能性がある。
 - Cloudflare Pages/Functionsのin-memory cacheは永続化ではない。本番永続cacheにCloudflare KV/D1等を使うかは未確認。
 
 ## 魚拓リンク仕様
