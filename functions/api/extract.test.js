@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { handleExtractRequest } from "./extract.js";
 import { extractPostWithCache } from "../../server/extractService.js";
 import { createMemoryPostCache } from "../../server/postCache.js";
+import { XApiV2ClientError } from "../../server/xApiV2Client.js";
 
 function jsonRequest({ method = "POST", body = { url: "https://x.com/user/status/123" }, headers = {} } = {}) {
   const options = {
@@ -133,5 +134,38 @@ test("Cloudflare function returns oEmbed fallback instead of 502 when X API prov
   assert.equal(payload.source, "oembed");
   assert.equal(payload.warnings.includes("X API provider failed; used oEmbed fallback."), true);
   assert.equal(JSON.stringify(payload).includes("secret-token"), false);
+  assertSecurityHeaders(response);
+});
+
+test("Cloudflare function exposes only safe X API failure status in fallback warning", async () => {
+  const response = await handleExtractRequest(jsonRequest(), {
+    env: { X_BEARER_TOKEN: "secret-token" },
+    rateLimiter: { check: () => ({ allowed: true }) },
+    extractPost: (parsed) =>
+      extractPostWithCache(parsed, {
+        env: { X_BEARER_TOKEN: "secret-token" },
+        cache: createMemoryPostCache(),
+        xApiProvider: async () => {
+          throw new XApiV2ClientError("safe upstream failure", "x_api_403", 502, 403);
+        },
+        oEmbedProvider: async () => ({
+          accountName: "Fallback User",
+          username: "user",
+          userNumericId: "未取得",
+          postId: "123",
+          postUrl: "https://x.com/user/status/123",
+          createdAt: "未取得",
+          text: "未取得",
+          mediaUrls: []
+        })
+      })
+  });
+  const payload = await readJson(response);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.source, "oembed");
+  assert.equal(payload.warnings.includes("X API provider failed with status 403; used oEmbed fallback."), true);
+  assert.equal(JSON.stringify(payload).includes("secret-token"), false);
+  assert.equal(JSON.stringify(payload).includes("Authorization"), false);
   assertSecurityHeaders(response);
 });

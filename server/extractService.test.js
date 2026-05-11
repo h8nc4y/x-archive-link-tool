@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { extractPostWithCache } from "./extractService.js";
 import { createMemoryPostCache } from "./postCache.js";
+import { XApiV2ClientError } from "./xApiV2Client.js";
 
 const parsedUrl = {
   username: "source_user",
@@ -152,6 +153,34 @@ test("X API failure without stale cache falls back to oEmbed without leaking tok
   assert.equal(result.warnings.includes("X API provider failed; used oEmbed fallback."), true);
   assert.equal(JSON.stringify(result).includes("secret-token"), false);
 });
+
+for (const status of [401, 403, 429]) {
+  test(`X API ${status} failure falls back with safe status warning`, async () => {
+    const result = await extractPostWithCache(parsedUrl, {
+      env: { X_BEARER_TOKEN: "secret-token" },
+      cache: createMemoryPostCache(),
+      xApiProvider: async () => {
+        throw new XApiV2ClientError("safe upstream failure", `x_api_${status}`, 502, status);
+      },
+      oEmbedProvider: async () => ({
+        accountName: "Fallback User",
+        username: "source_user",
+        userNumericId: "未取得",
+        postId: "123",
+        postUrl: "https://x.com/source_user/status/123",
+        createdAt: "未取得",
+        text: "未取得",
+        mediaUrls: []
+      })
+    });
+
+    assert.equal(result.source, "oembed");
+    assert.equal(result.cached, false);
+    assert.equal(result.warnings.includes(`X API provider failed with status ${status}; used oEmbed fallback.`), true);
+    assert.equal(JSON.stringify(result).includes("secret-token"), false);
+    assert.equal(JSON.stringify(result).includes("Authorization"), false);
+  });
+}
 
 test("token value is never included in response", async () => {
   const result = await extractPostWithCache(parsedUrl, {

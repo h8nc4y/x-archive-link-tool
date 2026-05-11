@@ -12,6 +12,7 @@ function mockResponse(status, body) {
   return {
     ok: status >= 200 && status < 300,
     status,
+    headers: new Headers(),
     async json() {
       return body;
     }
@@ -148,6 +149,27 @@ test("normalizeXApiV2Response handles animated_gif mp4 variant", () => {
 test("fetchXPostFromApi maps token and upstream errors safely", async () => {
   await assert.rejects(
     () => fetchXPostFromApi(parsedUrl, { bearerToken: "secret", fetchFn: async () => mockResponse(401, {}) }),
-    (error) => error instanceof XApiV2ClientError && error.code === "x_api_401" && !error.message.includes("secret")
+    (error) =>
+      error instanceof XApiV2ClientError &&
+      error.code === "x_api_401" &&
+      error.responseStatusCode === 401 &&
+      error.errorType === "unauthorized" &&
+      !error.message.includes("secret")
+  );
+});
+
+test("fetchXPostFromApi keeps safe rate limit reset diagnostic", async () => {
+  const response = mockResponse(429, {});
+  response.headers = new Headers({ "x-rate-limit-reset": "1760000000" });
+
+  await assert.rejects(
+    () => fetchXPostFromApi(parsedUrl, { bearerToken: "secret", fetchFn: async () => response }),
+    (error) =>
+      error instanceof XApiV2ClientError &&
+      error.code === "x_api_429" &&
+      error.responseStatusCode === 429 &&
+      error.errorType === "rate_limited" &&
+      error.rateLimitReset === "1760000000" &&
+      !JSON.stringify(error).includes("secret")
   );
 });

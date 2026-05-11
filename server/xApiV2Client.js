@@ -1,12 +1,14 @@
 const X_API_TWEET_URL = "https://api.x.com/2/tweets/";
 
 export class XApiV2ClientError extends Error {
-  constructor(message, code, statusCode, responseStatusCode) {
+  constructor(message, code, statusCode, responseStatusCode, { errorType, rateLimitReset } = {}) {
     super(message);
     this.name = "XApiV2ClientError";
     this.code = code;
     this.statusCode = statusCode;
     this.responseStatusCode = responseStatusCode;
+    this.errorType = errorType;
+    this.rateLimitReset = rateLimitReset;
   }
 }
 
@@ -19,28 +21,56 @@ function buildTweetUrl(postId) {
   return url;
 }
 
-function mapXApiError(status) {
+function readRateLimitReset(response) {
+  const value = response?.headers?.get?.("x-rate-limit-reset");
+  return /^[0-9]+$/.test(String(value || "")) ? value : undefined;
+}
+
+function mapXApiError(response) {
+  const status = response.status;
+  const diagnostics = {
+    rateLimitReset: readRateLimitReset(response)
+  };
+
   if (status === 401) {
-    return new XApiV2ClientError("X API authentication failed.", "x_api_401", 502, status);
+    return new XApiV2ClientError("X API authentication failed.", "x_api_401", 502, status, {
+      ...diagnostics,
+      errorType: "unauthorized"
+    });
   }
 
   if (status === 403) {
-    return new XApiV2ClientError("X API access was denied.", "x_api_403", 502, status);
+    return new XApiV2ClientError("X API access was denied.", "x_api_403", 502, status, {
+      ...diagnostics,
+      errorType: "forbidden"
+    });
   }
 
   if (status === 404) {
-    return new XApiV2ClientError("X API post was not found.", "x_api_404", 404, status);
+    return new XApiV2ClientError("X API post was not found.", "x_api_404", 404, status, {
+      ...diagnostics,
+      errorType: "not_found"
+    });
   }
 
   if (status === 429) {
-    return new XApiV2ClientError("X API rate limit exceeded.", "x_api_429", 429, status);
+    return new XApiV2ClientError("X API rate limit exceeded.", "x_api_429", 429, status, {
+      ...diagnostics,
+      errorType: "rate_limited"
+    });
   }
 
   if (status >= 500) {
-    return new XApiV2ClientError("X API upstream error.", "x_api_5xx", 502, status);
+    return new XApiV2ClientError("X API upstream error.", "x_api_5xx", 502, status, {
+      ...diagnostics,
+      errorType: "upstream_error"
+    });
   }
 
-  return new XApiV2ClientError("X API request failed.", "x_api_error", 502, status);
+  return new XApiV2ClientError("X API request failed.", "x_api_error", 502, status, {
+    ...diagnostics,
+    errorType: "request_failed"
+  });
 }
 
 function getBestVideoUrl(variants = []) {
@@ -161,7 +191,7 @@ export async function fetchXPostFromApi(parsedUrl, { bearerToken, fetchFn = glob
   });
 
   if (!response.ok) {
-    throw mapXApiError(response.status);
+    throw mapXApiError(response);
   }
 
   return normalizeXApiV2Response(await response.json(), parsedUrl);
