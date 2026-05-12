@@ -57,6 +57,28 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 
 X API Bearer Tokenは必須ではない。`.env` を作る場合もコミットしない。
 
+## Rate limit本番設定方針案
+
+現状:
+
+- `RATE_LIMIT_PER_IP_PER_MINUTE` は未設定。本番値はTODO/未設定。コード上の既定値は10/min。
+- `RATE_LIMIT_GLOBAL_PER_MINUTE` は未設定。本番値はTODO/未設定。コード上の既定値は60/min。
+- KV post cacheにより、同一postIdのcache hit時はX API v2を呼ばない。
+- cache miss時はX API v2またはoEmbed fallbackを呼ぶため、公開範囲が広がる前に本番値を決める。
+
+候補:
+
+- 試験公開の初期候補: `RATE_LIMIT_PER_IP_PER_MINUTE=10`, `RATE_LIMIT_GLOBAL_PER_MINUTE=60`。既定値と同じにして挙動差分を増やさない。
+- X API creditsやusage capを強く保護する候補: `RATE_LIMIT_PER_IP_PER_MINUTE=5`, `RATE_LIMIT_GLOBAL_PER_MINUTE=30`。利用者が少ない間の保守的な値。
+- 一時的な問題対応候補: global値を先に下げ、必要ならper IP値も下げる。設定変更後はProduction redeployと最小回数の確認を行う。
+
+未決事項:
+
+- [ ] 採用する本番値。
+- [ ] Cloudflare Pages Production環境変数への設定有無。
+- [ ] X API credits / billing / usage capを見ながら値を見直す頻度。
+- [ ] 正常利用者が429になった場合の問い合わせ先と対応基準。
+
 ## 本番で守る制約
 
 - X_BEARER_TOKENは任意。設定時だけX API v2を使う。
