@@ -9,6 +9,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - `X_BEARER_TOKEN` 設定時はX API v2から取得できる範囲を正規化できる。
 - `X_BEARER_TOKEN` 未設定時は公式oEmbed endpoint `https://publish.x.com/oembed` から取得できる範囲を正規化できる。
 - postId単位のcache-firstで、cache hit時はX API v2を呼ばない。
+- Cloudflare ProductionではKV binding `X_POST_CACHE` によりpostId単位のcacheを保存できる。
 - Web UIでコピー用テキストを `textarea` に表示できる。
 - 魚拓リンクを外部リンクとして表示できる。
 - ローカルで `/healthz` を確認できる。
@@ -18,7 +19,6 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - iOSアプリ
 - DB保存
 - ユーザー認証
-- 本番永続cache
 - OGP取得、短縮URL展開、スクレイピング、メディアダウンロード
 - 魚拓の自動取得
 
@@ -41,6 +41,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - 魚拓リンクは表示される。
 - 魚拓は自動取得されない。
 - ポート競合時の案内を表示できる。
+- Cloudflare Productionで同一投稿URLを2回確認し、1回目は `source=x-api-v2`, `cached=false`, mediaUrls件数4, warnings件数0、2回目は `source=cache`, `cached=true`, mediaUrls件数4, warnings件数0。推定X API v2通信回数は1回。
 
 ## 次の推奨作業
 

@@ -74,7 +74,8 @@
 - 期限切れcacheがあり、最新取得に失敗した場合は `stale-cache` とwarnings付きで返す。
 - X API認証、権限、rate limit、上流エラー時は、可能ならoEmbed fallbackへ戻し、warning付きで返す。
 - fallback warningには安全な範囲で上流HTTP statusだけを含める。401はBearer Token不正、402はX API credits / billing / payment required、403はApp権限/プラン/endpoint access不足、429はrate limit/usage capの可能性がある。
-- Cloudflare Pages/Functionsのin-memory cacheは永続化ではない。本番永続cacheにCloudflare KV/D1等を使うかは未確認。
+- Cloudflare Pages/FunctionsのProductionではCloudflare KV binding `X_POST_CACHE` を使う。
+- `X_POST_CACHE` binding未設定時はin-memory cacheへfallbackするが、serverless環境では永続化を期待しない。
 
 ## 魚拓リンク仕様
 
