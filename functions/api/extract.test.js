@@ -141,6 +141,20 @@ test("Cloudflare function rate limit returns 429", async () => {
   assertSecurityHeaders(response);
 });
 
+test("Cloudflare function rate limit response does not include sensitive values", async () => {
+  const response = await handleExtractRequest(jsonRequest(), {
+    env: { X_BEARER_TOKEN: "not-a-real-token-value" },
+    rateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 60 }) }
+  });
+  const serialized = JSON.stringify(await readJson(response));
+
+  assert.equal(response.status, 429);
+  assert.equal(serialized.includes("not-a-real-token-value"), false);
+  assert.equal(serialized.includes("Authorization"), false);
+  assert.equal(serialized.includes("https://x.com/user/status/123"), false);
+  assert.equal(serialized.includes("mediaUrls"), false);
+});
+
 test("Cloudflare function returns oEmbed fallback instead of 502 when X API provider fails", async () => {
   const response = await handleExtractRequest(jsonRequest(), {
     env: { X_BEARER_TOKEN: "secret-token" },
