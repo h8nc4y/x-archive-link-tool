@@ -19,7 +19,9 @@
 - `RATE_LIMIT_GLOBAL_PER_MINUTE=60`
 - `X_BEARER_TOKEN`: secretとして設定済み。値は記録しない。
 - Production redeploy: 人間側で実施済み。
-- 最新Production deploy成功状態: 未確認。
+- 最新Production deploy成功状態: 人間側で確認済み。`c1471eb` またはmaster最新のProduction deployはSuccess。
+- Production URLトップページ表示: 成功。
+- `/api/extract`: この確認では再実行していない。
 
 ## 本番確認済み
 
@@ -68,6 +70,6 @@
 
 ## 残確認
 
-- Cloudflare Pages Deployments上の最新Production deploy成功状態を人間が確認する。
+- Cloudflare Pages Deployments上の最新Production deploy成功状態は人間側で確認済み。
 - rate limit設定後の実際の429挙動は未確認。確認する場合は、実X API通信回数を増やさない方法を別checkpointで決める。
 - 確認結果にはHTTP status、source、cached、mediaUrls件数、warnings件数だけを書く。実投稿URL、投稿本文、mediaUrls値、username、postId、token、Authorization headerは記録しない。

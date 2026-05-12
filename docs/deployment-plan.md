@@ -46,6 +46,9 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - `/api/extract` へのPOSTが Ok として記録: OK
 - Cloudflare Functionsログ重大エラー: なし（確認時点）
 - KV post cache本番確認: OK。同一投稿URLで2回確認し、1回目は `source=x-api-v2`, `cached=false`, mediaUrls件数4, warnings件数0。2回目は `source=cache`, `cached=true`, mediaUrls件数4, warnings件数0。推定X API v2通信回数は1回。
+- Cloudflare Pages Deploymentsで `c1471eb` またはmaster最新のProduction deploy成功: OK（人間側で確認済み）。
+- `c1471eb` deploy後のトップページ表示: OK。
+- `c1471eb` deploy後の `/api/extract` 再実行: 未実施。
 
 ## 本番環境で必要な設定
 
@@ -139,7 +142,7 @@ redeploy後の最小確認方針:
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
 - [ ] 問い合わせ先: TODO/未設定。
 - [ ] プライバシーポリシーURL: TODO/未設定。
-- [ ] Cloudflare Pages deploy status確認: 人間がCloudflare Pages Deploymentsで最新commitのProduction成功を確認する。自動deploy結果は未確認のままにしない。
+- [x] Cloudflare Pages deploy status確認: 人間側で `c1471eb` またはmaster最新のProduction成功を確認済み。
 - [ ] Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
 - [ ] ログ保存期間: TODO/未設定。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
