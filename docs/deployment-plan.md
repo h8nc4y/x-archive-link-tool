@@ -98,6 +98,16 @@ redeploy後の最小確認方針:
 - [ ] X API credits / billing / usage capを見ながら値を見直す頻度。
 - [ ] 正常利用者が429になった場合の問い合わせ先と対応基準。
 
+429確認方針:
+
+- 原則として429挙動はローカルテストで確認する。`npm test` にはrate limitの既定値、環境変数指定、不正値fallback、429時の `Retry-After`、429本文の非漏えい確認が含まれる。
+- 本番で429確認を行うのは、公開前に人間が必要と判断した場合だけにする。
+- 本番で確認する場合も、実X API通信回数を増やさない方法を先に別checkpointで決める。安全に担保できない場合は実行しない。
+- 本番確認中に429以外の応答、5xx、X API provider warning、想定外のFunctionsログ、実X API通信増加の疑いが出た場合は追加実行せず停止する。
+- 記録してよい項目はHTTP status、`Retry-After` の有無、エラーcode、実行回数、確認時刻、Cloudflare deploy commit、warnings件数だけにする。
+- 記録禁止項目は実投稿URL、投稿本文、mediaUrls値、username、postId、token、Authorization header、secret値、Cookie、Cloudflare内部ログの詳細本文。
+- 問い合わせ先、429時の対応基準、X API credits / billing / usage capの見直し頻度は未確認。
+
 ## 本番で守る制約
 
 - X_BEARER_TOKENは任意。設定時だけX API v2を使う。
@@ -147,6 +157,7 @@ redeploy後の最小確認方針:
 - [ ] ログ保存期間: TODO/未設定。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
 - [ ] KV障害時の一時切り戻し方針: TODO/未設定。候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と手順は未確認。
+- [ ] 429本番確認: 未実施。原則ローカルテストで担保し、本番確認は実X API通信を増やさない手順を別checkpointで決めてから行う。
 - [ ] 実X API通信回数を増やさない確認方針: 同一投稿URLで最大2回。1回目がHTTP 200かつmediaUrls取得成功の場合だけ2回目を行う。失敗時は追加実行しない。
 - [ ] 記録禁止方針: token、Authorization header、secret値、実投稿URL、投稿本文、mediaUrls値、username、postIdはdocs、issue、チャット、ログへ貼らない。
 

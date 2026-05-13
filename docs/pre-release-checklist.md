@@ -64,6 +64,7 @@
 - プライバシーポリシーURL: TODO/未設定。
 - X API credits / billing / usage capを見直す頻度: 未確認。
 - 正常利用者が429になった場合の問い合わせ先と対応基準: 未確認。
+- 429確認方針: 原則ローカルテストで担保し、本番確認は必要時のみ別checkpointで手順を決める。
 - Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
 - ログ保存期間: TODO/未設定。
 - KV障害時の一時切り戻し方針: TODO/未設定。
@@ -72,4 +73,6 @@
 
 - Cloudflare Pages Deployments上の最新Production deploy成功状態は人間側で確認済み。
 - rate limit設定後の実際の429挙動は未確認。確認する場合は、実X API通信回数を増やさない方法を別checkpointで決める。
+- 本番429確認の停止条件: 429以外の応答、5xx、X API provider warning、想定外のFunctionsログ、実X API通信増加の疑いがある場合は追加実行しない。
+- 429確認で記録してよい項目: HTTP status、`Retry-After` の有無、エラーcode、実行回数、確認時刻、Cloudflare deploy commit、warnings件数。
 - 確認結果にはHTTP status、source、cached、mediaUrls件数、warnings件数だけを書く。実投稿URL、投稿本文、mediaUrls値、username、postId、token、Authorization headerは記録しない。
