@@ -45,7 +45,8 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 
 ## 次の推奨作業
 
-- 公開先とドメインを決める。
-- レート制限値を公開前に見直す。
+- Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
+- レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
 - 問い合わせ先とプライバシーポリシーを用意する。
-- 公開前チェックリストを再実行する。
+- `64a78c5` のCloudflare Production deploy成功は未確認。人間側で確認後、docsへ記録する。
+- 公開前チェックリストを必要に応じて再確認する。

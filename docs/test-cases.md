@@ -1,6 +1,8 @@
 # Test Cases
 
-検証コマンド: 未確認
+検証コマンド: `npm test`
+
+直近確認: 82 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
 
 ## Valid URL examples
 
@@ -11,6 +13,7 @@
 | `https://mobile.twitter.com/example/status/1234567890` | `https://x.com/example/status/1234567890` |
 | `https://x.com/user_123/status/1?s=20` | `https://x.com/user_123/status/1` |
 | `https://x.com/Example/status/1234567890123456789#ref` | `https://x.com/Example/status/1234567890123456789` |
+| `https://x.com/i/web/status/1234567890` | `https://x.com/i/web/status/1234567890` |
 
 ## Invalid URL examples
 
@@ -24,7 +27,6 @@
 | `https://x.com/example/status/12345678901234567890` | postId is longer than 19 digits |
 | `https://x.com/user-name/status/123` | username contains invalid character |
 | `https://x.com/abcdefghijklmnop/status/123` | username is longer than 15 characters |
-| `https://x.com/i/web/status/1234567890` | path is not accepted |
 | `https://x.com/example/status/123/extra` | path has extra segment |
 
 ## 魚拓リンク例
