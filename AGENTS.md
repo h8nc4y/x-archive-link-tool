@@ -40,9 +40,10 @@
 
 - `/goal` は作業開始してよいタイミングでだけ使う。
 - 計画、確認、読み取り専用調査だけの場合は `/goal` を使わない。
-- 作業は checkpoint 単位で進め、1 checkpoint が完了したら差分、確認結果、未確認事項、残リスクを報告して停止する。
-- 外部ネットワーク、push、deploy、実API呼び出し、依存追加、秘密情報、実データ操作が必要になった場合は、承認ポイントとして停止し、必要性、副作用、代替案、必要な承認内容を報告する。
-- 複雑、高リスク、複数ファイル横断、設計判断、データ影響、セキュリティ、権限、外部副作用があり `xhigh` が必要な場面では、自動切替せず、停止して理由と続行プロンプトを出す。
+- Codex は checkpoint 完了ごとに停止せず、ローカルで安全に継続できる複数 checkpoint を自律的に進める。
+- ローカルで完結するコード編集、テスト追加・修正、lint/type/format、docs 更新、fixture 更新、AGENTS.md/AGENT.md 更新、`.codex/config.toml` のローカル編集、必要最小限のリファクタ、local commit は停止せず実行してよい。
+- 停止するのは、料金が発生する可能性がある API 呼び出し、OpenAI API・YouTube API・Salesforce API・Cloudflare API などの外部 API/サービス実行、本番 deploy、push/tag/GitHub Release などの外部 write、ネットワーク経由の依存追加、秘密情報・token・OAuth・credential・実データを外部送信する可能性がある操作、sandbox/approval/権限/usage limit など物理的に継続できない blocker がある場合だけにする。
+- 複雑・高リスク・複数ファイル横断・設計判断がある場合でも、上記停止条件に該当しないローカル作業は、対象範囲を絞って判断根拠を残しながら継続する。
 - OpenAI API、Codex、ChatGPT Apps SDK、OpenAI 関連仕様を確認する場合は、利用可能なら OpenAI Developer Docs MCP を優先する。
 
 ## Codex 作業ガード
@@ -50,13 +51,15 @@
 - 変更前に `git status --short` を確認し、未追跡ファイルや既存差分があれば作業前に明示する。
 - 対象ファイルを絞り、仕様外改善、広範なリファクタ、依存追加、公開API変更を避ける。
 - `.env`、`data/`、`secrets`、`credentials`、`token`、`OAuth`、実データは読まない、表示しない、変更しない、コミットしない。
-- `git add .` は使わない。`git commit`、`git push`、deploy は明示依頼があるまで行わない。
+- `git add .` は使わない。local commit は作業目的に含まれる場合は停止せず行ってよい。`git push`、tag、GitHub Release、deploy は明示依頼があるまで行わない。
 - 完了前に `git diff --stat` と `git diff --name-only` を確認し、秘密情報、実データ、不要ファイルが混入していないか点検する。
+- コマンド結果、テスト結果、ファイル内容、commit hash、外部事実を捏造しない。不明点は `未確認` と書く。
+- 最終報告には、完了 checkpoint、commit、実行した確認、最終 `git status`、最終 `git diff --stat`、未確認事項、残リスク、停止理由、次の推奨アクションを含める。
 
 ## プロジェクト固有メモ
 
 - プロジェクト種別: Node.js ESM。ローカルサーバーは `node server/extractServer.js`、テストは Node.js の `node --test` ベース。
 - 確認済みテスト候補: `npm test`。
-- `npm` を使わない場合の確認済みテスト候補: `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js`。
+- `npm` を使わない場合の確認済みテスト候補: `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js`。
 - ローカル起動候補: PowerShell で `$env:PORT="3000"` を設定してから `npm start`、または `node server/extractServer.js`。
 - 外部ネットワーク、X API、Cloudflare Pages、oEmbed、デプロイ、依存追加を伴う操作は明示承認なしに実行しない。
