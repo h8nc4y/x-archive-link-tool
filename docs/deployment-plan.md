@@ -112,10 +112,9 @@ redeploy後の最小確認方針:
 
 現状:
 
-- 運用記録対象commitは `2bea397`。GitHubへpush済み。
-- `2bea397` push後のCloudflare Production deploy成功状態は未確認。
-- `2bea397` push後のProduction URLトップページ表示はCodex側で確認済み。
 - `13051d6` のCloudflare Production deploy成功とトップページ表示は人間側で確認済み。
+- `13051d6` 以降のdocs-only更新commitはGitHubへpush済みの場合があるが、Cloudflare Production deploy成功状態は個別確認が必要。
+- Production URLトップページ表示はCodex側でHTTP 200を確認済み。ただしトップページ表示だけでは、特定commitのProduction deploy成功は断定しない。
 - `/api/extract` は `13051d6` deploy後には再実行していない。
 
 通常確認:
@@ -147,7 +146,7 @@ Rate limit:
 
 残タスク:
 
-- `2bea397` のCloudflare Production deploy成功状態を確認し、docsへ記録する。
+- `13051d6` 以降の最新push済みcommitについて、Cloudflare Production deploy成功状態を確認し、docsへ記録する。
 - 問い合わせ先とプライバシーポリシーURLを確定する。
 - Cloudflare Functionsログ確認の運用責任者とログ保存期間を決める。
 - KV障害時の正式な切り戻し手順を決める。
@@ -197,7 +196,7 @@ Rate limit:
 - [ ] 問い合わせ先: TODO/未設定。
 - [ ] プライバシーポリシーURL: TODO/未設定。
 - [x] Cloudflare Pages deploy status確認: 人間側で `13051d6` のProduction成功を確認済み。
-- [ ] `2bea397` のCloudflare Production deploy成功状態: 未確認。
+- [ ] `13051d6` 以降の最新push済みcommitのCloudflare Production deploy成功状態: 未確認。
 - [ ] Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
 - [ ] ログ保存期間: TODO/未設定。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
