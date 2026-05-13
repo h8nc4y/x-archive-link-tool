@@ -19,7 +19,7 @@
 - `RATE_LIMIT_GLOBAL_PER_MINUTE=60`
 - `X_BEARER_TOKEN`: secretとして設定済み。値は記録しない。
 - Production redeploy: 人間側で実施済み。
-- 最新Production deploy成功状態: 人間側で確認済み。`13051d6` またはmaster最新のProduction deployはSuccess。
+- Production deploy成功状態: `13051d6` は人間側で確認済み。`f20a910` のProduction deploy成功状態は未確認。
 - Production URLトップページ表示: 成功。
 - `/api/extract`: この確認では再実行していない。
 
@@ -71,7 +71,7 @@
 
 ## 残確認
 
-- Cloudflare Pages Deployments上の最新Production deploy成功状態は人間側で確認済み。
+- Cloudflare Pages Deployments上の `13051d6` Production deploy成功状態は人間側で確認済み。`f20a910` のProduction deploy成功状態は未確認。
 - rate limit設定後の実際の429挙動は未確認。確認する場合は、実X API通信回数を増やさない方法を別checkpointで決める。
 - 本番429確認の停止条件: 429以外の応答、5xx、X API provider warning、想定外のFunctionsログ、実X API通信増加の疑いがある場合は追加実行しない。
 - 429確認で記録してよい項目: HTTP status、`Retry-After` の有無、エラーcode、実行回数、確認時刻、Cloudflare deploy commit、warnings件数。

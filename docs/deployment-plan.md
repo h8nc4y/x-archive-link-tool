@@ -46,7 +46,7 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - `/api/extract` へのPOSTが Ok として記録: OK
 - Cloudflare Functionsログ重大エラー: なし（確認時点）
 - KV post cache本番確認: OK。同一投稿URLで2回確認し、1回目は `source=x-api-v2`, `cached=false`, mediaUrls件数4, warnings件数0。2回目は `source=cache`, `cached=true`, mediaUrls件数4, warnings件数0。推定X API v2通信回数は1回。
-- Cloudflare Pages Deploymentsで `13051d6` またはmaster最新のProduction deploy成功: OK（人間側で確認済み）。
+- Cloudflare Pages Deploymentsで `13051d6` のProduction deploy成功: OK（人間側で確認済み）。
 - `13051d6` deploy後のトップページ表示: OK。
 - `13051d6` deploy後の `/api/extract` 再実行: 未実施。
 
@@ -108,6 +108,50 @@ redeploy後の最小確認方針:
 - 記録禁止項目は実投稿URL、投稿本文、mediaUrls値、username、postId、token、Authorization header、secret値、Cookie、Cloudflare内部ログの詳細本文。
 - 問い合わせ先、429時の対応基準、X API credits / billing / usage capの見直し頻度は未確認。
 
+## 公開後運用ハンドオーバー
+
+現状:
+
+- 運用記録対象commitは `f20a910`。GitHubへpush済み。
+- `f20a910` push後のCloudflare Production deploy成功状態は未確認。
+- `13051d6` のCloudflare Production deploy成功とトップページ表示は人間側で確認済み。
+- `/api/extract` は `13051d6` deploy後には再実行していない。
+
+通常確認:
+
+- GitHub push後はCloudflare Pages Deploymentsで該当commitのProduction成功を確認する。
+- Production URLトップページ表示を確認する。
+- `/api/extract` の本番確認は必要時のみ行う。実行する場合は、実X API通信回数を増やさない方針を先に確認する。
+- 確認結果にはHTTP status、source、cached、mediaUrls件数、warnings件数だけを書く。
+
+KV post cache:
+
+- Production bindingは `X_POST_CACHE`、namespaceは `x-archive-link-tool-post-cache`。
+- TTLは30日。
+- 同一投稿URLで2回確認済み。1回目は `source=x-api-v2`, `cached=false`, mediaUrls件数4, warnings件数0。2回目は `source=cache`, `cached=true`, mediaUrls件数4, warnings件数0。
+- KVは最適化層。KV障害時もorigin取得を優先する設計だが、正式な切り戻し判断者と手順は未確認。
+
+Rate limit:
+
+- Production初期値は `RATE_LIMIT_PER_IP_PER_MINUTE=10`, `RATE_LIMIT_GLOBAL_PER_MINUTE=60`。
+- 429挙動は原則ローカルテストで確認する。
+- 本番429確認は未実施。実施する場合は別checkpointで手順を決める。
+- X API credits / billing / usage capの見直し頻度と、429時の問い合わせ先・対応基準は未確認。
+
+記録禁止:
+
+- `X_BEARER_TOKEN` の値、token、Authorization header、secret値、Cookie。
+- 実投稿URL、投稿本文、mediaUrls値、username、postId。
+- Cloudflare内部ログの詳細本文。
+
+残タスク:
+
+- `f20a910` のCloudflare Production deploy成功状態を確認し、docsへ記録する。
+- 問い合わせ先とプライバシーポリシーURLを確定する。
+- Cloudflare Functionsログ確認の運用責任者とログ保存期間を決める。
+- KV障害時の正式な切り戻し手順を決める。
+- X API credits / billing / usage capの見直し頻度を決める。
+
 ## 本番で守る制約
 
 - X_BEARER_TOKENは任意。設定時だけX API v2を使う。
@@ -152,7 +196,8 @@ redeploy後の最小確認方針:
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
 - [ ] 問い合わせ先: TODO/未設定。
 - [ ] プライバシーポリシーURL: TODO/未設定。
-- [x] Cloudflare Pages deploy status確認: 人間側で `13051d6` またはmaster最新のProduction成功を確認済み。
+- [x] Cloudflare Pages deploy status確認: 人間側で `13051d6` のProduction成功を確認済み。
+- [ ] `f20a910` のCloudflare Production deploy成功状態: 未確認。
 - [ ] Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
 - [ ] ログ保存期間: TODO/未設定。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
