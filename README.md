@@ -36,13 +36,7 @@ npm test
 `npm` が使えない場合:
 
 ```powershell
-node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
-```
-
-Cloudflare Pages Functions 用APIテストも含める場合:
-
-```powershell
-node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
+node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
 ```
 
 ## 環境変数
@@ -75,7 +69,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 
 - iOSアプリ
 - DB
-- 本番デプロイ設定
+- 追加の本番デプロイ設定
 - ユーザー入力URLのfetch
 - X HTMLスクレイピング
 - ブラウザ自動化によるX閲覧

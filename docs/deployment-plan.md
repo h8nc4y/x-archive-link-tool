@@ -166,8 +166,7 @@ Rate limit:
 
 ## 公開前チェック手順
 
-- [ ] `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js` を実行する。
-- [ ] Cloudflare Pages Functions用APIを含める場合は `functions/api/extract.test.js` も実行する。
+- [ ] `npm test` を実行する。`package.json` のtestにはURL validator、rate limiter、KV post cache、extract service、Cloudflare Pages Functions extract testsを含める。
 - [ ] `docs/pre-release-checklist.md` を再確認する。
 - [ ] `docs/privacy-policy-draft.md` と `docs/support-page-draft.md` の未設定項目を埋める。
 - [ ] 公開先の環境変数にレート制限値を設定する。
