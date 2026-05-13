@@ -49,6 +49,9 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - Cloudflare Pages Deploymentsで `13051d6` のProduction deploy成功: OK（人間側で確認済み）。
 - `13051d6` deploy後のトップページ表示: OK。
 - `13051d6` deploy後の `/api/extract` 再実行: 未実施。
+- Cloudflare Pages Deploymentsで `d31275d` のProduction deploy成功: OK（人間側で確認済み）。
+- `d31275d` deploy後のトップページ表示: HTTP 200、title `Xポスト貼り付けテキスト生成`。
+- `d31275d` deploy後の `/api/extract` 再実行、429本番確認、X API呼び出し: 未実施。
 
 ## 本番環境で必要な設定
 
@@ -112,10 +115,11 @@ redeploy後の最小確認方針:
 
 現状:
 
-- `13051d6` のCloudflare Production deploy成功とトップページ表示は人間側で確認済み。
-- `13051d6` 以降のdocs-only更新commitはGitHubへpush済みの場合があるが、Cloudflare Production deploy成功状態は個別確認が必要。
+- `d31275d` のCloudflare Production deploy成功は人間側で確認済み。
+- `d31275d` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
+- `d31275d` 以降のdocs-only更新commitはGitHubへpush済みの場合があるが、Cloudflare Production deploy成功状態は個別確認が必要。
 - Production URLトップページ表示はCodex側でHTTP 200を確認済み。ただしトップページ表示だけでは、特定commitのProduction deploy成功は断定しない。
-- `/api/extract` は `13051d6` deploy後には再実行していない。
+- `/api/extract` は `d31275d` deploy後には再実行していない。429本番確認とX API呼び出しも未実施。
 
 通常確認:
 
@@ -146,7 +150,7 @@ Rate limit:
 
 残タスク:
 
-- `13051d6` 以降の最新push済みcommitについて、Cloudflare Production deploy成功状態を確認し、docsへ記録する。
+- `d31275d` 以降の最新push済みcommitについて、Cloudflare Production deploy成功状態を確認し、docsへ記録する。
 - 問い合わせ先とプライバシーポリシーURLを確定する。
 - Cloudflare Functionsログ確認の運用責任者とログ保存期間を決める。
 - KV障害時の正式な切り戻し手順を決める。
@@ -195,8 +199,8 @@ Rate limit:
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
 - [ ] 問い合わせ先: TODO/未設定。
 - [ ] プライバシーポリシーURL: TODO/未設定。
-- [x] Cloudflare Pages deploy status確認: 人間側で `13051d6` のProduction成功を確認済み。
-- [ ] `13051d6` 以降の最新push済みcommitのCloudflare Production deploy成功状態: 未確認。
+- [x] Cloudflare Pages deploy status確認: 人間側で `d31275d` のProduction成功を確認済み。
+- [ ] `d31275d` 以降の最新push済みcommitのCloudflare Production deploy成功状態: 未確認。
 - [ ] Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
 - [ ] ログ保存期間: TODO/未設定。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
