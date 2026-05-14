@@ -50,6 +50,6 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
-- 問い合わせ先とプライバシーポリシーを用意する。
+- 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理し、実値は人間判断後に反映する。
 - `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。以降のdocs-only更新commitはGitHubへpush後、Cloudflare Production deploy成功状態を個別に確認してdocsへ記録する。
 - 公開前チェックリストを必要に応じて再確認する。

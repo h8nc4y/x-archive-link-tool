@@ -60,14 +60,19 @@
 - 公開先: Cloudflare Pages。
 - ドメイン: Cloudflare Pages無料URL。独自ドメインは後回し。
 - レート制限値: Production初期値はper IP 10/min、global 60/min。
-- 問い合わせ先: TODO/未設定。
-- プライバシーポリシーURL: TODO/未設定。
-- X API credits / billing / usage capを見直す頻度: 未確認。
-- 正常利用者が429になった場合の問い合わせ先と対応基準: 未確認。
+- 問い合わせ先: 未設定 / 人間判断待ち。
+- プライバシーポリシーURL: 未設定 / 人間判断待ち。
+- ログ保存期間: 未設定 / 人間判断待ち。
+- KV障害時の正式切り戻し手順: 未設定 / 人間判断待ち。
+- X API credits / billing / usage capを見直す頻度: 未確認 / 人間判断待ち。
+- 正常利用者が429になった場合の問い合わせ先と対応基準: 未確認 / 人間判断待ち。
 - 429確認方針: 原則ローカルテストで担保し、本番確認は必要時のみ別checkpointで手順を決める。
-- Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
-- ログ保存期間: TODO/未設定。
-- KV障害時の一時切り戻し方針: TODO/未設定。
+
+## 公開後運用TODO候補
+
+- Cloudflare Functionsログ確認の運用責任者: 未設定 / 人間判断待ち。
+- Cloudflare Functionsログ確認の頻度と確認手順: 未設定 / 人間判断待ち。
+- KV TTL長期運用時の定期確認方法: 未確認 / 人間判断待ち。
 
 ## 残確認
 

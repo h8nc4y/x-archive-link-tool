@@ -6,11 +6,24 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 
 - [ ] 公開先: Cloudflare Pages
 - [ ] ドメイン: Cloudflare Pages無料URL（`*.pages.dev`）
-- [ ] 問い合わせ先: TODO/未設定
-- [ ] プライバシーポリシーURL: TODO/未設定
+- [ ] 問い合わせ先: 未設定 / 人間判断待ち
+- [ ] プライバシーポリシーURL: 未設定 / 人間判断待ち
 - [x] レート制限値: Cloudflare Productionに初期運用値を設定済み
-- [ ] ログ保存期間: TODO/未設定
-- [ ] 公開時の運用/ロールバック手順の最終確認: TODO/未設定
+- [ ] ログ保存期間: 未設定 / 人間判断待ち
+- [ ] 公開時の運用/ロールバック手順の最終確認: 未設定 / 人間判断待ち
+
+## 運用未決定項目の分類
+
+Codexは次の実値を決めない。未設定または未確認のまま管理し、人間判断後に該当docsへ反映する。
+
+| 項目 | 分類 | 現状 | 次アクション |
+| --- | --- | --- | --- |
+| 問い合わせ先 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にサポートページ草案とプライバシーポリシー草案へ反映する。 |
+| プライバシーポリシーURL | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にREADME、サポートページ草案、公開前チェックへ反映する。 |
+| ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にプライバシーポリシー草案へ反映する。 |
+| KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 候補手順は記録済みだが、実施判断者と正式手順は決めない。 |
+| X API credits / billing / usage cap見直し頻度 | 公開前に決めるべき項目 | 未確認 / 人間判断待ち | 課金・利用上限判断が必要なためCodexでは決めない。 |
+| Cloudflare Functionsログ確認の運用責任者 | 公開後運用TODO候補 | 未設定 / 人間判断待ち | 運用開始後の確認責任者として人間側で決める。 |
 
 ## Cloudflare Pages設定
 
@@ -101,8 +114,8 @@ redeploy後の最小確認方針:
 未決事項:
 
 - [x] Cloudflare Pages Production環境変数への設定有無: 人間側で設定・redeploy済み。
-- [ ] X API credits / billing / usage capを見ながら値を見直す頻度。
-- [ ] 正常利用者が429になった場合の問い合わせ先と対応基準。
+- [ ] X API credits / billing / usage capを見ながら値を見直す頻度: 未確認 / 人間判断待ち。
+- [ ] 正常利用者が429になった場合の問い合わせ先と対応基準: 未確認 / 人間判断待ち。
 
 429確認方針:
 
@@ -154,10 +167,11 @@ Rate limit:
 残タスク:
 
 - `ca0bd79` 以降の最新push済みcommitについて、Cloudflare Production deploy成功状態を確認し、docsへ記録する。
-- 問い合わせ先とプライバシーポリシーURLを確定する。
-- Cloudflare Functionsログ確認の運用責任者とログ保存期間を決める。
-- KV障害時の正式な切り戻し手順を決める。
-- X API credits / billing / usage capの見直し頻度を決める。
+- 問い合わせ先とプライバシーポリシーURLを人間側で確定する。
+- ログ保存期間を人間側で確定する。
+- Cloudflare Functionsログ確認の運用責任者を人間側で決める。
+- KV障害時の正式な切り戻し手順を人間側で決める。
+- X API credits / billing / usage capの見直し頻度を人間側で決める。
 
 ## 本番で守る制約
 
@@ -183,7 +197,7 @@ Rate limit:
 
 - [ ] 公開直前のGit commitを記録する。
 - [ ] 問題があれば直前の安定版commitへ戻す。
-- [ ] ロールバック担当者と判断基準を決める: TODO/未設定
+- [ ] ロールバック担当者と判断基準を決める: 未設定 / 人間判断待ち
 - レート制限値の変更で回避できる問題は、コード変更より先に設定値で対応する。
 - X API v2側障害やoEmbed側障害が疑われる場合は、既存cacheがあればstale-cacheとして返す。
 
@@ -200,14 +214,15 @@ Rate limit:
 
 - [x] `RATE_LIMIT_PER_IP_PER_MINUTE`: Cloudflare Production環境変数に `10` を設定済み。
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
-- [ ] 問い合わせ先: TODO/未設定。
-- [ ] プライバシーポリシーURL: TODO/未設定。
+- [ ] 問い合わせ先: 未設定 / 人間判断待ち。
+- [ ] プライバシーポリシーURL: 未設定 / 人間判断待ち。
 - [x] Cloudflare Pages deploy status確認: 人間側で `ca0bd79` のProduction成功を確認済み。
 - [ ] `ca0bd79` 以降の最新push済みcommitのCloudflare Production deploy成功状態: 未確認。
-- [ ] Cloudflare Functionsログ確認の運用責任者: TODO/未設定。
-- [ ] ログ保存期間: TODO/未設定。
+- [ ] Cloudflare Functionsログ確認の運用責任者: 未設定 / 人間判断待ち。
+- [ ] ログ保存期間: 未設定 / 人間判断待ち。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
-- [ ] KV障害時の一時切り戻し方針: TODO/未設定。候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と手順は未確認。
+- [ ] KV障害時の正式切り戻し手順: 未設定 / 人間判断待ち。候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と正式手順は未確認。
+- [ ] X API credits / billing / usage cap見直し頻度: 未確認 / 人間判断待ち。
 - [ ] 429本番確認: 未実施。原則ローカルテストで担保し、本番確認は実X API通信を増やさない手順を別checkpointで決めてから行う。
 - [ ] 実X API通信回数を増やさない確認方針: 同一投稿URLで最大2回。1回目がHTTP 200かつmediaUrls取得成功の場合だけ2回目を行う。失敗時は追加実行しない。
 - [ ] 記録禁止方針: token、Authorization header、secret値、実投稿URL、投稿本文、mediaUrls値、username、postIdはdocs、issue、チャット、ログへ貼らない。
