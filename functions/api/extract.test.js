@@ -121,6 +121,53 @@ test("Cloudflare function rejects invalid URL", async () => {
   assertSecurityHeaders(response);
 });
 
+test("Cloudflare function rejects invalid JSON", async () => {
+  const response = await handleExtractRequest(
+    new Request("https://example.pages.dev/api/extract", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{"
+    }),
+    { rateLimiter: { check: () => ({ allowed: true }) } }
+  );
+
+  assert.equal(response.status, 400);
+  assertSecurityHeaders(response);
+});
+
+test("Cloudflare function rejects unsupported content type", async () => {
+  const response = await handleExtractRequest(
+    jsonRequest({
+      headers: { "content-type": "text/plain" },
+      body: { url: "https://x.com/user/status/123" }
+    }),
+    { rateLimiter: { check: () => ({ allowed: true }) } }
+  );
+
+  assert.equal(response.status, 415);
+  assertSecurityHeaders(response);
+});
+
+test("Cloudflare function accepts JSON content type with charset", async () => {
+  const response = await handleExtractRequest(jsonRequest({ headers: { "content-type": "application/json; charset=utf-8" } }), {
+    env: {},
+    rateLimiter: { check: () => ({ allowed: true }) },
+    extractPost: async (parsed) => ({
+      accountName: "Example User",
+      username: parsed.username,
+      userNumericId: "未取得",
+      postId: parsed.postId,
+      postUrl: parsed.canonicalUrl,
+      createdAt: "未取得",
+      text: "未取得",
+      mediaUrls: []
+    })
+  });
+
+  assert.equal(response.status, 200);
+  assertSecurityHeaders(response);
+});
+
 test("Cloudflare function rejects oversized body", async () => {
   const response = await handleExtractRequest(
     jsonRequest({ body: { url: `https://x.com/${"a".repeat(1100)}/status/123` } }),
@@ -139,6 +186,40 @@ test("Cloudflare function rate limit returns 429", async () => {
   assert.equal(response.status, 429);
   assert.equal(response.headers.get("retry-after"), "60");
   assertSecurityHeaders(response);
+});
+
+test("Cloudflare function uses Cloudflare connecting IP for rate limiting", async () => {
+  let checkedIp;
+  const response = await handleExtractRequest(
+    jsonRequest({
+      headers: {
+        "cf-connecting-ip": "203.0.113.10",
+        "x-forwarded-for": "198.51.100.20"
+      }
+    }),
+    {
+      env: {},
+      rateLimiter: {
+        check(ip) {
+          checkedIp = ip;
+          return { allowed: true };
+        }
+      },
+      extractPost: async (parsed) => ({
+        accountName: "Example User",
+        username: parsed.username,
+        userNumericId: "未取得",
+        postId: parsed.postId,
+        postUrl: parsed.canonicalUrl,
+        createdAt: "未取得",
+        text: "未取得",
+        mediaUrls: []
+      })
+    }
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(checkedIp, "203.0.113.10");
 });
 
 test("Cloudflare function rate limit response does not include sensitive values", async () => {

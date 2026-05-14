@@ -40,6 +40,12 @@ test("buildCopyText uses 未取得 for invalid archive URL", () => {
   assert.match(text, /魚拓URL：\n未取得/);
 });
 
+test("buildCopyText rejects archive URL with trailing injected text", () => {
+  const text = buildCopyText(basePost, "https://megalodon.jp/2026-0509-0000-00/example\nextra");
+
+  assert.match(text, /魚拓URL：\n未取得/);
+});
+
 test("buildGyotakuUrl uses gyo.tc prefix", () => {
   assert.equal(buildGyotakuUrl(basePost.postUrl), "https://gyo.tc/https://x.com/example_user/status/67890");
 });
@@ -67,6 +73,19 @@ test("buildCopyText supports new API response aliases", () => {
 
   assert.match(text, /アカウント名：Alias User/);
   assert.match(text, /ポストURL：https:\/\/x\.com\/i\/web\/status\/123/);
+});
+
+test("buildCopyText falls back for missing optional API fields", () => {
+  const text = buildCopyText({
+    accountName: "Partial",
+    username: "partial_user",
+    postUrl: "https://x.com/partial_user/status/123",
+    mediaUrls: []
+  });
+
+  assert.match(text, /ポスト投稿日：未取得/);
+  assert.match(text, /ポスト内容：\n未取得/);
+  assert.equal(text.includes("undefined"), false);
 });
 
 test("buildSourceMessage describes cache and oEmbed source", () => {

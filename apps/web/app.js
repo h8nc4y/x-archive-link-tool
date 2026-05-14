@@ -1,4 +1,4 @@
-const ARCHIVE_URL_PATTERN = /^https:\/\/(?:megalodon\.jp|s[0-9]+\.megalodon\.jp)\/.+/;
+const ARCHIVE_URL_PATTERN = /^https:\/\/(?:megalodon\.jp|s[0-9]+\.megalodon\.jp)\/\S+$/;
 
 export function buildGyotakuUrl(postUrl) {
   return `https://gyo.tc/${postUrl}`;
@@ -15,16 +15,18 @@ export function buildCopyText(post, archiveUrl = "") {
   const postUrl = post.postUrl || post.canonicalUrl || "未取得";
   const userNumericId = post.userNumericId || "未取得";
   const username = post.username || "未取得";
+  const createdAt = post.createdAt || "未取得";
+  const text = post.text || "未取得";
 
   return [
     `アカウント名：${accountName}`,
     `アカウントID：@${username}`,
     `ユーザー数値ID：${userNumericId}`,
     `ポストURL：${postUrl}`,
-    `ポスト投稿日：${post.createdAt}`,
+    `ポスト投稿日：${createdAt}`,
     "",
     "ポスト内容：",
-    post.text,
+    text,
     "",
     "メディアURL：",
     mediaUrls,
