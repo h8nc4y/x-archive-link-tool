@@ -12,9 +12,21 @@ export function hasArchiveUrlPasteNoise(value) {
   return /\s/.test(String(value || ""));
 }
 
+function formatMediaUrls(mediaUrls) {
+  if (!Array.isArray(mediaUrls)) {
+    return "なし";
+  }
+
+  const validUrls = mediaUrls
+    .filter((url) => typeof url === "string" && url.trim() !== "")
+    .map((url) => url.trim());
+
+  return validUrls.length > 0 ? validUrls.join("\n") : "なし";
+}
+
 export function buildCopyText(post, archiveUrl = "") {
   const validArchiveUrl = isValidArchiveUrl(archiveUrl) ? archiveUrl.trim() : "未取得";
-  const mediaUrls = Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls.join("\n") : "なし";
+  const mediaUrls = formatMediaUrls(post.mediaUrls);
   const accountName = post.accountName || post.authorName || "未取得";
   const postUrl = post.postUrl || post.canonicalUrl || "未取得";
   const userNumericId = post.userNumericId || "未取得";

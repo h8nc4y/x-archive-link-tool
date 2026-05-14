@@ -28,6 +28,17 @@ test("buildCopyText uses なし without media URLs", () => {
   assert.match(text, /メディアURL：\nなし/);
 });
 
+test("buildCopyText ignores blank or non-string media URL values", () => {
+  const text = buildCopyText({
+    ...basePost,
+    mediaUrls: [null, undefined, "", "  ", " https://pbs.twimg.com/media/one.jpg "]
+  });
+
+  assert.match(text, /メディアURL：\nhttps:\/\/pbs\.twimg\.com\/media\/one\.jpg/);
+  assert.equal(text.includes("undefined"), false);
+  assert.equal(text.includes("null"), false);
+});
+
 test("buildCopyText includes valid archive URL", () => {
   const text = buildCopyText(basePost, "https://s1.megalodon.jp/2026-0509-0000-00/example");
 
