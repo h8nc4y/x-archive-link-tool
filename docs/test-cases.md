@@ -2,7 +2,7 @@
 
 検証コマンド: `npm test`
 
-直近確認: 95 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
+直近確認: 97 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
 
 ## Valid URL examples
 
@@ -46,5 +46,6 @@
 | `https://megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
 | `https://s1.megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
 | `https://example.com/archive` | `未取得` |
+| ` https://megalodon.jp/2026-0509-0000-00/example ` | `未取得` |
 | `https://megalodon.jp/2026-0509-0000-00/example extra` | `未取得` |
 | `https://megalodon.jp/2026-0509-0000-00/example` と `extra` が改行で続く貼り付け | `未取得` |

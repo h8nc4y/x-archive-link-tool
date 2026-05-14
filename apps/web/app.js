@@ -5,7 +5,8 @@ export function buildGyotakuUrl(postUrl) {
 }
 
 export function isValidArchiveUrl(value) {
-  return ARCHIVE_URL_PATTERN.test(String(value || "").trim());
+  const rawValue = String(value || "");
+  return !hasArchiveUrlPasteNoise(rawValue) && ARCHIVE_URL_PATTERN.test(rawValue);
 }
 
 export function hasArchiveUrlPasteNoise(value) {
@@ -17,9 +18,17 @@ function formatMediaUrls(mediaUrls) {
     return "なし";
   }
 
-  const validUrls = mediaUrls
-    .filter((url) => typeof url === "string" && url.trim() !== "")
-    .map((url) => url.trim());
+  const validUrls = [];
+  for (const url of mediaUrls) {
+    if (typeof url !== "string" || url.trim() === "") {
+      continue;
+    }
+
+    const trimmedUrl = url.trim();
+    if (!validUrls.includes(trimmedUrl)) {
+      validUrls.push(trimmedUrl);
+    }
+  }
 
   return validUrls.length > 0 ? validUrls.join("\n") : "なし";
 }

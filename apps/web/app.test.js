@@ -39,6 +39,20 @@ test("buildCopyText ignores blank or non-string media URL values", () => {
   assert.equal(text.includes("null"), false);
 });
 
+test("buildCopyText deduplicates media URL values", () => {
+  const text = buildCopyText({
+    ...basePost,
+    mediaUrls: [
+      "https://pbs.twimg.com/media/one.jpg",
+      " https://pbs.twimg.com/media/one.jpg ",
+      "https://video.twimg.com/two.mp4"
+    ]
+  });
+
+  assert.match(text, /メディアURL：\nhttps:\/\/pbs\.twimg\.com\/media\/one\.jpg\nhttps:\/\/video\.twimg\.com\/two\.mp4/);
+  assert.equal(text.match(/https:\/\/pbs\.twimg\.com\/media\/one\.jpg/g).length, 1);
+});
+
 test("buildCopyText includes valid archive URL", () => {
   const text = buildCopyText(basePost, "https://s1.megalodon.jp/2026-0509-0000-00/example");
 
@@ -53,6 +67,12 @@ test("buildCopyText uses 未取得 for invalid archive URL", () => {
 
 test("buildCopyText rejects archive URL with trailing injected text", () => {
   const text = buildCopyText(basePost, "https://megalodon.jp/2026-0509-0000-00/example\nextra");
+
+  assert.match(text, /魚拓URL：\n未取得/);
+});
+
+test("buildCopyText rejects archive URL with surrounding whitespace", () => {
+  const text = buildCopyText(basePost, " https://megalodon.jp/2026-0509-0000-00/example ");
 
   assert.match(text, /魚拓URL：\n未取得/);
 });
