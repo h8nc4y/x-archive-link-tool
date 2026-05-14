@@ -4,8 +4,8 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 
 ## 公開前に決めること
 
-- [ ] 公開先: Cloudflare Pages
-- [ ] ドメイン: Cloudflare Pages無料URL（`*.pages.dev`）
+- [x] 公開先: Cloudflare Pages
+- [x] ドメイン: Cloudflare Pages無料URL（`*.pages.dev`）
 - [ ] 問い合わせ先: 未設定 / 人間判断待ち
 - [ ] プライバシーポリシーURL: 未設定 / 人間判断待ち
 - [x] レート制限値: Cloudflare Productionに初期運用値を設定済み
@@ -35,9 +35,9 @@ Codexは次の実値を決めない。未設定または未確認のまま管理
 - [ ] build command: 不要 / 空欄
 - [ ] build output directory: `apps/web`
 - [ ] Functions directory: `functions`
-- [ ] API実行基盤: Cloudflare Pages Functions / Workers
-- [ ] `/api/extract`: `functions/api/extract.js`
-- [ ] KV namespace binding: `X_POST_CACHE` -> `x-archive-link-tool-post-cache`（Production）
+- [x] API実行基盤: Cloudflare Pages Functions / Workers
+- [x] `/api/extract`: `functions/api/extract.js`
+- [x] KV namespace binding: `X_POST_CACHE` -> `x-archive-link-tool-post-cache`（Production）
 - [ ] 独自ドメイン: 後回し
 - Environment variables: `X_BEARER_TOKEN` はsecretとして設定済み。値は記録しない。未設定時はoEmbed fallback。
 
@@ -75,7 +75,7 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - [x] `RATE_LIMIT_PER_IP_PER_MINUTE`: Productionに `10` を設定済み
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Productionに `60` を設定済み
 - [x] `X_BEARER_TOKEN`: secretとして設定済み。値は記録しない。
-- [ ] `X_POST_CACHE`: Cloudflare KV namespace binding。Productionでは `x-archive-link-tool-post-cache` を設定済み。
+- [x] `X_POST_CACHE`: Cloudflare KV namespace binding。Productionでは `x-archive-link-tool-post-cache` を設定済み。
 
 X API Bearer Tokenは必須ではない。`.env` を作る場合もコミットしない。
 
@@ -190,7 +190,7 @@ Rate limit:
 - [ ] `npm test` を実行する。`package.json` のtestにはURL validator、rate limiter、KV post cache、extract service、Cloudflare Pages Functions extract testsを含める。
 - [ ] `docs/pre-release-checklist.md` を再確認する。
 - [ ] `docs/privacy-policy-draft.md` と `docs/support-page-draft.md` の未設定項目を埋める。
-- [ ] 公開先の環境変数にレート制限値を設定する。
+- [x] 公開先の環境変数にレート制限値を設定する。
 - [ ] 公開前にWeb UIと `/api/extract` を確認する。
 
 ## ロールバック方針
