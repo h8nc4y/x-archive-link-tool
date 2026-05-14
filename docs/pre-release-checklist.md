@@ -4,7 +4,7 @@
 
 ## ローカル確認
 
-- `npm test` が成功する。直近確認は97 tests pass。
+- `npm test` が成功する。直近確認は98 tests pass。
 - `node server/extractServer.js` でローカル起動できる。
 - `http://127.0.0.1:3000/healthz` が `{"ok":true}` を返す。
 - Web UIで公開XポストURLを1件入力し、コピー用 `textarea` に結果が出る。

@@ -374,6 +374,38 @@ test("rate limit resets after time window", async () => {
   );
 });
 
+test("rate limit logs do not include sensitive request data", async () => {
+  const logs = [];
+
+  await withServer(
+    async (port) => {
+      const response = await request(port, {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: "https://x.com/sensitive_user/status/987654321" })
+      });
+      const serializedBody = JSON.stringify(response.body);
+
+      assert.equal(response.statusCode, 429);
+      assert.equal(response.body.code, "rate_limit_exceeded");
+      assert.equal(serializedBody.includes("https://x.com/sensitive_user/status/987654321"), false);
+      assert.equal(serializedBody.includes("sensitive_user"), false);
+      assert.equal(serializedBody.includes("987654321"), false);
+    },
+    {
+      logger: (entry) => logs.push(entry),
+      rateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 60 }) }
+    }
+  );
+
+  const serializedLogs = JSON.stringify(logs);
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].statusCode, 429);
+  assert.equal(logs[0].errorCode, "rate_limit_exceeded");
+  assert.equal(serializedLogs.includes("https://x.com/sensitive_user/status/987654321"), false);
+  assert.equal(serializedLogs.includes("987654321"), false);
+  assert.equal(serializedLogs.includes("sensitive_user"), false);
+});
+
 test("safe logs do not include sensitive request or X data", async () => {
   const logs = [];
 
