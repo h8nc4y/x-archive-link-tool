@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCopyText, buildGyotakuUrl, buildSourceMessage } from "./app.js";
+import { buildCopyText, buildGyotakuUrl, buildSourceMessage, hasArchiveUrlPasteNoise } from "./app.js";
 
 const basePost = {
   accountName: "Example",
@@ -44,6 +44,12 @@ test("buildCopyText rejects archive URL with trailing injected text", () => {
   const text = buildCopyText(basePost, "https://megalodon.jp/2026-0509-0000-00/example\nextra");
 
   assert.match(text, /魚拓URL：\n未取得/);
+});
+
+test("hasArchiveUrlPasteNoise detects whitespace in pasted archive URL text", () => {
+  assert.equal(hasArchiveUrlPasteNoise("https://megalodon.jp/2026-0509-0000-00/example"), false);
+  assert.equal(hasArchiveUrlPasteNoise("https://megalodon.jp/2026-0509-0000-00/example\nextra"), true);
+  assert.equal(hasArchiveUrlPasteNoise("https://megalodon.jp/2026-0509-0000-00/example extra"), true);
 });
 
 test("buildGyotakuUrl uses gyo.tc prefix", () => {

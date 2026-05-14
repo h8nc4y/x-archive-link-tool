@@ -2,7 +2,7 @@
 
 検証コマンド: `npm test`
 
-直近確認: 88 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
+直近確認: 89 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
 
 ## Valid URL examples
 
@@ -38,3 +38,13 @@
 ```
 
 `noreferrer` は付けない。
+
+## 魚拓URL入力例
+
+| input | result |
+| --- | --- |
+| `https://megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
+| `https://s1.megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
+| `https://example.com/archive` | `未取得` |
+| `https://megalodon.jp/2026-0509-0000-00/example extra` | `未取得` |
+| `https://megalodon.jp/2026-0509-0000-00/example` と `extra` が改行で続く貼り付け | `未取得` |

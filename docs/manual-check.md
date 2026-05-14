@@ -40,6 +40,7 @@ node server/extractServer.js
 - 魚拓リンク「魚拓を取得する場合はこちら」が別タブで開く。
 - 魚拓は自動取得されない。
 - 魚拓URL欄は `https://megalodon.jp/...` または `https://s{digits}.megalodon.jp/...` のみ有効になる。
+- 魚拓URL欄に改行や空白を含む文字列を貼り付けた場合、コピー用テキストの魚拓URLは `未取得` になる。
 
 ## 4. 停止とポート競合
 

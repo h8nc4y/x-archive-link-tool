@@ -8,6 +8,10 @@ export function isValidArchiveUrl(value) {
   return ARCHIVE_URL_PATTERN.test(String(value || "").trim());
 }
 
+export function hasArchiveUrlPasteNoise(value) {
+  return /\s/.test(String(value || ""));
+}
+
 export function buildCopyText(post, archiveUrl = "") {
   const validArchiveUrl = isValidArchiveUrl(archiveUrl) ? archiveUrl.trim() : "未取得";
   const mediaUrls = Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls.join("\n") : "なし";
@@ -70,6 +74,7 @@ function setupApp() {
   const copyMessage = document.querySelector("#copy-message");
   const sourceMessage = document.querySelector("#source-message");
   let currentPost = null;
+  let archiveInputHasInvalidPaste = false;
 
   if (
     !form ||
@@ -95,7 +100,7 @@ function setupApp() {
       return;
     }
 
-    copyText.value = buildCopyText(currentPost, archiveInput.value);
+    copyText.value = buildCopyText(currentPost, archiveInputHasInvalidPaste ? "" : archiveInput.value);
     copyButton.disabled = false;
     setText(sourceMessage, buildSourceMessage(currentPost));
   }
@@ -120,6 +125,7 @@ function setupApp() {
 
       currentPost = payload;
       archiveInput.value = "";
+      archiveInputHasInvalidPaste = false;
       gyotakuLink.href = buildGyotakuUrl(payload.postUrl || payload.canonicalUrl);
       archiveSection.hidden = false;
       refreshCopyText();
@@ -133,7 +139,22 @@ function setupApp() {
     }
   });
 
-  archiveInput.addEventListener("input", refreshCopyText);
+  archiveInput.addEventListener("paste", (event) => {
+    const pastedText = event.clipboardData?.getData("text") || "";
+    if (!hasArchiveUrlPasteNoise(pastedText)) {
+      return;
+    }
+
+    event.preventDefault();
+    archiveInput.value = pastedText.trim();
+    archiveInputHasInvalidPaste = true;
+    refreshCopyText();
+  });
+
+  archiveInput.addEventListener("input", () => {
+    archiveInputHasInvalidPaste = false;
+    refreshCopyText();
+  });
 
   copyButton.addEventListener("click", async () => {
     if (!copyText.value) {
