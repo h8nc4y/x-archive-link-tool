@@ -51,3 +51,15 @@ test("rejects invalid URLs", () => {
     assert.throws(() => parseXPostUrl(url), XPostUrlValidationError, url);
   }
 });
+
+test("rejects noisy pasted URL text", () => {
+  const noisyInputs = [
+    "https://x.com/user/status/123 extra",
+    "https://x.com/user/status/123\nhttps://x.com/user/status/456",
+    "https://x.com/user/status/123\nextra"
+  ];
+
+  for (const input of noisyInputs) {
+    assert.throws(() => parseXPostUrl(input), XPostUrlValidationError, input);
+  }
+});
