@@ -42,14 +42,14 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - 魚拓は自動取得されない。
 - ポート競合時の案内を表示できる。
 - Cloudflare Productionで同一投稿URLを2回確認し、1回目は `source=x-api-v2`, `cached=false`, mediaUrls件数4, warnings件数0、2回目は `source=cache`, `cached=true`, mediaUrls件数4, warnings件数0。推定X API v2通信回数は1回。
-- Cloudflare Pages Dashboardで `d31275d` のProduction deployment Successは人間側で確認済み。
-- `d31275d` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
-- `d31275d` deploy後の `/api/extract`、429本番確認、X API呼び出しは未実施。
+- Cloudflare Pages Dashboardで `ca0bd79` のProduction deployment Successは人間側で確認済み。
+- `ca0bd79` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
+- `ca0bd79` deploy後の `/api/extract`、429本番確認、X API呼び出しは未実施。
 
 ## 次の推奨作業
 
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
 - 問い合わせ先とプライバシーポリシーを用意する。
-- `d31275d` のCloudflare Production deploy成功は人間側で確認済み。以降のdocs-only更新commitはGitHubへpush後、Cloudflare Production deploy成功状態を個別に確認してdocsへ記録する。
+- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。以降のdocs-only更新commitはGitHubへpush後、Cloudflare Production deploy成功状態を個別に確認してdocsへ記録する。
 - 公開前チェックリストを必要に応じて再確認する。
