@@ -168,6 +168,32 @@ test("Cloudflare function accepts JSON content type with charset", async () => {
   assertSecurityHeaders(response);
 });
 
+test("Cloudflare function rejects unexpected request body shapes", async () => {
+  let extractCalls = 0;
+  const invalidBodies = [
+    null,
+    [],
+    { url: "https://x.com/user/status/123", extra: true },
+    { url: 123 }
+  ];
+
+  for (const body of invalidBodies) {
+    const response = await handleExtractRequest(jsonRequest({ body }), {
+      rateLimiter: { check: () => ({ allowed: true }) },
+      extractPost: async () => {
+        extractCalls += 1;
+        throw new Error("extractPost should not run for invalid request bodies");
+      }
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal((await readJson(response)).error, 'Request body must be { "url": "..." }.');
+    assertSecurityHeaders(response);
+  }
+
+  assert.equal(extractCalls, 0);
+});
+
 test("Cloudflare function rejects oversized body", async () => {
   const response = await handleExtractRequest(
     jsonRequest({ body: { url: `https://x.com/${"a".repeat(1100)}/status/123` } }),
@@ -220,6 +246,39 @@ test("Cloudflare function uses Cloudflare connecting IP for rate limiting", asyn
 
   assert.equal(response.status, 200);
   assert.equal(checkedIp, "203.0.113.10");
+});
+
+test("Cloudflare function uses forwarded IP when Cloudflare connecting IP is absent", async () => {
+  let checkedIp;
+  const response = await handleExtractRequest(
+    jsonRequest({
+      headers: {
+        "x-forwarded-for": "198.51.100.20"
+      }
+    }),
+    {
+      env: {},
+      rateLimiter: {
+        check(ip) {
+          checkedIp = ip;
+          return { allowed: true };
+        }
+      },
+      extractPost: async (parsed) => ({
+        accountName: "Example User",
+        username: parsed.username,
+        userNumericId: "未取得",
+        postId: parsed.postId,
+        postUrl: parsed.canonicalUrl,
+        createdAt: "未取得",
+        text: "未取得",
+        mediaUrls: []
+      })
+    }
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(checkedIp, "198.51.100.20");
 });
 
 test("Cloudflare function rate limit response does not include sensitive values", async () => {
