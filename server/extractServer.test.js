@@ -204,6 +204,52 @@ test("POST /api/extract rejects unsupported content type with 415", async () => 
   });
 });
 
+test("POST /api/extract accepts JSON content type with charset", async () => {
+  await withServer(async (port) => {
+    const response = await request(port, {
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ url: "https://x.com/user/status/123" })
+    });
+
+    assert.equal(response.statusCode, 200);
+    assertSecurityHeaders(response.headers);
+  });
+});
+
+test("POST /api/extract rejects unexpected request body shapes", async () => {
+  let extractCalls = 0;
+
+  await withServer(
+    async (port) => {
+      const invalidBodies = [
+        null,
+        [],
+        { url: "https://x.com/user/status/123", extra: true },
+        { url: 123 }
+      ];
+
+      for (const body of invalidBodies) {
+        const response = await request(port, {
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        assert.equal(response.statusCode, 400);
+        assert.equal(response.body.error, 'Request body must be { "url": "..." }.');
+        assertSecurityHeaders(response.headers);
+      }
+    },
+    {
+      extractPost: async () => {
+        extractCalls += 1;
+        throw new Error("extractPost should not run for invalid request bodies");
+      }
+    }
+  );
+
+  assert.equal(extractCalls, 0);
+});
+
 test("POST /api/extract rejects oversized body with 413", async () => {
   await withServer(async (port) => {
     const response = await request(port, {
