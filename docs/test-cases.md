@@ -2,7 +2,7 @@
 
 検証コマンド: `npm test`
 
-直近確認: 98 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
+直近確認: 99 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
 
 ## Valid URL examples
 
