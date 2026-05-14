@@ -36,7 +36,7 @@ npm test
 `npm` が使えない場合:
 
 ```powershell
-node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
+node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js apps/web/styles.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
 ```
 
 ## 環境変数
