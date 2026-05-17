@@ -17,6 +17,13 @@ $env:PORT="3000"
 npm start
 ```
 
+PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は、同じscriptを `npm.cmd` 経由で実行します。
+
+```powershell
+$env:PORT="3000"
+npm.cmd start
+```
+
 ブラウザで `http://127.0.0.1:3000/` を開き、XポストURLを入力します。
 疎通確認だけなら `http://127.0.0.1:3000/healthz` を開き、`{"ok":true}` が返ることを確認します。
 
@@ -31,6 +38,12 @@ node server/extractServer.js
 
 ```powershell
 npm test
+```
+
+PowerShellで `npm.ps1` の実行ポリシーエラーになる場合:
+
+```powershell
+npm.cmd test
 ```
 
 `npm` が使えない場合:
@@ -109,3 +122,5 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 ```powershell
 npm test
 ```
+
+PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使います。
