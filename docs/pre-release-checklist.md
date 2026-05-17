@@ -25,6 +25,7 @@
 - Production deploy成功状態: `ca0bd79` は人間側で確認済み。`ca0bd79` 以降の最新push済みcommitのProduction deploy成功状態は未確認。
 - Production deploy確認の正式証跡: Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけ確認済みにする。GitHub check-run successだけではProduction deploy確認済みにしない。
 - Production URLトップページ表示: HTTP 200、title `Xポスト貼り付けテキスト生成`。
+- 最新merge commit `cbe25119008814542df28bcd6ea7cc1159d7e3af`: GitHub上のCloudflare Pages check-runはsuccess、公開URL `https://x-archive-link-tool.pages.dev/privacy.html` の静的表示も確認済み。ただし、Cloudflare Pages deployment一覧またはDashboardでProduction deploymentとして成功した正式証跡は未確認。
 - `/api/extract`、429本番確認、X API呼び出し: この確認では実行していない。実X API/oEmbed通信やcredits影響があり得るため、人間承認なしに実行しない。
 
 ## 本番確認済み
@@ -65,7 +66,7 @@
 - ドメイン: Cloudflare Pages無料URL。独自ドメインは後回し。
 - レート制限値: Production初期値はper IP 10/min、global 60/min。
 - 問い合わせ先: `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。
-- プライバシーポリシーURL候補: `/privacy.html`。ローカル静的ページは作成済み。最新Production反映は未確認。
+- プライバシーポリシーURL候補: `/privacy.html`。公開URLの静的表示は確認済み。Cloudflare Pages deployment一覧での最新commit正式証跡は未確認。
 - ログ保存期間: 未設定 / 人間判断待ち。ドラフトでは安全なログ項目だけを使う方針を記録済み。
 - KV障害時の正式切り戻し手順: 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と正式手順は未確認。
 - X API credits / billing / usage capを見直す頻度: 未確認 / 人間判断待ち。
@@ -81,6 +82,7 @@
 ## 残確認
 
 - Cloudflare Pages Deployments上の `ca0bd79` Production deploy成功状態は人間側で確認済み。`ca0bd79` 以降の最新push済みcommitのProduction deploy成功状態は未確認。
+- `cbe25119008814542df28bcd6ea7cc1159d7e3af` の補助証跡: GitHub Cloudflare Pages check-run success、public `/privacy.html` 静的表示OK。正式証跡: 未確認。
 - rate limit設定後の実際の429挙動は未確認。確認する場合は、実X API通信回数を増やさない方法を別checkpointで決める。
 - 本番 `/api/extract` と本番429確認は、実X API/oEmbed通信やcredits影響があり得るため、今回実行しない。
 - 本番429確認の停止条件: 429以外の応答、5xx、X API provider warning、想定外のFunctionsログ、実X API通信増加の疑いがある場合は追加実行しない。

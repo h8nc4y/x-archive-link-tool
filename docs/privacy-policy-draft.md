@@ -4,7 +4,9 @@
 
 公開URL候補: `https://x-archive-link-tool.pages.dev/privacy.html`
 
-最新Production反映: 未確認
+公開URLの静的表示: 確認済み
+
+最新commitのCloudflare Pages deployment正式証跡: 未確認
 
 ## 取り扱う情報
 
@@ -46,6 +48,6 @@
 ## 公開前レビューで決めること
 
 - [x] 問い合わせ先: `h8nc4y.sub01@gmail.com`
-- [ ] プライバシーポリシーURL: `/privacy.html` 候補。最新Production反映は未確認
+- [ ] プライバシーポリシーURL: `/privacy.html` 候補。公開URLの静的表示は確認済み。Cloudflare Pages deployment正式証跡は未確認
 - [ ] ログ保存期間: 未設定 / 人間判断待ち
 - [ ] 法務または運用責任者による確認: 未設定 / 人間判断待ち
