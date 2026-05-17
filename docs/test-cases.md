@@ -2,6 +2,8 @@
 
 検証コマンド: `npm test`
 
+PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使う。
+
 直近確認: 99 tests pass。`package.json` の `npm test` にはURL validator、rate limiter、KV post cache、Cloudflare Functions extract testsを含む。
 
 ## Valid URL examples
