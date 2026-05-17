@@ -47,7 +47,9 @@ X API Bearer Tokenが設定されている場合はX API v2から取得します
 
 公開URL候補: `https://x-archive-link-tool.pages.dev/privacy.html`
 
-最新Production反映: 未確認
+公開URLの静的表示: 確認済み
+
+最新commitのCloudflare Pages deployment正式証跡: 未確認
 
 ## 公開前レビューで決めること
 
