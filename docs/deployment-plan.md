@@ -6,22 +6,22 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 
 - [x] 公開先: Cloudflare Pages
 - [x] ドメイン: Cloudflare Pages無料URL（`*.pages.dev`）
-- [ ] 問い合わせ先: 未設定 / 人間判断待ち
-- [ ] プライバシーポリシーURL: 未設定 / 人間判断待ち
+- [x] 問い合わせ先: `h8nc4y.sub01@gmail.com`（ユーザー指定値。法務レビュー済みではない）
+- [ ] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。最新Production反映は未確認
 - [x] レート制限値: Cloudflare Productionに初期運用値を設定済み
 - [ ] ログ保存期間: 未設定 / 人間判断待ち
 - [ ] 公開時の運用/ロールバック手順の最終確認: 未設定 / 人間判断待ち
 
 ## 運用未決定項目の分類
 
-Codexは次の実値を決めない。未設定または未確認のまま管理し、人間判断後に該当docsへ反映する。
+Codexは次の実値を独断で決めない。ユーザー指定値は候補として反映し、未設定または未確認の項目は人間判断後に該当docsへ反映する。
 
 | 項目 | 分類 | 現状 | 次アクション |
 | --- | --- | --- | --- |
-| 問い合わせ先 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にサポートページ草案とプライバシーポリシー草案へ反映する。 |
-| プライバシーポリシーURL | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にREADME、サポートページ草案、公開前チェックへ反映する。 |
-| ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 決定後にプライバシーポリシー草案へ反映する。 |
-| KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち | 候補手順は記録済みだが、実施判断者と正式手順は決めない。 |
+| 問い合わせ先 | 公開前に決めるべき項目 | `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。 | 公開前にサポート範囲と運用責任者を確認する。 |
+| プライバシーポリシーURL | 公開前に決めるべき項目 | `/privacy.html` 候補を作成済み。最新Production反映は未確認。 | Cloudflare Production deploy成功後に https://x-archive-link-tool.pages.dev/privacy.html を表示確認する。 |
+| ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち。ドラフトでは安全なログ項目のみ記録する方針を記載済み。 | 保存期間を決め、プライバシーポリシーと運用手順へ反映する。 |
+| KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし正式未確認。 | 実施判断者、切り戻し条件、復旧後の再有効化手順を決める。 |
 | X API credits / billing / usage cap見直し頻度 | 公開前に決めるべき項目 | 未確認 / 人間判断待ち | 課金・利用上限判断が必要なためCodexでは決めない。 |
 | Cloudflare Functionsログ確認の運用責任者 | 公開後運用TODO候補 | 未設定 / 人間判断待ち | 運用開始後の確認責任者として人間側で決める。 |
 
@@ -42,6 +42,17 @@ Codexは次の実値を決めない。未設定または未確認のまま管理
 - Environment variables: `X_BEARER_TOKEN` はsecretとして設定済み。値は記録しない。未設定時はoEmbed fallback。
 
 Root directoryを `apps/web` にすると、リポジトリ直下の `functions/` が認識されない可能性があるため、空欄またはリポジトリルートのままにする。
+
+## GitHub Actions CI
+
+- Issue #2の判断として、最小CIを導入する。
+- Workflow: `.github/workflows/ci.yml`
+- Trigger: pull request、`master` へのpush、`workflow_dispatch`
+- Permission: `contents: read`
+- Job: Ubuntu runnerで `npm test` のみを実行する。
+- package-lock.json がないため、install stepは入れない。
+- lint/typecheck/format専用scriptは `package.json` にないため、今回のCIには追加しない。
+- 費用影響: GitHub Actionsのincluded minutes内なら追加費用0円見込み。ただしaccount plan、残minutes、spending limit、overage単価は未確認。Issue #2にこの判断を関連付ける。
 
 ## 初回デプロイ手動確認結果
 
@@ -135,13 +146,15 @@ redeploy後の最小確認方針:
 - `ca0bd79` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
 - `ca0bd79` 以降のdocs-only更新commitはGitHubへpush済みの場合があるが、Cloudflare Production deploy成功状態は個別確認が必要。
 - Production URLトップページ表示はCodex側でHTTP 200を確認済み。ただしトップページ表示だけでは、特定commitのProduction deploy成功は断定しない。
+- GitHub check-run successだけではCloudflare Production正式証跡として扱わない。Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけProduction確認済みとして記録する。
 - `/api/extract` は `ca0bd79` deploy後には再実行していない。429本番確認とX API呼び出しも未実施。
 
 通常確認:
 
 - GitHub push後はCloudflare Pages Deploymentsで該当commitのProduction成功を確認する。
 - Production URLトップページ表示を確認する。
-- `/api/extract` の本番確認は必要時のみ行う。実行する場合は、実X API通信回数を増やさない方針を先に確認する。
+- `/api/extract` の本番確認は必要時のみ行う。実X API/oEmbed通信やcredits影響があり得るため、人間承認なしに実行しない。
+- 本番429確認も、実X API/oEmbed通信やcredits影響があり得るため、人間承認なしに実行しない。
 - 確認結果にはHTTP status、source、cached、mediaUrls件数、warnings件数だけを書く。
 
 KV post cache:
@@ -167,7 +180,8 @@ Rate limit:
 残タスク:
 
 - `ca0bd79` 以降の最新push済みcommitについて、Cloudflare Production deploy成功状態を確認し、docsへ記録する。
-- 問い合わせ先とプライバシーポリシーURLを人間側で確定する。
+- 問い合わせ先 `h8nc4y.sub01@gmail.com` の公開可否、サポート範囲、法務レビュー要否を人間側で確定する。
+- プライバシーポリシーURL候補 `/privacy.html` のProduction反映を確認する。
 - ログ保存期間を人間側で確定する。
 - Cloudflare Functionsログ確認の運用責任者を人間側で決める。
 - KV障害時の正式な切り戻し手順を人間側で決める。
@@ -191,7 +205,8 @@ Rate limit:
 - [ ] `docs/pre-release-checklist.md` を再確認する。
 - [ ] `docs/privacy-policy-draft.md` と `docs/support-page-draft.md` の未設定項目を埋める。
 - [x] 公開先の環境変数にレート制限値を設定する。
-- [ ] 公開前にWeb UIと `/api/extract` を確認する。
+- [ ] 公開前にWeb UIを確認する。
+- [ ] 本番 `/api/extract` と本番429確認は、人間承認後に実X API/oEmbed通信やcredits影響のない手順を決められた場合だけ実行する。
 
 ## ロールバック方針
 
@@ -214,17 +229,17 @@ Rate limit:
 
 - [x] `RATE_LIMIT_PER_IP_PER_MINUTE`: Cloudflare Production環境変数に `10` を設定済み。
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
-- [ ] 問い合わせ先: 未設定 / 人間判断待ち。
-- [ ] プライバシーポリシーURL: 未設定 / 人間判断待ち。
+- [x] 問い合わせ先: `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。
+- [ ] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。最新Production反映は未確認。
 - [x] Cloudflare Pages deploy status確認: 人間側で `ca0bd79` のProduction成功を確認済み。
 - [ ] `ca0bd79` 以降の最新push済みcommitのCloudflare Production deploy成功状態: 未確認。
 - [ ] Cloudflare Functionsログ確認の運用責任者: 未設定 / 人間判断待ち。
 - [ ] ログ保存期間: 未設定 / 人間判断待ち。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
-- [ ] KV障害時の正式切り戻し手順: 未設定 / 人間判断待ち。候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と正式手順は未確認。
+- [ ] KV障害時の正式切り戻し手順: 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者、切り戻し条件、復旧後の再有効化手順は未確認。
 - [ ] X API credits / billing / usage cap見直し頻度: 未確認 / 人間判断待ち。
-- [ ] 429本番確認: 未実施。原則ローカルテストで担保し、本番確認は実X API通信を増やさない手順を別checkpointで決めてから行う。
-- [ ] 実X API通信回数を増やさない確認方針: 同一投稿URLで最大2回。1回目がHTTP 200かつmediaUrls取得成功の場合だけ2回目を行う。失敗時は追加実行しない。
+- [ ] 429本番確認: 未実施。原則ローカルテストで担保し、本番確認は実X API/oEmbed通信やcredits影響があり得るため、人間承認後に手順を決めてから行う。
+- [ ] 実X API/oEmbed通信回数を増やさない確認方針: 同一投稿URLで最大2回。1回目がHTTP 200かつmediaUrls取得成功の場合だけ2回目を行う。失敗時は追加実行しない。
 - [ ] 記録禁止方針: token、Authorization header、secret値、実投稿URL、投稿本文、mediaUrls値、username、postIdはdocs、issue、チャット、ログへ貼らない。
 
 ## 既知の制限

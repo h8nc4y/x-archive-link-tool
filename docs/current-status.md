@@ -46,10 +46,19 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - `ca0bd79` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
 - `ca0bd79` deploy後の `/api/extract`、429本番確認、X API呼び出しは未実施。
 
+## CI導入状況
+
+- Issue #2の判断として、GitHub Actionsの最小CIを導入する。
+- CIは `.github/workflows/ci.yml` で、pull request、`master` へのpush、手動実行時に `npm test` のみを実行する。
+- package-lock.json がないため、install stepは入れない。
+- lint/typecheck/format専用scriptは `package.json` にないため、今回のCIには追加しない。
+- GitHub Actionsの実行はGitHubのActions minutesを消費する可能性がある。現時点では追加費用0円見込みだが、account plan、残minutes、spending limit、overage単価は未確認。
+
 ## 次の推奨作業
 
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
-- 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理し、実値は人間判断後に反映する。
-- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。以降のdocs-only更新commitはGitHubへpush後、Cloudflare Production deploy成功状態を個別に確認してdocsへ記録する。
+- 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理する。問い合わせ先は `h8nc4y.sub01@gmail.com` を候補値として反映済みだが、法務レビュー済みではない。
+- プライバシーポリシーURL候補は `/privacy.html`。ローカル静的ページは追加済みだが、最新Production反映は未確認。
+- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。以降の最新commitはCloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などの信頼できるProduction証跡が取れた場合だけProduction確認済みとしてdocsへ記録する。GitHub check-run successだけではProduction正式証跡として扱わない。
 - 公開前チェックリストを必要に応じて再確認する。

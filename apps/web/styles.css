@@ -152,6 +152,35 @@ a {
   margin-bottom: 0;
 }
 
+.footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.legal {
+  line-height: 1.75;
+}
+
+.legal section {
+  margin-top: 1.5rem;
+}
+
+.legal h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.legal p,
+.legal ul {
+  margin: 0.5rem 0 0;
+}
+
+.legal ul {
+  padding-left: 1.25rem;
+}
+
 .error {
   color: var(--danger);
 }
