@@ -19,6 +19,7 @@ const SECURITY_HEADERS = {
 const STATIC_FILES = new Map([
   ["/", { file: new URL("../apps/web/index.html", import.meta.url), contentType: "text/html; charset=utf-8" }],
   ["/index.html", { file: new URL("../apps/web/index.html", import.meta.url), contentType: "text/html; charset=utf-8" }],
+  ["/privacy.html", { file: new URL("../apps/web/privacy.html", import.meta.url), contentType: "text/html; charset=utf-8" }],
   ["/styles.css", { file: new URL("../apps/web/styles.css", import.meta.url), contentType: "text/css; charset=utf-8" }],
   ["/app.js", { file: new URL("../apps/web/app.js", import.meta.url), contentType: "text/javascript; charset=utf-8" }]
 ]);

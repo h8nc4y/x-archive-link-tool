@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>プライバシーポリシー | Xポスト貼り付けテキスト生成</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel legal" aria-labelledby="privacy-title">
+        <header class="header">
+          <p class="eyebrow">Privacy Policy Draft</p>
+          <h1 id="privacy-title">プライバシーポリシー</h1>
+          <p class="lead">このページは公開前確認用のドラフトです。法務レビュー済みではありません。</p>
+        </header>
+
+        <section>
+          <h2>取り扱う情報</h2>
+          <p>入力されたXポストURLは、貼り付け用テキスト生成のため一時的に使用します。入力URLは検証後、正規化したXポストURLとして扱います。</p>
+          <p>X API Bearer Tokenが設定されている場合は、postIdをX API v2へ送信する場合があります。未設定時は、正規化済みXポストURLを公式oEmbed endpointへ送信します。</p>
+        </section>
+
+        <section>
+          <h2>保存しない情報</h2>
+          <ul>
+            <li>データベース保存はしません。</li>
+            <li>サーバーログにX投稿本文、メディアURL、ユーザー情報、postId、HTML本文を保存しません。</li>
+            <li>魚拓URLをサーバーで取得または保存しません。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>キャッシュ</h2>
+          <p>API利用量を抑えるため、正規化済み投稿情報をpostId単位でキャッシュする場合があります。Cloudflare ProductionではKV bindingを使い、TTLは30日です。</p>
+        </section>
+
+        <section>
+          <h2>ログ</h2>
+          <p>障害調査では、request_id、method、path、statusCode、durationMs、errorCodeなど、投稿内容を含まない項目だけを使います。ログ保存期間は公開前に最終決定します。</p>
+        </section>
+
+        <section>
+          <h2>外部サービス</h2>
+          <ul>
+            <li>X API v2: X API Bearer Token設定時だけ使用する場合があります。</li>
+            <li>公式oEmbed endpoint: X API Bearer Token未設定時のfallbackとして使用します。</li>
+            <li>魚拓サービス: ユーザー操作で外部リンクを開く場合があります。サーバーから自動取得しません。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>問い合わせ先</h2>
+          <p><a href="mailto:h8nc4y.sub01@gmail.com">h8nc4y.sub01@gmail.com</a></p>
+        </section>
+
+        <p><a href="/">トップページへ戻る</a></p>
+      </section>
+    </main>
+  </body>
+</html>

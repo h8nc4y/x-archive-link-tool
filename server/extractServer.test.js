@@ -83,6 +83,22 @@ test("GET / serves web index with security headers", async () => {
   });
 });
 
+test("GET /privacy.html serves privacy policy draft with security headers", async () => {
+  await withServer(async (port) => {
+    const response = await request(port, {
+      method: "GET",
+      path: "/privacy.html"
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "text/html; charset=utf-8");
+    assert.match(response.body, /プライバシーポリシー/);
+    assert.match(response.body, /h8nc4y\.sub01@gmail\.com/);
+    assert.match(response.body, /法務レビュー済みではありません/);
+    assertSecurityHeaders(response.headers);
+  });
+});
+
 test("formatStartupError explains port conflicts", () => {
   assert.equal(
     formatStartupError({ code: "EADDRINUSE" }, 3000),
