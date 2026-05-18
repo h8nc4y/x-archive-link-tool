@@ -5,7 +5,7 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです
 Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URLで初回デプロイ済みです。iOSアプリ、DB、独自ドメイン設定は未実装です。
 
 公開URL: https://x-archive-link-tool.pages.dev
-プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（`/privacy` へredirect後の静的表示は確認済み。最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はCloudflare Pages Production deployment一覧で確認済み）
+プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（`/privacy` へredirect後の静的表示は確認済み。現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はCloudflare Pages Production deployment一覧で確認済み）
 
 Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。静的ページ用のセキュリティヘッダは `apps/web/_headers` で指定します。
 
@@ -115,6 +115,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - [テストケース](docs/test-cases.md)
 - [現状まとめ](docs/current-status.md)
 - [公開前チェックリスト](docs/pre-release-checklist.md)
+- [公開前運用Runbook](docs/pre-release-operations-runbook.md)
 - [デプロイ準備](docs/deployment-plan.md)
 - [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
 - [サポートページドラフト](docs/support-page-draft.md)
