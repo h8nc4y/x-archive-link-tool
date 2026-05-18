@@ -6,7 +6,7 @@
 
 公開URLの静的表示: 確認済み
 
-最新commitのCloudflare Pages deployment正式証跡: 未確認
+最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のCloudflare Pages Production deployment正式証跡: 確認済み（Wrangler deployment ID `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`）
 
 ## 取り扱う情報
 
@@ -48,6 +48,6 @@
 ## 公開前レビューで決めること
 
 - [x] 問い合わせ先: `h8nc4y.sub01@gmail.com`
-- [ ] プライバシーポリシーURL: `/privacy.html` 候補。公開URLの静的表示は確認済み。Cloudflare Pages deployment正式証跡は未確認
+- [x] プライバシーポリシーURL: `/privacy.html` 候補。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。最新HEADのCloudflare Pages Production deployment正式証跡も確認済み
 - [ ] ログ保存期間: 未設定 / 人間判断待ち
 - [ ] 法務または運用責任者による確認: 未設定 / 人間判断待ち
