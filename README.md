@@ -5,7 +5,7 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです
 Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URLで初回デプロイ済みです。iOSアプリ、DB、独自ドメイン設定は未実装です。
 
 公開URL: https://x-archive-link-tool.pages.dev
-プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（公開URLの静的表示は確認済み。Cloudflare Pages deployment一覧での最新commit正式証跡は未確認）
+プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（`/privacy` へredirect後の静的表示は確認済み。最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はCloudflare Pages Production deployment一覧で確認済み）
 
 Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。静的ページ用のセキュリティヘッダは `apps/web/_headers` で指定します。
 

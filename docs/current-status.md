@@ -48,7 +48,9 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - `ca0bd79` deploy後の `/api/extract`、429本番確認、X API呼び出しは未実施。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` のGitHub上のCloudflare Pages check-runはsuccess。external_idは `373397d2-7347-4f4c-bf53-06e42110f4d9`、details URLはCloudflare DashboardのPages deployment URL。
 - 公開URL `https://x-archive-link-tool.pages.dev/privacy.html` は静的表示を確認済み。表示項目は `プライバシーポリシー`、問い合わせ先、法務未レビュー表示。console errorは0件。
-- ただし、Cloudflare Pages deployment一覧またはCloudflare Dashboardで `cbe25119008814542df28bcd6ea7cc1159d7e3af` がProduction deploymentとして成功した正式証跡は未確認。`wrangler whoami` は未認証で `wrangler login` が必要なため、Codex側ではPages deployment一覧を読めなかった。
+- Wrangler 4.92.0で `wrangler whoami` が成功し、OAuth tokenが有効であることを確認済み。ただしtokenには広いwrite権限があるため、Cloudflare操作はdeployment一覧の読み取りだけに限定した。
+- 2026-05-18 20:40 JSTに `npx wrangler pages deployment list --project-name x-archive-link-tool --environment production --json` を実行し、最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` の短縮 `1a8fad5` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`、deployment URLは `https://a79ddcf6.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `16 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
+- Wranglerのdeployment listは明示的な `Success` 文字列を返さず、Status欄は相対時刻表示だった。補助証跡として、同commitのGitHub上Cloudflare Pages check-run successと公開静的URLのHEAD/GET 200、主要security headersありを確認済み。
 
 ## CI導入状況
 
@@ -63,7 +65,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
 - 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理する。問い合わせ先は `h8nc4y.sub01@gmail.com` を候補値として反映済みだが、法務レビュー済みではない。
-- プライバシーポリシーURL候補は `/privacy.html`。公開URLの静的表示は確認済みだが、`cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Pages deployment一覧でのProduction正式証跡は未確認。
-- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`cbe25119008814542df28bcd6ea7cc1159d7e3af` はGitHub check-runと公開URL表示まで確認済みだが、Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などの信頼できるProduction証跡が取れていないため、Production確認済みとは扱わない。
+- プライバシーポリシーURL候補は `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のCloudflare Pages Production deployment一覧での正式証跡も確認済み。
+- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はWranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。
 - 公開前チェックリストを必要に応じて再確認する。
 - Cloudflare Pages静的アセット向けに `apps/web/_headers` を追加し、CSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` をローカルサーバーのsecurity headersと揃えた。
