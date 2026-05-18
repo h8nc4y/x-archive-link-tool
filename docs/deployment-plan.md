@@ -7,7 +7,7 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 - [x] 公開先: Cloudflare Pages
 - [x] ドメイン: Cloudflare Pages無料URL（`*.pages.dev`）
 - [x] 問い合わせ先: `h8nc4y.sub01@gmail.com`（ユーザー指定値。法務レビュー済みではない）
-- [x] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧での最新HEAD正式証跡も確認済み
+- [x] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧での現在の本番稼働HEAD正式証跡も確認済み
 - [x] レート制限値: Cloudflare Productionに初期運用値を設定済み
 - [ ] ログ保存期間: 未設定 / 人間判断待ち
 - [ ] 公開時の運用/ロールバック手順の最終確認: 未設定 / 人間判断待ち
@@ -15,14 +15,15 @@ oEmbed版Web MVPのCloudflare Pages初回デプロイ設定と、公開前後に
 ## 運用未決定項目の分類
 
 Codexは次の実値を独断で決めない。ユーザー指定値は候補として反映し、未設定または未確認の項目は人間判断後に該当docsへ反映する。
+公開前の運用判断、承認文言、実行禁止操作は `docs/pre-release-operations-runbook.md` でも管理する。
 
 | 項目 | 分類 | 現状 | 次アクション |
 | --- | --- | --- | --- |
 | 問い合わせ先 | 公開前に決めるべき項目 | `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。 | 公開前にサポート範囲と運用責任者を確認する。 |
-| プライバシーポリシーURL | 公開前に決めるべき項目 | `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧で最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のProduction正式証跡も確認済み。 | 公開前に法務レビュー要否を確認する。 |
-| ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち。ドラフトでは安全なログ項目のみ記録する方針を記載済み。 | 保存期間を決め、プライバシーポリシーと運用手順へ反映する。 |
-| KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし正式未確認。 | 実施判断者、切り戻し条件、復旧後の再有効化手順を決める。 |
-| X API credits / billing / usage cap見直し頻度 | 公開前に決めるべき項目 | 未確認 / 人間判断待ち | 課金・利用上限判断が必要なためCodexでは決めない。 |
+| プライバシーポリシーURL | 公開前に決めるべき項目 | `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧で現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のProduction正式証跡も確認済み。 | 公開前に法務レビュー要否を確認する。 |
+| ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち。ドラフトでは安全なログ項目のみ記録する方針を記載済み。 | 推奨案は安全ログ項目だけを30日以内、またはCloudflare既定の短い保持期間に合わせること。法務/運用責任者が確定し、プライバシーポリシーへ反映する。 |
+| KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただしCloudflare write操作を伴うためCodexは未実施。 | 実施判断者、切り戻し条件、復旧後の再有効化手順、承認文言を決める。 |
+| X API credits / billing / usage cap見直し頻度 | 公開前に決めるべき項目 | 未確認 / 人間判断待ち | 推奨案は公開前、公開直後、以後週次、安定後月次で人間がX Developer Portalを確認すること。tokenやsecretは共有しない。 |
 | Cloudflare Functionsログ確認の運用責任者 | 公開後運用TODO候補 | 未設定 / 人間判断待ち | 運用開始後の確認責任者として人間側で決める。 |
 
 ## Cloudflare Pages設定
@@ -84,7 +85,8 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - GitHub check-runで `cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Pages successを確認。external_idは `373397d2-7347-4f4c-bf53-06e42110f4d9`、details URLはCloudflare DashboardのPages deployment URL。ただし、GitHub check-run単独のためProduction正式証跡とは扱わない。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` deploy後と推定される公開URL `https://x-archive-link-tool.pages.dev/privacy.html` の静的表示は確認済み。H1 `プライバシーポリシー`、問い合わせ先、法務未レビュー表示、console error 0件。ただし公開URL表示だけでは、特定commitのProduction deployment成功は断定しない。
 - Cloudflare Pages deployment一覧で `cbe25119008814542df28bcd6ea7cc1159d7e3af` がProduction deploymentとして成功した正式証跡は未確認。Codex環境では `wrangler 4.92.0` の `wrangler whoami` が未認証で、Pages deployment一覧を読めなかった。
-- 2026-05-18 20:40 JSTに `npx wrangler pages deployment list --project-name x-archive-link-tool --environment production --json` を実行し、最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` の短縮 `1a8fad5` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`、deployment URLは `https://a79ddcf6.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `16 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
+- 2026-05-18 20:40 JSTに `npx wrangler pages deployment list --project-name x-archive-link-tool --environment production --json` を実行し、レビューhardening反映時点のHEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` の短縮 `1a8fad5` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`、deployment URLは `https://a79ddcf6.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `16 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
+- 2026-05-18 20:50 JSTに同じWrangler読み取り確認を再実行し、PR #8 merge後の現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` の短縮 `2db0a89` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`、deployment URLは `https://aaadb2ac.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `4 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。
 - Wranglerのdeployment listは明示的な `Success` 文字列を返さず、Status欄は相対時刻表示だった。補助証跡として、同commitのGitHub上Cloudflare Pages check-run success、公開 `https://x-archive-link-tool.pages.dev/` のHEAD/GET 200、公開 `https://x-archive-link-tool.pages.dev/privacy.html` の `/privacy` redirect後HEAD/GET 200、主要security headersありを確認済み。
 
 ## 本番環境で必要な設定
@@ -152,7 +154,8 @@ redeploy後の最小確認方針:
 - `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。
 - `ca0bd79` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` はGitHub check-runと公開URL静的表示を確認済み。ただしCloudflare Pages deployment一覧またはDashboardでのProduction正式証跡は未確認。
-- 最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はWranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。
+- `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡としてWranglerのCloudflare Pages Production deployment一覧で確認済み。
+- 現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はWranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。
 - Production URLトップページ表示はCodex側でHTTP 200を確認済み。ただしトップページ表示だけでは、特定commitのProduction deploy成功は断定しない。
 - GitHub check-run successだけではCloudflare Production正式証跡として扱わない。Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけProduction確認済みとして記録する。
 - `/api/extract` は `ca0bd79` deploy後には再実行していない。429本番確認とX API呼び出しも未実施。
@@ -170,7 +173,7 @@ redeploy後の最小確認方針:
 
 1. Cloudflare Dashboardで Pages project `x-archive-link-tool` を開く。
 2. Deployments一覧でEnvironmentが `Production` のdeploymentを確認する。
-3. Deployment detailでbranchが `master`、commitが対象HEADまたは短縮hash、statusがSuccessであることを確認する。最新確認対象は `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` または短縮 `1a8fad5`。
+3. Deployment detailでbranchが `master`、commitが対象HEADまたは短縮hash、statusがSuccessであることを確認する。現在の本番稼働HEADは `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` または短縮 `2db0a89`。
 4. deployment URLまたはdeployment ID、environment、branch、commit hash、created/deployed time、statusを記録する。
 5. GitHub check-run successや公開URL表示だけでProduction正式確認済みとは書かない。
 6. 本番 `/api/extract`、本番429確認、実X API/oEmbed live通信は、この確認手順では実行しない。
@@ -248,10 +251,11 @@ Rate limit:
 - [x] `RATE_LIMIT_PER_IP_PER_MINUTE`: Cloudflare Production環境変数に `10` を設定済み。
 - [x] `RATE_LIMIT_GLOBAL_PER_MINUTE`: Cloudflare Production環境変数に `60` を設定済み。
 - [x] 問い合わせ先: `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。
-- [x] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧での最新HEAD正式証跡も確認済み。
+- [x] プライバシーポリシーURL: `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧での現在の本番稼働HEAD正式証跡も確認済み。
 - [x] Cloudflare Pages deploy status確認: 人間側で `ca0bd79` のProduction成功を確認済み。
 - [ ] `cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Production deploy成功状態: GitHub check-runと公開URL静的表示は確認済み。Cloudflare Pages deployment一覧またはDashboardでの正式証跡は未確認。
-- [x] 最新HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
+- [x] レビューhardening反映HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
+- [x] 現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。
 - [ ] Cloudflare Functionsログ確認の運用責任者: 未設定 / 人間判断待ち。
 - [ ] ログ保存期間: 未設定 / 人間判断待ち。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。
