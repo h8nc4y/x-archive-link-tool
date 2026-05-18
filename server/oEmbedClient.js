@@ -82,6 +82,14 @@ function htmlToPlainText(html) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/gi, "'")
+    .replace(/&#([0-9]+);/g, (_match, codePoint) => {
+      const value = Number(codePoint);
+      return Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "";
+    })
+    .replace(/&#x([0-9a-f]+);/gi, (_match, codePoint) => {
+      const value = Number.parseInt(codePoint, 16);
+      return Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "";
+    })
     .replace(/\s+/g, " ")
     .trim();
 

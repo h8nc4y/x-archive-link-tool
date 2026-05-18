@@ -27,7 +27,7 @@
 
 - 確認済みテスト候補: `npm test`。
 - PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使う。
-- `npm` を使わない場合の確認済みテスト候補: `node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js apps/web/styles.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js`。
+- `npm` を使わない場合の確認済みテスト候補: `node --test`。Node.js test runnerの自動探索で `*.test.js` を実行する。
 - ローカル起動候補: PowerShell で `$env:PORT="3000"` を設定してから `npm start`。PowerShell実行ポリシーに当たる場合は `npm.cmd start`。`npm` を使わない場合は `node server/extractServer.js`。
 - 外部ネットワーク、X API、oEmbed、Cloudflare本番API確認は、料金・secret・実データ送信に該当しない範囲を確認してから実行する。
 

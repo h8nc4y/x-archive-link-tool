@@ -36,6 +36,34 @@ function sendJson(status, payload, headers = {}) {
   });
 }
 
+function createRequestId() {
+  return globalThis.crypto?.randomUUID?.() || "unknown";
+}
+
+function writeSafeLog(logger, entry) {
+  if (!logger) {
+    return;
+  }
+
+  const safeEntry = {
+    request_id: entry.request_id,
+    method: entry.method,
+    path: entry.path,
+    statusCode: entry.statusCode,
+    durationMs: entry.durationMs,
+    errorCode: entry.errorCode
+  };
+
+  if (typeof logger === "function") {
+    logger(safeEntry);
+    return;
+  }
+
+  if (typeof logger.info === "function") {
+    logger.info(safeEntry);
+  }
+}
+
 function isJsonContentType(value) {
   if (!value) {
     return false;
@@ -96,23 +124,39 @@ function getClientIp(request) {
 
 export async function handleExtractRequest(
   request,
-  { env = {}, extractPost = null, rateLimiter = getRateLimiter(env), xApiProvider, oEmbedProvider } = {}
+  { env = {}, extractPost = null, rateLimiter = getRateLimiter(env), xApiProvider, oEmbedProvider, logger = null, now = Date.now } = {}
 ) {
+  const startedAt = now();
+  const requestUrl = new URL(request.url);
+  const requestId = createRequestId();
+  const respond = (status, payload, headers = {}, errorCode = undefined) => {
+    writeSafeLog(logger, {
+      request_id: requestId,
+      method: request.method,
+      path: requestUrl.pathname,
+      statusCode: status,
+      durationMs: Math.max(0, now() - startedAt),
+      errorCode
+    });
+    return sendJson(status, payload, headers);
+  };
+
   if (request.method !== "POST") {
-    return sendJson(405, { error: "Method not allowed." }, { allow: "POST" });
+    return respond(405, { error: "Method not allowed." }, { allow: "POST" }, "method_not_allowed");
   }
 
   const rateLimitResult = rateLimiter.check(getClientIp(request));
   if (!rateLimitResult.allowed) {
-    return sendJson(
+    return respond(
       429,
       { error: "Rate limit exceeded.", code: "rate_limit_exceeded" },
-      { "retry-after": String(rateLimitResult.retryAfterSeconds) }
+      { "retry-after": String(rateLimitResult.retryAfterSeconds) },
+      "rate_limit_exceeded"
     );
   }
 
   if (!isJsonContentType(request.headers.get("content-type"))) {
-    return sendJson(415, { error: "Content-Type must be application/json." });
+    return respond(415, { error: "Content-Type must be application/json." }, {}, "unsupported_content_type");
   }
 
   try {
@@ -137,28 +181,28 @@ export async function handleExtractRequest(
           xApiProvider,
           oEmbedProvider
         }));
-    return sendJson(200, await extractor(parsed));
+    return respond(200, await extractor(parsed));
   } catch (error) {
     if (error instanceof XPostUrlValidationError) {
-      return sendJson(400, { error: error.message, code: error.code });
+      return respond(400, { error: error.message, code: error.code }, {}, error.code);
     }
 
     if (error instanceof HttpError) {
-      return sendJson(error.statusCode, { error: error.message });
+      return respond(error.statusCode, { error: error.message }, {}, `http_${error.statusCode}`);
     }
 
     if (error instanceof OEmbedClientError) {
-      return sendJson(error.statusCode, { error: error.message, code: error.code });
+      return respond(error.statusCode, { error: error.message, code: error.code }, {}, error.code);
     }
 
     if (error instanceof XApiV2ClientError) {
-      return sendJson(error.statusCode, { error: error.message, code: error.code });
+      return respond(error.statusCode, { error: error.message, code: error.code }, {}, error.code);
     }
 
-    return sendJson(500, { error: "Internal server error." });
+    return respond(500, { error: "Internal server error." }, {}, "internal_error");
   }
 }
 
 export function onRequest(context) {
-  return handleExtractRequest(context.request, { env: context.env });
+  return handleExtractRequest(context.request, { env: context.env, logger: console });
 }

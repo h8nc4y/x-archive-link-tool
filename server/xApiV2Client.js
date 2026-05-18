@@ -39,6 +39,13 @@ function mapXApiError(response) {
     });
   }
 
+  if (status === 402) {
+    return new XApiV2ClientError("X API payment or credits are required.", "x_api_402", 402, status, {
+      ...diagnostics,
+      errorType: "payment_required"
+    });
+  }
+
   if (status === 403) {
     return new XApiV2ClientError("X API access was denied.", "x_api_403", 502, status, {
       ...diagnostics,
@@ -71,6 +78,10 @@ function mapXApiError(response) {
     ...diagnostics,
     errorType: "request_failed"
   });
+}
+
+function buildCanonicalUrl(postId, username) {
+  return username ? `https://x.com/${username}/status/${postId}` : `https://x.com/i/web/status/${postId}`;
 }
 
 function getBestVideoUrl(variants = []) {
@@ -133,6 +144,7 @@ export function normalizeXApiV2Response(payload, parsedUrl) {
   const users = Array.isArray(payload?.includes?.users) ? payload.includes.users : [];
   const mediaItems = Array.isArray(payload?.includes?.media) ? payload.includes.media : [];
   const author = users.find((user) => user.id === tweet.author_id) || {};
+  const username = typeof author.username === "string" ? author.username : parsedUrl.username;
   const mediaByKey = new Map(mediaItems.map((item) => [item.media_key, item]));
   const mediaKeys = Array.isArray(tweet?.attachments?.media_keys) ? tweet.attachments.media_keys : [];
   const warnings = [];
@@ -159,9 +171,9 @@ export function normalizeXApiV2Response(payload, parsedUrl) {
 
   return {
     id: String(tweet.id || parsedUrl.postId),
-    canonicalUrl: `https://x.com/i/web/status/${tweet.id || parsedUrl.postId}`,
+    canonicalUrl: buildCanonicalUrl(tweet.id || parsedUrl.postId, username),
     authorName: typeof author.name === "string" ? author.name : "未取得",
-    username: typeof author.username === "string" ? author.username : parsedUrl.username,
+    username,
     userNumericId: typeof author.id === "string" ? author.id : "未取得",
     createdAt: typeof tweet.created_at === "string" ? tweet.created_at : "未取得",
     text: typeof tweet.text === "string" ? tweet.text : "未取得",

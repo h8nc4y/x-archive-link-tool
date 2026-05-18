@@ -40,6 +40,7 @@ test("fetchXPostFromApi requests X API v2 with injected bearer token", async () 
   assert.equal(result.source, "x-api-v2");
   assert.equal(result.authorName, "Example");
   assert.equal(result.username, "example");
+  assert.equal(result.canonicalUrl, "https://x.com/example/status/123");
 });
 
 test("normalizeXApiV2Response extracts photo media URLs", () => {
@@ -70,6 +71,30 @@ test("normalizeXApiV2Response extracts photo media URLs", () => {
     "https://pbs.twimg.com/media/three.jpg",
     "https://pbs.twimg.com/media/four.jpg"
   ]);
+});
+
+test("normalizeXApiV2Response uses username canonical URL when available", () => {
+  const result = normalizeXApiV2Response(
+    {
+      data: { id: "123", text: "hello", author_id: "42" },
+      includes: { users: [{ id: "42", name: "Example", username: "example" }] }
+    },
+    parsedUrl
+  );
+
+  assert.equal(result.canonicalUrl, "https://x.com/example/status/123");
+});
+
+test("normalizeXApiV2Response falls back to parsed canonical URL username", () => {
+  const result = normalizeXApiV2Response(
+    {
+      data: { id: "123", text: "hello" },
+      includes: {}
+    },
+    parsedUrl
+  );
+
+  assert.equal(result.canonicalUrl, "https://x.com/source_user/status/123");
 });
 
 test("normalizeXApiV2Response extracts a single photo media URL", () => {
@@ -170,6 +195,19 @@ test("fetchXPostFromApi keeps safe rate limit reset diagnostic", async () => {
       error.responseStatusCode === 429 &&
       error.errorType === "rate_limited" &&
       error.rateLimitReset === "1760000000" &&
+      !JSON.stringify(error).includes("secret")
+  );
+});
+
+test("fetchXPostFromApi maps 402 to payment required error", async () => {
+  await assert.rejects(
+    () => fetchXPostFromApi(parsedUrl, { bearerToken: "secret", fetchFn: async () => mockResponse(402, {}) }),
+    (error) =>
+      error instanceof XApiV2ClientError &&
+      error.code === "x_api_402" &&
+      error.statusCode === 402 &&
+      error.responseStatusCode === 402 &&
+      error.errorType === "payment_required" &&
       !JSON.stringify(error).includes("secret")
   );
 });

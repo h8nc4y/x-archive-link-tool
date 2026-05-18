@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCopyText, buildGyotakuUrl, buildSourceMessage, hasArchiveUrlPasteNoise } from "./app.js";
+import { buildCopyText, buildGyotakuUrl, buildSourceMessage, getUserErrorMessage, hasArchiveUrlPasteNoise } from "./app.js";
 
 const basePost = {
   accountName: "Example",
@@ -125,7 +125,39 @@ test("buildCopyText falls back for missing optional API fields", () => {
   assert.equal(text.includes("undefined"), false);
 });
 
+test("buildCopyText does not render @未取得 for missing username", () => {
+  const text = buildCopyText({
+    accountName: "Partial",
+    postUrl: "https://x.com/i/web/status/123",
+    mediaUrls: []
+  });
+
+  assert.match(text, /アカウントID：未取得/);
+  assert.equal(text.includes("@未取得"), false);
+});
+
 test("buildSourceMessage describes cache and oEmbed source", () => {
   assert.equal(buildSourceMessage({ cached: true }), "キャッシュから表示しています。");
   assert.equal(buildSourceMessage({ source: "oembed" }), "公式API未使用のため画像URLを取得できない場合があります。");
+});
+
+test("buildSourceMessage maps warnings to Japanese user messages", () => {
+  const message = buildSourceMessage({
+    source: "stale-cache",
+    warnings: [
+      "最新取得に失敗したため期限切れキャッシュを返しました。",
+      "media_urls_unavailable",
+      "X API provider failed with status 402; used oEmbed fallback."
+    ]
+  });
+
+  assert.match(message, /古い可能性があるキャッシュ/);
+  assert.match(message, /画像や動画の直接URLを取得できませんでした/);
+  assert.match(message, /X APIで取得できなかったため/);
+});
+
+test("getUserErrorMessage maps API codes to Japanese messages", () => {
+  assert.equal(getUserErrorMessage({ code: "invalid_host" }), "対応しているURLは x.com または twitter.com のポストURLです。");
+  assert.equal(getUserErrorMessage({ code: "x_api_402" }), "X APIの利用枠または課金設定により取得できません。管理者側の確認が必要です。");
+  assert.equal(getUserErrorMessage({ code: "unknown_code" }), "取得に失敗しました。時間を置いて再試行してください。");
 });
