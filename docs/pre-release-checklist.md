@@ -4,7 +4,8 @@
 
 ## ローカル確認
 
-- `npm test` が成功する。直近確認は100 tests pass。
+- `npm test` が成功する。直近確認は112 tests pass。
+- `npm test` は `node --test` の自動探索で `*.test.js` を実行し、新規テストをCIから漏れにくくする。
 - GitHub Actions最小CIは `.github/workflows/ci.yml` で `npm test` のみを実行する。pull request、`master` へのpush、手動実行が対象。
 - package-lock.json がないため、CIにinstall stepは入れない。
 - lint/typecheck/format専用scriptは `package.json` にないため、CI対象外。
@@ -25,6 +26,7 @@
 - Production deploy成功状態: `ca0bd79` は人間側で確認済み。`ca0bd79` 以降の最新push済みcommitのProduction deploy成功状態は未確認。
 - Production deploy確認の正式証跡: Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけ確認済みにする。GitHub check-run successだけではProduction deploy確認済みにしない。
 - Production URLトップページ表示: HTTP 200、title `Xポスト貼り付けテキスト生成`。
+- Static security headers: `apps/web/_headers` でCSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` を設定する。
 - 最新merge commit `cbe25119008814542df28bcd6ea7cc1159d7e3af`: GitHub上のCloudflare Pages check-runはsuccess、公開URL `https://x-archive-link-tool.pages.dev/privacy.html` の静的表示も確認済み。ただし、Cloudflare Pages deployment一覧またはDashboardでProduction deploymentとして成功した正式証跡は未確認。
 - `/api/extract`、429本番確認、X API呼び出し: この確認では実行していない。実X API/oEmbed通信やcredits影響があり得るため、人間承認なしに実行しない。
 
@@ -59,6 +61,7 @@
 - 任意URLを外部へ渡さない。
 - X HTMLスクレイピング、OGP取得、短縮URL展開、メディアダウンロードをしない。
 - ログに入力URL、投稿内容、username、postId、HTML本文、mediaUrlsを出さない。
+- Cloudflare Functionsログはrequest_id、method、path、statusCode、durationMs、errorCodeだけを出す。
 
 ## 公開前に決めること
 
@@ -71,6 +74,7 @@
 - KV障害時の正式切り戻し手順: 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と正式手順は未確認。
 - X API credits / billing / usage capを見直す頻度: 未確認 / 人間判断待ち。
 - 正常利用者が429になった場合の問い合わせ先と対応基準: 未確認 / 人間判断待ち。
+- Cloudflare Functionsのin-memory cacheとrate limiterはisolate単位のbest-effort。真のglobal制限が必要になった場合のKV/Durable Object等の採用判断は将来課題。
 - 429確認方針: 原則ローカルテストで担保する。本番確認は実X API/oEmbed通信やcredits影響があり得るため、人間承認後に手順を決めてから実行する。
 
 ## 公開後運用TODO候補

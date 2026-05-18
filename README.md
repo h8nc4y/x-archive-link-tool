@@ -7,7 +7,7 @@ Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URL
 公開URL: https://x-archive-link-tool.pages.dev
 プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（公開URLの静的表示は確認済み。Cloudflare Pages deployment一覧での最新commit正式証跡は未確認）
 
-Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。
+Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。静的ページ用のセキュリティヘッダは `apps/web/_headers` で指定します。
 
 ## ローカル起動
 
@@ -37,7 +37,7 @@ node server/extractServer.js
 
 ## テスト
 
-GitHub Actionsでは、pull request、`master` へのpush、手動実行で最小CIとして `npm test` を実行します。package-lock.json がないため、CIにinstall stepは入れていません。
+GitHub Actionsでは、pull request、`master` へのpush、手動実行で最小CIとして `npm test` を実行します。package-lock.json がないため、CIにinstall stepは入れていません。`npm test` は `node --test` の自動探索で `*.test.js` を実行します。
 
 ```powershell
 npm test
@@ -52,7 +52,7 @@ npm.cmd test
 `npm` が使えない場合:
 
 ```powershell
-node --test server/urlValidator.test.js server/extractServer.test.js server/oEmbedClient.test.js server/xApiV2Client.test.js server/kvPostCache.test.js server/rateLimiter.test.js server/extractService.test.js server/env.test.js apps/web/app.test.js apps/web/styles.test.js scripts/manualOEmbedCheck.test.js functions/api/extract.test.js
+node --test
 ```
 
 ## 環境変数
@@ -118,6 +118,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - [デプロイ準備](docs/deployment-plan.md)
 - [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
 - [サポートページドラフト](docs/support-page-draft.md)
+- [Claude Code利用手順](docs/claude-code-usage.md)
 - [セキュリティ](SECURITY.md)
 
 ## 検証

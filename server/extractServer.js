@@ -105,7 +105,7 @@ async function readJsonBody(req) {
 export async function handleRequest(
   req,
   res,
-  { extractPost = createExtractPost(), rateLimiter = null, logger = null, now = Date.now } = {}
+  { extractPost = createExtractPost(), rateLimiter = null, logger = null, now = Date.now, staticFiles = STATIC_FILES, readFileFn = readFile } = {}
 ) {
   const startedAt = now();
   const requestUrl = new URL(req.url || "/", "http://localhost");
@@ -122,54 +122,54 @@ export async function handleRequest(
     });
   };
 
-  if (req.method === "GET" && STATIC_FILES.has(requestUrl.pathname)) {
-    const staticFile = STATIC_FILES.get(requestUrl.pathname);
-    const body = await readFile(staticFile.file);
-    sendBytes(res, 200, body, { "content-type": staticFile.contentType });
-    writeSafeLog(logger, {
-      request_id: requestId,
-      method: req.method,
-      path: requestUrl.pathname,
-      statusCode: 200,
-      durationMs: Math.max(0, now() - startedAt)
-    });
-    return;
-  }
-
-  if (req.method === "GET" && requestUrl.pathname === "/healthz") {
-    respond(200, { ok: true });
-    return;
-  }
-
-  if (requestUrl.pathname !== "/api/extract") {
-    respond(404, { error: "Not found." }, {}, "not_found");
-    return;
-  }
-
-  if (req.method !== "POST") {
-    respond(405, { error: "Method not allowed." }, { allow: "POST" }, "method_not_allowed");
-    return;
-  }
-
-  if (rateLimiter) {
-    const rateLimitResult = rateLimiter.check(req.socket?.remoteAddress || "unknown");
-    if (!rateLimitResult.allowed) {
-      respond(
-        429,
-        { error: "Rate limit exceeded.", code: "rate_limit_exceeded" },
-        { "retry-after": String(rateLimitResult.retryAfterSeconds) },
-        "rate_limit_exceeded"
-      );
+  try {
+    if (req.method === "GET" && staticFiles.has(requestUrl.pathname)) {
+      const staticFile = staticFiles.get(requestUrl.pathname);
+      const body = await readFileFn(staticFile.file);
+      sendBytes(res, 200, body, { "content-type": staticFile.contentType });
+      writeSafeLog(logger, {
+        request_id: requestId,
+        method: req.method,
+        path: requestUrl.pathname,
+        statusCode: 200,
+        durationMs: Math.max(0, now() - startedAt)
+      });
       return;
     }
-  }
 
-  if (!isJsonContentType(req.headers["content-type"])) {
-    respond(415, { error: "Content-Type must be application/json." }, {}, "unsupported_content_type");
-    return;
-  }
+    if (req.method === "GET" && requestUrl.pathname === "/healthz") {
+      respond(200, { ok: true });
+      return;
+    }
 
-  try {
+    if (requestUrl.pathname !== "/api/extract") {
+      respond(404, { error: "Not found." }, {}, "not_found");
+      return;
+    }
+
+    if (req.method !== "POST") {
+      respond(405, { error: "Method not allowed." }, { allow: "POST" }, "method_not_allowed");
+      return;
+    }
+
+    if (rateLimiter) {
+      const rateLimitResult = rateLimiter.check(req.socket?.remoteAddress || "unknown");
+      if (!rateLimitResult.allowed) {
+        respond(
+          429,
+          { error: "Rate limit exceeded.", code: "rate_limit_exceeded" },
+          { "retry-after": String(rateLimitResult.retryAfterSeconds) },
+          "rate_limit_exceeded"
+        );
+        return;
+      }
+    }
+
+    if (!isJsonContentType(req.headers["content-type"])) {
+      respond(415, { error: "Content-Type must be application/json." }, {}, "unsupported_content_type");
+      return;
+    }
+
     const body = await readJsonBody(req);
     if (
       body === null ||

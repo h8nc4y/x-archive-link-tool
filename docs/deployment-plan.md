@@ -35,6 +35,7 @@ Codexは次の実値を独断で決めない。ユーザー指定値は候補と
 - [ ] build command: 不要 / 空欄
 - [ ] build output directory: `apps/web`
 - [ ] Functions directory: `functions`
+- [x] Static security headers: `apps/web/_headers`
 - [x] API実行基盤: Cloudflare Pages Functions / Workers
 - [x] `/api/extract`: `functions/api/extract.js`
 - [x] KV namespace binding: `X_POST_CACHE` -> `x-archive-link-tool-post-cache`（Production）
@@ -79,6 +80,7 @@ Root directoryを `apps/web` にすると、リポジトリ直下の `functions/
 - Cloudflare Pages Deploymentsで `ca0bd79` のProduction deploy成功: OK（人間側で確認済み）。
 - `ca0bd79` deploy後のトップページ表示: HTTP 200、title `Xポスト貼り付けテキスト生成`。
 - `ca0bd79` deploy後の `/api/extract` 再実行、429本番確認、X API呼び出し: 未実施。
+- Static security headersは `apps/web/_headers` で設定する。公開静的ページのHEAD/GETではCSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` を確認する。
 - GitHub check-runで `cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Pages successを確認。external_idは `373397d2-7347-4f4c-bf53-06e42110f4d9`、details URLはCloudflare DashboardのPages deployment URL。ただし、GitHub check-run単独のためProduction正式証跡とは扱わない。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` deploy後と推定される公開URL `https://x-archive-link-tool.pages.dev/privacy.html` の静的表示は確認済み。H1 `プライバシーポリシー`、問い合わせ先、法務未レビュー表示、console error 0件。ただし公開URL表示だけでは、特定commitのProduction deployment成功は断定しない。
 - Cloudflare Pages deployment一覧で `cbe25119008814542df28bcd6ea7cc1159d7e3af` がProduction deploymentとして成功した正式証跡は未確認。Codex環境では `wrangler 4.92.0` の `wrangler whoami` が未認証で、Pages deployment一覧を読めなかった。
@@ -180,6 +182,7 @@ KV post cache:
 Rate limit:
 
 - Production初期値は `RATE_LIMIT_PER_IP_PER_MINUTE=10`, `RATE_LIMIT_GLOBAL_PER_MINUTE=60`。
+- Cloudflare Functionsのrate limiterはisolate単位のbest-effortであり、真のglobal制限ではない。
 - 429挙動は原則ローカルテストで確認する。
 - 本番429確認は未実施。実施する場合は別checkpointで手順を決める。
 - X API credits / billing / usage capの見直し頻度と、429時の問い合わせ先・対応基準は未確認。
@@ -236,6 +239,7 @@ Rate limit:
 - 2回目がcacheにならない場合は、Production binding `X_POST_CACHE` が `x-archive-link-tool-post-cache` を指しているか、binding追加後のProduction redeployが成功しているか、Functionsログに重大エラーがないかを確認する。
 - `source=oembed` とX API provider failure warningが出る場合は、X API credits / billing / permission / rate limitを確認する。token値は表示、共有、保存しない。
 - KVは最適化層として扱う。KV get/set/payload parse失敗時もorigin取得が動く想定だが、serverlessのin-memory cacheは本番永続化として期待しない。
+- in-memory cacheとrate limiterはCloudflare isolate単位のbest-effort。真のglobal制限や共有状態が必要になった場合はKVまたはDurable Object等を別工程で検討する。
 - KV valueには正規化済み投稿情報が含まれる可能性があるため、Cloudflare画面やログから値をコピーしてdocs、issue、チャットへ貼らない。
 
 ## 本番未設定項目と運用残リスク

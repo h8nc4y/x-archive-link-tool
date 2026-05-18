@@ -17,6 +17,8 @@
 - durationMs
 - errorCode
 
+ローカルサーバーとCloudflare Pages Functionsの本番ログは、上記の安全な構造化項目だけを出力対象にする。
+
 ## ログに残さない情報
 
 - 入力された生URL

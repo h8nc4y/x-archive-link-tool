@@ -295,6 +295,52 @@ test("Cloudflare function rate limit response does not include sensitive values"
   assert.equal(serialized.includes("mediaUrls"), false);
 });
 
+test("Cloudflare function writes only safe structured log fields", async () => {
+  const logs = [];
+  const response = await handleExtractRequest(jsonRequest(), {
+    env: { X_BEARER_TOKEN: "secret-token" },
+    logger: (entry) => logs.push(entry),
+    now: () => 1000,
+    rateLimiter: { check: () => ({ allowed: true }) },
+    extractPost: async (parsed) => ({
+      accountName: "Sensitive Name",
+      username: parsed.username,
+      userNumericId: "42",
+      postId: parsed.postId,
+      postUrl: parsed.canonicalUrl,
+      createdAt: "未取得",
+      text: "Sensitive body",
+      mediaUrls: ["https://pbs.twimg.com/media/secret.jpg"]
+    })
+  });
+  const serialized = JSON.stringify(logs);
+
+  assert.equal(response.status, 200);
+  assert.equal(logs.length, 1);
+  assert.equal(typeof logs[0].request_id, "string");
+  assert.equal(logs[0].method, "POST");
+  assert.equal(logs[0].path, "/api/extract");
+  assert.equal(logs[0].statusCode, 200);
+  assert.equal(logs[0].durationMs, 0);
+  assert.equal(serialized.includes("secret-token"), false);
+  assert.equal(serialized.includes("Sensitive body"), false);
+  assert.equal(serialized.includes("secret.jpg"), false);
+  assert.equal(serialized.includes("user/status/123"), false);
+  assert.equal(serialized.includes("Authorization"), false);
+});
+
+test("Cloudflare function logs safe error code", async () => {
+  const logs = [];
+  const response = await handleExtractRequest(jsonRequest({ body: { url: "https://t.co/abc" } }), {
+    logger: (entry) => logs.push(entry),
+    rateLimiter: { check: () => ({ allowed: true }) }
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].errorCode, "invalid_host");
+});
+
 test("Cloudflare function returns oEmbed fallback instead of 502 when X API provider fails", async () => {
   const response = await handleExtractRequest(jsonRequest(), {
     env: { X_BEARER_TOKEN: "secret-token" },

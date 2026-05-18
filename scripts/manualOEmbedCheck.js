@@ -30,8 +30,9 @@ export function formatResult(statusCode, payload) {
 }
 
 export function formatError(statusCode, payload) {
+  const suppressedCodes = new Set(["missing_x_bearer_token", "missing_fetch"]);
   const errorKind =
-    payload && typeof payload.code === "string" && payload.code !== "missing_token"
+    payload && typeof payload.code === "string" && !suppressedCodes.has(payload.code)
       ? payload.code
       : `http_${statusCode}`;
   return [`HTTP status: ${statusCode}`, `error kind/status: ${errorKind}`];

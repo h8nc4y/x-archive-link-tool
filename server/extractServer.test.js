@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { createServer, formatStartupError } from "./extractServer.js";
+import { handleRequest, createServer, formatStartupError } from "./extractServer.js";
 
 async function withServer(run, options = {}) {
   const server = createServer({
@@ -121,6 +121,27 @@ test("GET /healthz returns ok without sensitive data", async () => {
     assert.deepEqual(response.body, { ok: true });
     assertSecurityHeaders(response.headers);
   });
+});
+
+test("GET static file read failure returns 500 without hanging", async () => {
+  await withServer(
+    async (port) => {
+      const response = await request(port, {
+        method: "GET",
+        path: "/broken.html"
+      });
+
+      assert.equal(response.statusCode, 500);
+      assert.deepEqual(response.body, { error: "Internal server error." });
+      assertSecurityHeaders(response.headers);
+    },
+    {
+      staticFiles: new Map([["/broken.html", { file: new URL("./missing.html", import.meta.url), contentType: "text/html; charset=utf-8" }]]),
+      readFileFn: async () => {
+        throw new Error("read failed");
+      }
+    }
+  );
 });
 
 test("GET only serves whitelisted static files", async () => {

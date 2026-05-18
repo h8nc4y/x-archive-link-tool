@@ -10,6 +10,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - `X_BEARER_TOKEN` 未設定時は公式oEmbed endpoint `https://publish.x.com/oembed` から取得できる範囲を正規化できる。
 - postId単位のcache-firstで、cache hit時はX API v2を呼ばない。
 - Cloudflare ProductionではKV binding `X_POST_CACHE` によりpostId単位のcacheを保存できる。
+- Cloudflare Functionsのin-memory cacheとrate limiterはisolate単位のbest-effortであり、真のglobal制限ではない。
 - Web UIでコピー用テキストを `textarea` に表示できる。
 - 魚拓リンクを外部リンクとして表示できる。
 - ローカルで `/healthz` を確認できる。
@@ -65,3 +66,4 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - プライバシーポリシーURL候補は `/privacy.html`。公開URLの静的表示は確認済みだが、`cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Pages deployment一覧でのProduction正式証跡は未確認。
 - `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`cbe25119008814542df28bcd6ea7cc1159d7e3af` はGitHub check-runと公開URL表示まで確認済みだが、Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などの信頼できるProduction証跡が取れていないため、Production確認済みとは扱わない。
 - 公開前チェックリストを必要に応じて再確認する。
+- Cloudflare Pages静的アセット向けに `apps/web/_headers` を追加し、CSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` をローカルサーバーのsecurity headersと揃えた。

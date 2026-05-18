@@ -182,6 +182,30 @@ for (const status of [401, 403, 429]) {
   });
 }
 
+test("X API 402 failure falls back with safe status warning", async () => {
+  const result = await extractPostWithCache(parsedUrl, {
+    env: { X_BEARER_TOKEN: "secret-token" },
+    cache: createMemoryPostCache(),
+    xApiProvider: async () => {
+      throw new XApiV2ClientError("payment required", "x_api_402", 402, 402);
+    },
+    oEmbedProvider: async () => ({
+      accountName: "Fallback User",
+      username: "source_user",
+      userNumericId: "未取得",
+      postId: "123",
+      postUrl: "https://x.com/source_user/status/123",
+      createdAt: "未取得",
+      text: "未取得",
+      mediaUrls: []
+    })
+  });
+
+  assert.equal(result.source, "oembed");
+  assert.equal(result.warnings.includes("X API provider failed with status 402; used oEmbed fallback."), true);
+  assert.equal(JSON.stringify(result).includes("secret-token"), false);
+});
+
 test("token value is never included in response", async () => {
   const result = await extractPostWithCache(parsedUrl, {
     env: { X_BEARER_TOKEN: "secret-token" },

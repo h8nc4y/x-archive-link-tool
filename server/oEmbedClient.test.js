@@ -66,6 +66,17 @@ test("normalizeOEmbedResponse extracts plain text from oEmbed HTML", () => {
   assert.deepEqual(result.mediaUrls, []);
 });
 
+test("normalizeOEmbedResponse decodes numeric character references", () => {
+  const result = normalizeOEmbedResponse(
+    {
+      html: "<blockquote><p>&#12371;&#12435;&#12395;&#12385;&#12399;&#12290;</p></blockquote>"
+    },
+    parsedUrl
+  );
+
+  assert.equal(result.text, "こんにちは。");
+});
+
 test("normalizeOEmbedResponse never returns script HTML and keeps media empty", () => {
   const result = normalizeOEmbedResponse(
     {

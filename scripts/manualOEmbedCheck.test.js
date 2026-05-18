@@ -49,8 +49,8 @@ test("formatError prints status and error kind only", () => {
   ]);
 });
 
-test("formatError does not surface legacy missing_token code", () => {
-  assert.deepEqual(formatError(500, { code: "missing_token", error: "do not print" }), [
+test("formatError does not surface local setup error codes", () => {
+  assert.deepEqual(formatError(500, { code: "missing_x_bearer_token", error: "do not print" }), [
     "HTTP status: 500",
     "error kind/status: http_500"
   ]);
