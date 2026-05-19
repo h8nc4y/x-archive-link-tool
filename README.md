@@ -115,6 +115,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - [テストケース](docs/test-cases.md)
 - [現状まとめ](docs/current-status.md)
 - [公開前チェックリスト](docs/pre-release-checklist.md)
+- [リリース候補メモ](docs/release-candidate.md)
 - [公開前運用Runbook](docs/pre-release-operations-runbook.md)
 - [デプロイ準備](docs/deployment-plan.md)
 - [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
