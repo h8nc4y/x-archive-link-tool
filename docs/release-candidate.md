@@ -6,11 +6,13 @@
 ## 対象HEAD
 
 - リリース候補HEAD: `b49835a34fac3c76c9e4d2f2159683de975d2094`
+- `v0.1.0` tag対象HEAD: `4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5`
 - 対象ブランチ: `master`
 - 対象リポジトリ: `h8nc4y/x-archive-link-tool`
-- バージョン位置づけ: `package.json` は `0.1.0`。まだGit tagとGitHub Releaseは作成していない。
+- バージョン位置づけ: `package.json` は `0.1.0`。Git tag `v0.1.0` とGitHub Release `v0.1.0` は作成済み。
+- GitHub Release: https://github.com/h8nc4y/x-archive-link-tool/releases/tag/v0.1.0
 
-判断: `b49835a34fac3c76c9e4d2f2159683de975d2094` は、静的ページ公開、CI、ローカルテスト、Cloudflare Pages Production deployment一覧の読み取り証跡が揃っており、人間が `v0.1.0` 相当の公開可否を判断するリリース候補HEADとして扱える。
+判断: `b49835a34fac3c76c9e4d2f2159683de975d2094` は、静的ページ公開、CI、ローカルテスト、Cloudflare Pages Production deployment一覧の読み取り証跡が揃っており、アプリ実装のリリース候補スナップショットとして扱う。最終tag対象の `4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5` は、このメモ追加後のdocs-only HEADであり、`v0.1.0` の公開済みtagとして固定する。
 
 ## 確認済み事項
 
@@ -83,6 +85,9 @@ Cloudflare Pages の正式証跡は、GitHub check-run successや公開URL表示
 - `b49835a34fac3c76c9e4d2f2159683de975d2094`
   - PR #9 pre-release operations Runbook反映後のリリース候補HEAD。
   - deployment ID: `2868b8df-0e6b-479a-9f8c-955cfb8aa0e2`
+- `4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5`
+  - PR #10 release-candidate memo反映後の `v0.1.0` tag対象HEAD。
+  - deployment ID: `0215eabb-7db3-4aa1-97c8-e8572b4fd29f`
 
 ### 無限docs更新を避ける方針
 
@@ -103,9 +108,9 @@ Cloudflare Pages の正式証跡は、GitHub check-run successや公開URL表示
 - oEmbed live通信
   - 理由: 外部live通信であり、本番API smokeの一部として人間承認が必要。
 - Git tag作成
-  - 理由: `v0.1.0` 公開操作であり、今回は公開判断材料の整理に留める。
+  - 状態: 実施済み。`v0.1.0` は `4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5` を指すannotated tag。
 - GitHub Release作成
-  - 理由: 公開操作であり、今回は実行しない。
+  - 状態: 実施済み。通常releaseとして https://github.com/h8nc4y/x-archive-link-tool/releases/tag/v0.1.0 を作成済み。
 
 ## 残未確認事項
 
@@ -166,4 +171,3 @@ Cloudflare Pages の正式証跡は、GitHub check-run successや公開URL表示
 `本番429確認を、最大 N リクエストまで実行することを承認します。実行前後にX API creditsとCloudflare状態を確認し、記録はHTTP status、rate-limit関連の有無、時刻、リクエスト回数に限定してください。実投稿URL、本文、token、Authorization header、secret値は記録しないでください。`
 
 推奨: 本番429確認は初回公開前には実行せず、ローカルfixtureまたはpreview環境での確認を優先する。
-

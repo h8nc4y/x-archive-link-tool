@@ -61,6 +61,15 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - lint/typecheck/format専用scriptは `package.json` にないため、今回のCIには追加しない。
 - GitHub Actionsの実行はGitHubのActions minutesを消費する可能性がある。現時点では追加費用0円見込みだが、account plan、残minutes、spending limit、overage単価は未確認。
 
+## Release
+
+- `v0.1.0` は通常のGitHub Releaseとして作成済み。
+- Release URL: https://github.com/h8nc4y/x-archive-link-tool/releases/tag/v0.1.0
+- tag object: `c47b21cac5d9c1e9977248bab17982298a9c1673`
+- tag target: `4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5`
+- アプリ実装のリリース候補スナップショットは `b49835a34fac3c76c9e4d2f2159683de975d2094`。`4669e5b6fe0387223f1418bc8d9e851cc8e7cbe5` はrelease-candidate docs追加後のtag対象HEAD。
+- Release notesは `docs/release-notes-v0.1.0.md` にも記録する。ただしこのpost-release docs更新は `v0.1.0` tag対象には含めない。
+
 ## 次の推奨作業
 
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
