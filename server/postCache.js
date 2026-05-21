@@ -1,4 +1,9 @@
 export const DEFAULT_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export const POST_EXTRACT_CACHE_VERSION = "v2-note-tweet";
+
+export function buildPostCacheKey(postId) {
+  return `${POST_EXTRACT_CACHE_VERSION}:${String(postId)}`;
+}
 
 export function createMemoryPostCache({ now = Date.now } = {}) {
   const entries = new Map();

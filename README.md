@@ -74,7 +74,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - 出力項目は、アカウント名、`@username`、ユーザー数値ID、ポストURL、投稿日、本文、メディアURL、魚拓URL。
 - X API v2はBring Your Own Token方式で任意利用する。未設定時は公式oEmbed endpoint `https://publish.x.com/oembed` を使う。
 - X API v2でlong-form Postの `note_tweet.text` が返る場合は、コピー用本文にその全文を優先して使う。
-- 同じpostIdはcache-firstで扱い、cache hit時はX API v2を呼ばない。
+- 同じpostIdはcache-firstで扱い、cache hit時はX API v2を呼ばない。本文抽出仕様を変えた場合はcache key versionを上げ、旧仕様の抽出cacheを再利用しない。
 - oEmbed fallbackでは取得できない項目があるため、ユーザー数値IDとメディア直接URLは未取得になる場合がある。
 - 投稿本文と投稿日はoEmbed HTMLから安全に抽出できる場合だけ表示し、抽出できない場合は `未取得`。
 - 魚拓は自動取得しない。
