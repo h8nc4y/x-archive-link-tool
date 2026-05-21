@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { extractPostWithCache } from "./extractService.js";
-import { createMemoryPostCache } from "./postCache.js";
+import { buildPostCacheKey, createMemoryPostCache } from "./postCache.js";
 import { XApiV2ClientError } from "./xApiV2Client.js";
 
 const parsedUrl = {
@@ -30,7 +30,7 @@ function providerPost(overrides = {}) {
 
 test("cache hit does not call X API provider", async () => {
   const cache = createMemoryPostCache({ now: () => 0 });
-  await cache.set("123", providerPost(), {
+  await cache.set(buildPostCacheKey("123"), providerPost(), {
     fetchedAt: "2026-05-10T00:00:00.000Z",
     expiresAt: "2026-06-09T00:00:00.000Z"
   });
@@ -48,6 +48,34 @@ test("cache hit does not call X API provider", async () => {
   assert.equal(calls, 0);
   assert.equal(result.source, "cache");
   assert.equal(result.cached, true);
+});
+
+test("legacy unversioned cache entry is ignored after long-form text support", async () => {
+  const cache = createMemoryPostCache({ now: () => 0 });
+  await cache.set("123", providerPost({ text: "shortened preview https://t.co/example" }), {
+    fetchedAt: "2026-05-10T00:00:00.000Z",
+    expiresAt: "2026-06-09T00:00:00.000Z"
+  });
+  let calls = 0;
+
+  const result = await extractPostWithCache(parsedUrl, {
+    env: { X_BEARER_TOKEN: "token" },
+    cache,
+    xApiProvider: async () => {
+      calls += 1;
+      return providerPost({
+        text: "full long-form body line 1\nfull long-form body line 2",
+        mediaUrls: ["https://pbs.twimg.com/media/one.jpg"]
+      });
+    }
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.source, "x-api-v2");
+  assert.equal(result.cached, false);
+  assert.equal(result.text, "full long-form body line 1\nfull long-form body line 2");
+  assert.equal(result.text.includes("https://t.co/example"), false);
+  assert.deepEqual(result.mediaUrls, ["https://pbs.twimg.com/media/one.jpg"]);
 });
 
 test("cache miss calls X API provider once and stores result", async () => {
@@ -109,7 +137,7 @@ test("missing X_BEARER_TOKEN uses oEmbed fallback and caches result", async () =
 
 test("API failure returns stale cache with warning", async () => {
   const cache = createMemoryPostCache({ now: () => 2_000 });
-  await cache.set("123", providerPost(), {
+  await cache.set(buildPostCacheKey("123"), providerPost(), {
     ttlMs: 1,
     fetchedAt: "1970-01-01T00:00:00.000Z",
     expiresAt: "1970-01-01T00:00:00.001Z"

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { handleExtractRequest } from "./extract.js";
 import { extractPostWithCache } from "../../server/extractService.js";
-import { createMemoryPostCache } from "../../server/postCache.js";
+import { buildPostCacheKey, createMemoryPostCache } from "../../server/postCache.js";
 import { XApiV2ClientError } from "../../server/xApiV2Client.js";
 
 function jsonRequest({ method = "POST", body = { url: "https://x.com/user/status/123" }, headers = {} } = {}) {
@@ -432,7 +432,7 @@ test("Cloudflare function uses KV cache hit without calling X API provider again
   assert.equal(secondPayload.source, "cache");
   assert.equal(secondPayload.cached, true);
   assert.equal(xApiCalls, 1);
-  assert.equal(kv.values.has("post:91001"), true);
+  assert.equal(kv.values.has(`post:${buildPostCacheKey("91001")}`), true);
   assert.equal(JSON.stringify(secondPayload).includes("secret-token"), false);
   assert.equal(JSON.stringify(secondPayload).includes("Authorization"), false);
 });
@@ -473,7 +473,7 @@ test("Cloudflare function returns origin result when KV set fails without public
 
 test("Cloudflare function treats malformed KV payload as cache miss without public warning", async () => {
   const kv = createMockKv();
-  kv.values.set("post:91004", "{not-json");
+  kv.values.set(`post:${buildPostCacheKey("91004")}`, "{not-json");
   const env = { X_BEARER_TOKEN: "secret-token", X_POST_CACHE: kv };
   let xApiCalls = 0;
   const response = await handleExtractRequest(jsonRequest({ body: { url: "https://x.com/user/status/91004" } }), {

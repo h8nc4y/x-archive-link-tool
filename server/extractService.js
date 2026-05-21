@@ -1,6 +1,6 @@
 import { fetchXPost as fetchOEmbedPost } from "./oEmbedClient.js";
 import { fetchXPostFromApi } from "./xApiV2Client.js";
-import { createMemoryPostCache, DEFAULT_CACHE_TTL_MS } from "./postCache.js";
+import { buildPostCacheKey, createMemoryPostCache, DEFAULT_CACHE_TTL_MS, POST_EXTRACT_CACHE_VERSION } from "./postCache.js";
 
 const OEMBED_MEDIA_WARNING = "公式API未使用のため画像URLを取得できない場合があります。";
 const STALE_CACHE_WARNING = "最新取得に失敗したため期限切れキャッシュを返しました。";
@@ -66,7 +66,8 @@ function fromCached(entry, source) {
 }
 
 async function cachePost(cache, postId, post, ttlMs) {
-  await cache.set(postId, post, {
+  await cache.set(buildPostCacheKey(postId), post, {
+    cacheVersion: POST_EXTRACT_CACHE_VERSION,
     ttlMs,
     fetchedAt: post.fetchedAt,
     expiresAt: post.cacheExpiresAt
@@ -75,7 +76,7 @@ async function cachePost(cache, postId, post, ttlMs) {
 
 async function getCachedPost(cache, postId, options) {
   try {
-    return await cache.get(postId, options);
+    return await cache.get(buildPostCacheKey(postId), options);
   } catch {
     return null;
   }
