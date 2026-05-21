@@ -23,6 +23,13 @@
 - `.env`、`data/`、`secrets`、`credentials`、`token`、`OAuth`、実データは読まない、表示しない、変更しない、コミットしない。
 - 本番 `/api/extract` 確認やX API呼び出しは、実投稿URLやAPI creditsへ影響し得るため必要性を分けて扱う。実行する場合も記録は HTTP status、source、cached、mediaUrls件数、warnings件数など最小限にし、実URLや本文やtokenは記録しない。
 
+## Post-release operations
+
+- v0.1.0後の外部・法務・課金確認は、人間確認結果を `docs/post-release-human-verification-template.md` の形で受け取ってから扱う。
+- Codexが自走してよいのは、repo内docs、Issue、template、外部通信しないdry-run/testの整備まで。
+- 本番 `/api/extract`、本番429確認、X API/oEmbed live通信、実X投稿URL送信、X Developer Portal、billing/credits確認、secret/token/OAuth/実データ読み取り、Cloudflare write操作は停止条件とする。
+- Cloudflareは今回のpost-release整備ではwrite操作を行わない。既存認証でread-only確認を行う場合も、広いWrangler OAuth権限を前提に最小コマンドへ限定する。
+
 ## Verification
 
 - 確認済みテスト候補: `npm test`。
@@ -30,6 +37,14 @@
 - `npm` を使わない場合の確認済みテスト候補: `node --test`。Node.js test runnerの自動探索で `*.test.js` を実行する。
 - ローカル起動候補: PowerShell で `$env:PORT="3000"` を設定してから `npm start`。PowerShell実行ポリシーに当たる場合は `npm.cmd start`。`npm` を使わない場合は `node server/extractServer.js`。
 - 外部ネットワーク、X API、oEmbed、Cloudflare本番API確認は、料金・secret・実データ送信に該当しない範囲を確認してから実行する。
+- CLIは非対話実行を基本にする。`read`、`pause`、`select`、対話式prompt待ち、`tail -f`、`watch`、無限sleep、foreground dev server待機は使わない。
+- 長時間コマンドにはtimeout、watch回数、または明示的な上限を付ける。dev serverが必要な場合だけbackground起動し、PIDとlogを保存し、不要になったら停止する。
+- post-release運用docsの必須セクション確認は `npm.cmd run check:post-release-docs` を使う。
+
+## Agent docs
+
+- このリポジトリの正は `AGENTS.md`。`AGENT.md` は現時点で未導入。
+- `.codex/config.toml` も現時点で未導入。追加する場合は、存在しないhook scriptや未導入MCP/Skillを参照しない。
 
 ## Localization
 
