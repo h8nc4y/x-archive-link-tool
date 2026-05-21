@@ -156,3 +156,5 @@ npm.cmd run check:post-release-docs
 ```powershell
 npm.cmd run smoke:production-once
 ```
+
+smoke後は `tmp/approved-smoke-target.txt` の内容を読まずに削除し、smoke scriptや本番 `/api/extract` を再実行しないでください。記録はHTTP status、source、cached、mediaUrls件数、warnings件数、error code、確認時刻、実行回数などの抽象項目に限定します。
