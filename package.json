@@ -6,6 +6,7 @@
   "scripts": {
     "check:post-release-docs": "node scripts/verifyPostReleaseDocs.js",
     "manual:oembed-check": "node scripts/manualOEmbedCheck.js",
+    "smoke:production-once": "node scripts/runProductionSmokeOnce.js",
     "start": "node server/extractServer.js",
     "test": "node --test"
   }
