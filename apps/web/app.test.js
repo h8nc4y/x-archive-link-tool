@@ -112,6 +112,17 @@ test("buildCopyText supports new API response aliases", () => {
   assert.match(text, /ポストURL：https:\/\/x\.com\/i\/web\/status\/123/);
 });
 
+test("buildCopyText keeps long post body without truncation", () => {
+  const longText = Array.from({ length: 24 }, (_, index) => `long-form line ${index + 1}`).join("\n");
+  const text = buildCopyText({
+    ...basePost,
+    text: longText
+  });
+
+  assert.match(text, new RegExp(`ポスト内容：\\n${longText}`));
+  assert.equal(text.includes("long-form line 24"), true);
+});
+
 test("buildCopyText falls back for missing optional API fields", () => {
   const text = buildCopyText({
     accountName: "Partial",

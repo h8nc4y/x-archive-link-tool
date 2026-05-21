@@ -36,11 +36,58 @@ test("fetchXPostFromApi requests X API v2 with injected bearer token", async () 
 
   assert.equal(String(requestUrl).startsWith("https://api.x.com/2/tweets/123?"), true);
   assert.equal(requestUrl.searchParams.get("expansions"), "attachments.media_keys,author_id");
+  assert.equal(requestUrl.searchParams.get("tweet.fields"), "created_at,entities,attachments,note_tweet");
   assert.equal(requestOptions.headers.authorization, "Bearer test-token");
   assert.equal(result.source, "x-api-v2");
   assert.equal(result.authorName, "Example");
   assert.equal(result.username, "example");
   assert.equal(result.canonicalUrl, "https://x.com/example/status/123");
+});
+
+test("normalizeXApiV2Response prefers note_tweet text for long-form posts", () => {
+  const result = normalizeXApiV2Response(
+    {
+      data: {
+        id: "123",
+        text: "shortened long-form preview https://t.co/example",
+        note_tweet: {
+          text: "long-form body line 1\nlong-form body line 2\nlong-form body line 3"
+        },
+        author_id: "42",
+        attachments: { media_keys: ["p1"] }
+      },
+      includes: {
+        users: [{ id: "42", name: "Example", username: "example" }],
+        media: [{ media_key: "p1", type: "photo", url: "https://media.example/one.jpg" }]
+      }
+    },
+    parsedUrl
+  );
+
+  assert.equal(result.text, "long-form body line 1\nlong-form body line 2\nlong-form body line 3");
+  assert.equal(result.text.includes("https://t.co/example"), false);
+  assert.deepEqual(result.mediaUrls, ["https://media.example/one.jpg"]);
+  assert.equal(result.source, "x-api-v2");
+  assert.deepEqual(result.warnings, []);
+});
+
+test("normalizeXApiV2Response falls back to tweet text without note_tweet text", () => {
+  const result = normalizeXApiV2Response(
+    {
+      data: {
+        id: "123",
+        text: "regular post text",
+        note_tweet: { text: "" },
+        author_id: "42"
+      },
+      includes: { users: [{ id: "42", name: "Example", username: "example" }] }
+    },
+    parsedUrl
+  );
+
+  assert.equal(result.text, "regular post text");
+  assert.equal(result.authorName, "Example");
+  assert.equal(result.username, "example");
 });
 
 test("normalizeXApiV2Response extracts photo media URLs", () => {

@@ -16,7 +16,7 @@ function buildTweetUrl(postId) {
   const url = new URL(`${X_API_TWEET_URL}${postId}`);
   url.searchParams.set("expansions", "attachments.media_keys,author_id");
   url.searchParams.set("media.fields", "url,preview_image_url,variants,type,width,height,alt_text,duration_ms");
-  url.searchParams.set("tweet.fields", "created_at,entities,attachments");
+  url.searchParams.set("tweet.fields", "created_at,entities,attachments,note_tweet");
   url.searchParams.set("user.fields", "username,name");
   return url;
 }
@@ -139,6 +139,15 @@ function normalizeExpandedUrls(urls = []) {
   }));
 }
 
+function selectTweetText(tweet) {
+  const noteText = tweet?.note_tweet?.text;
+  if (typeof noteText === "string" && noteText.trim() !== "") {
+    return noteText;
+  }
+
+  return typeof tweet.text === "string" ? tweet.text : "未取得";
+}
+
 export function normalizeXApiV2Response(payload, parsedUrl) {
   const tweet = payload?.data || {};
   const users = Array.isArray(payload?.includes?.users) ? payload.includes.users : [];
@@ -176,7 +185,7 @@ export function normalizeXApiV2Response(payload, parsedUrl) {
     username,
     userNumericId: typeof author.id === "string" ? author.id : "未取得",
     createdAt: typeof tweet.created_at === "string" ? tweet.created_at : "未取得",
-    text: typeof tweet.text === "string" ? tweet.text : "未取得",
+    text: selectTweetText(tweet),
     expandedUrls: normalizeExpandedUrls(tweet?.entities?.urls || []),
     media,
     mediaUrls,
