@@ -89,6 +89,16 @@ error code: rate_limited
 
 通常smokeで異常が出た場合の既定対応は、追加実行停止、Issueへ抽象結果記録、人間がX Developer PortalとCloudflare Dashboardを確認することである。
 
+## post-smoke cleanup
+
+smoke対象を一時ファイルで渡した場合は、実行後に次を行う。
+
+1. `tmp/approved-smoke-target.txt` の内容を読まずに削除する。
+2. 削除後に、ファイルが存在しないことだけを確認する。
+3. `tmp/` がGit管理外であることを確認する。
+4. smoke script、本番 `/api/extract`、429確認、retry、負荷確認は再実行しない。
+5. docs、Issue、PR、最終報告には削除有無と抽象結果だけを記録し、実URL、postId、username、投稿本文、media URL値、raw JSON valuesは記録しない。
+
 ## 記録項目
 
 記録してよい項目:
