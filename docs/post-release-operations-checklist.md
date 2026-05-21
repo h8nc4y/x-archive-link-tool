@@ -6,6 +6,40 @@
 
 この文書は手順整理用です。作成時点では、本番 `/api/extract`、本番429確認、X API live通信、oEmbed live通信、実X投稿URL送信、Cloudflare write操作、secret / token / OAuth / 実データの読み取りは実行していません。
 
+## 残タスクの分類
+
+| 分類 | 項目 | Codexの扱い | 次の入力 |
+| --- | --- | --- | --- |
+| 人間確認が必須 | X Developer Portal credits残量、billing状態、usage cap / spending cap相当、rate limit / quota、App権限、本番利用可否 | Codexはログイン、OAuth、実確認をしない。`docs/post-release-human-verification-template.md` の空欄を埋めるためのtemplate整備だけ行う。 | 実URLやtokenを含まないOK/NG、確認日、判断者、上限値の要約。 |
+| 人間確認が必須 | privacy/legal review、ログ保存期間、問い合わせ先、サポート範囲 | Codexは法務判断を代替しない。候補文面、確認欄、Issue整理だけ行う。 | review済み/未確認、問い合わせ先の公開可否、ログ保存期間の確定値。 |
+| 人間確認が必須 | KV障害時判断者、cacheなし継続可否、停止判断 | Codexは判断者を推測しない。`docs/incident-and-kv-failure-runbook.md` へ未確定として残す。 | 判断者名またはrole、停止/継続基準、復旧確認の承認範囲。 |
+| Codexが自走可能 | repo内docs、README導線、Issue、dry-run script、Node test | 実装、検証、PR、mergeまで実行可能。外部live通信は行わない。 | 追加承認不要。 |
+| Codexが実行禁止 | 実X投稿URL送信、X API / oEmbed live通信、本番 `/api/extract` smoke、本番429確認 | 明示承認とrunbook条件が揃うまで停止。 | `docs/production-smoke-runbook.md` の承認文言、最大回数、抽象化済み記録形式。 |
+| Codexが実行禁止 | secret/token/OAuth/`.env`/実データ読み取り、課金が発生しうる外部操作、Cloudflare write操作 | 必要になった時点で停止し、費用・代替案・承認文言を報告する。 | secret値そのものではなく、設定済み/未設定/確認済みなどの抽象結果だけ。 |
+
+## Codexへ渡してよい安全な情報
+
+- X Developer Portal、billing、credits、usage cap / spending cap相当の `OK` / `NG` / `未確認`。
+- credits残量やcap値の要約。ただし請求明細、支払い情報、token、secretは含めない。
+- 確認日、確認者role、次回確認予定日。
+- smoke対象が「人間が選んだテスト用公開投稿」かどうかの分類。実URL自体は渡さない。
+- 本番API smoke承認文言、最大実行回数、記録してよい抽象項目。
+- smoke実行後の抽象化済み結果: HTTP status、source、cached、mediaUrls件数、warnings件数、error code、確認時刻。
+
+## 記録禁止情報
+
+- token、secret、OAuth credential、Authorization header、Cookie。
+- `.env`、`data/`、`secrets`、`credentials`、`token`、`OAuth` 配下の内容。
+- 実X投稿URL、postId、username、account name、実投稿本文、media URL、HTML本文、raw JSON values。
+- 個人情報、請求明細、支払い情報、Cloudflare内部ログの詳細本文。
+
+## GitHub Issue追跡
+
+- [#13 Confirm X Developer Portal credits, billing, and usage caps before production smoke](https://github.com/h8nc4y/x-archive-link-tool/issues/13)
+- [#14 Confirm privacy, legal, log retention, and support contact operations](https://github.com/h8nc4y/x-archive-link-tool/issues/14)
+- [#15 Define KV outage owner and incident handling path](https://github.com/h8nc4y/x-archive-link-tool/issues/15)
+- [#16 Approve and record production API smoke test without secrets or real URLs](https://github.com/h8nc4y/x-archive-link-tool/issues/16)
+
 ## 現在の前提
 
 - Repository: `h8nc4y/x-archive-link-tool`

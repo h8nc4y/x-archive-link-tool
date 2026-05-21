@@ -108,6 +108,14 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - 魚拓URL欄は `https://megalodon.jp/...` または `https://s{digits}.megalodon.jp/...` のみ有効です。
 - `.env`、投稿本文、メディアURLをGitやログに残さないでください。
 
+## v0.1.0後の運用確認
+
+v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、privacy/legal、問い合わせ先、KV障害時判断者を確認する項目と、Codexがrepo内docs・Issue・dry-run検証だけを整備できる項目に分けます。
+
+本番 `/api/extract`、本番429確認、X API / oEmbed live通信、実X投稿URL送信、secret/token/OAuth/実データ読み取り、Cloudflare write操作は、明示承認と専用runbookなしに実行しません。
+
+人間確認結果は、実URLやtokenを含めず、[人間確認結果テンプレート](docs/post-release-human-verification-template.md) の形式で共有します。その後に [本番API smoke Runbook](docs/production-smoke-runbook.md) の承認文言を使って、最大回数と記録項目を限定します。
+
 ## ドキュメント
 
 - [要件](docs/requirements.md)
@@ -119,6 +127,9 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 - [v0.1.0 Release Notes](docs/release-notes-v0.1.0.md)
 - [公開前運用Runbook](docs/pre-release-operations-runbook.md)
 - [v0.1.0後の人間確認チェックリスト](docs/post-release-operations-checklist.md)
+- [本番API smoke Runbook](docs/production-smoke-runbook.md)
+- [人間確認結果テンプレート](docs/post-release-human-verification-template.md)
+- [Incident / KV障害Runbook](docs/incident-and-kv-failure-runbook.md)
 - [デプロイ準備](docs/deployment-plan.md)
 - [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
 - [サポートページドラフト](docs/support-page-draft.md)
@@ -132,3 +143,9 @@ npm test
 ```
 
 PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使います。
+
+post-release運用docsの必須セクションだけを外部通信なしで確認する場合:
+
+```powershell
+npm.cmd run check:post-release-docs
+```

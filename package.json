@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:post-release-docs": "node scripts/verifyPostReleaseDocs.js",
     "manual:oembed-check": "node scripts/manualOEmbedCheck.js",
     "start": "node server/extractServer.js",
     "test": "node --test"
