@@ -29,6 +29,7 @@
 - Codexが自走してよいのは、repo内docs、Issue、template、外部通信しないdry-run/testの整備まで。
 - 本番 `/api/extract`、本番429確認、X API/oEmbed live通信、実X投稿URL送信、X Developer Portal、billing/credits確認、secret/token/OAuth/実データ読み取り、Cloudflare write操作は停止条件とする。
 - Cloudflareは今回のpost-release整備ではwrite操作を行わない。既存認証でread-only確認を行う場合も、広いWrangler OAuth権限を前提に最小コマンドへ限定する。
+- 上記の停止条件は、v0.1.0後の外部・法務・課金・本番live確認に関するプロジェクト固有制限である。通常のrepo内docs/test/GitHub/Browser確認や、実URL・secret・課金を伴わないWeb UI作業は、グローバルの自走方針に従う。
 
 ## Verification
 
@@ -40,6 +41,8 @@
 - CLIは非対話実行を基本にする。`read`、`pause`、`select`、対話式prompt待ち、`tail -f`、`watch`、無限sleep、foreground dev server待機は使わない。
 - 長時間コマンドにはtimeout、watch回数、または明示的な上限を付ける。dev serverが必要な場合だけbackground起動し、PIDとlogを保存し、不要になったら停止する。
 - post-release運用docsの必須セクション確認は `npm.cmd run check:post-release-docs` を使う。
+- Web UIを変更した場合は、グローバル方針に従い、日本語firstの文言と実レンダリングを確認する。可能な範囲で390px、768px、1280px以上の表示を確認し、Browser/Chrome/Chrome DevTools/Playwrightのどれを使ったかを報告する。
+- Web UI、HTML、CSS、クライアントJavaScriptに触れる実装では、secretや実データを含まないqueryだけでModern Web Guidanceのsearch/retrieveを使う。Google公式skillsは、このrepoにGoogle Cloud/Firebase/Gemini等のGoogle技術面が追加される明示タスクがある場合だけ対象にする。
 
 ## Agent docs
 

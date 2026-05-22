@@ -37,11 +37,18 @@
 
 - 古い「checkpointごとに必ず停止する」方針は、Codex関連設定内には見つかりません。
 - 古い「push、deploy、依存追加、GitHub操作を一律禁止する」方針は、Codex関連設定内には見つかりません。
+- グローバル `AGENTS.md` は、Codex向けprompt作成時に `/goal` を短くし、詳細指示を通常チャット欄へ分離する方針を持っています。インテリジェンス表記とCodexのチャット継続/新規判断も、copy block外へ出す順序で定義されています。
+- グローバル `AGENTS.md` と `cost-guard.rules` は、`read`、`pause`、`select`、`tail -f`、`watch`、`while true`、`sleep infinity`、foreground dev server待機を禁止し、非対話・timeout・bounded retry・background server管理を要求しています。
+- GitHub issue、PR comment、review commentは情報源または報告先であり、開発開始やPR作成の前提ではないと定義されています。
 - プロジェクト `AGENTS.md` は、グローバルの自走方針を妨げていません。
 - プロジェクト `AGENTS.md` の外部ネットワーク、X API、oEmbed、Cloudflare本番確認の注意は、課金、secret、実データ送信を避けるためのプロジェクト固有の安全境界であり、グローバル方針の停止条件と整合しています。
+- プロジェクト `AGENTS.md` は、post-release外部・法務・課金・本番live確認の停止条件と、通常のrepo内docs/test/GitHub/Browser確認を分けています。
 - グローバル `config.toml` にはこのリポジトリの `trust_level = "trusted"` があり、グローバル方針と矛盾しません。
-- グローバル `cost-guard.rules` は、Git/GitHubと非課金Cloudflare操作を許可し、OpenAI API、Workers AI、Vectorize、R2、remote D1など課金または実データ影響があり得る操作をprompt扱いにしており、グローバル `AGENTS.md` と整合しています。
-- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。今回の正本はグローバル設定全体であり、このリポジトリ固有設定とは矛盾しませんが、将来のグローバル棚卸し候補です。
+- グローバル `config.toml` の `project_doc_fallback_filenames` は `AGENTS.md` を先頭に含み、`AGENT.md` はfallbackとして扱われています。グローバル `config.toml` に存在しないhook scriptへの参照は見つかりません。
+- グローバル `cost-guard.rules` は、Git/GitHubと非課金Cloudflare操作を許可し、OpenAI API、Workers AI、Vectorize、R2、remote D1、KV、Queues、Hyperdrive、Workflows、Google Cloud/Firebase/BigQuery/Cloud Storage/Kubernetesなど課金または実データ影響があり得る操作をprompt扱いにしており、グローバル `AGENTS.md` と整合しています。
+- Modern Web Guidanceは、Web UI、HTML、CSS、クライアントJavaScript等に触れる場合だけ、secretや実データを含まないqueryでsearch/retrieveを使う方針です。interactive wizardになり得るinstallはforbiddenです。
+- Google公式skillsは、Google Cloud/Firebase/Gemini等のGoogle技術面に関係する場合だけ対象で、generic frontend、Cloudflare-first app、local-only scriptでは不要と定義されています。
+- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。広すぎる `Remove-Item -Recurse -Force` 許可は削除済みです。残る具体的許可ルールは、将来のグローバル棚卸し候補です。
 
 ## 今回残すプロジェクト固有方針
 
@@ -56,4 +63,4 @@
 ## 今後の見直し候補
 
 - グローバル `default.rules` の他プロジェクト固有コマンドを、必要であればプロジェクト単位またはより汎用的なルールへ整理する。
-- グローバル `config.toml` の `project_doc_fallback_filenames` は `AGENT.md` などを指定しているため、`AGENTS.md` の扱いがアプリ既定なのか明示設定なのかを、必要があれば別途確認する。
+- `cost-guard.rules` の正式parserまたは公式test runnerがある場合は、custom checkではなくそれを使う。現時点では、構文と代表例の確認に留めます。
