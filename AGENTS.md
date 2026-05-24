@@ -49,6 +49,12 @@
 - このリポジトリの正は `AGENTS.md`。`AGENT.md` は現時点で未導入。
 - `.codex/config.toml` も現時点で未導入。追加する場合は、存在しないhook scriptや未導入MCP/Skillを参照しない。
 
+## GitHub operations
+
+- 現時点のCodex実行環境では、`gh` CLIは認証状態が通常PowerShellと一致せずHTTP 401になるため、Codex内のGitHub操作前提にしない。
+- Codex内では `gh auth login` や認証待ちを繰り返さない。GitHubのIssue、PR、merge確認は、利用可能なGitHub connectorを優先し、connectorでできない場合はlocal commitと実際に通る `git push` までに留める。
+- PR URL、CI結果、merge結果は、GitHub connector、git remote状態、または別の確認済み証跡で確認できた場合だけ報告する。確認できない場合は未確認と書き、捏造しない。
+
 ## Localization
 
 - このプロジェクトは日本語ユーザーと日本のエンドユーザー向けに保守する。

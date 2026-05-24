@@ -50,6 +50,13 @@
 - Google公式skillsは、Google Cloud/Firebase/Gemini等のGoogle技術面に関係する場合だけ対象で、generic frontend、Cloudflare-first app、local-only scriptでは不要と定義されています。
 - グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。広すぎる `Remove-Item -Recurse -Force` 許可は削除済みです。残る具体的許可ルールは、将来のグローバル棚卸し候補です。
 
+## Codex実行環境のGitHub操作制約
+
+- 通常PowerShellでは `gh` CLIのread-only確認が成功する一方で、Codex実行環境では `gh auth status`、open PR/Issue一覧、repo viewがHTTP 401になる状態を確認しています。
+- この差分はGitHubアカウント全体ではなく、Codex実行環境から見える `gh` credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
+- 今後のCodex作業では、GitHub Issue/PR/merge確認は利用可能なGitHub connectorを優先します。connectorで作成・mergeまで確認できない場合は、local commitと実際に通る `git push` までに留め、PR URL、CI結果、merge結果は確認できた場合だけ報告します。
+- `gh` CLI認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、通常PowerShellまたは人間操作による確認結果とCodex側で確認可能な証跡を分けて扱います。
+
 ## 今回残すプロジェクト固有方針
 
 - ユーザー入力URLをサーバーで直接fetchせず、validatorが生成した `canonicalXPostUrl` だけを外部endpointへ渡す。
