@@ -6,10 +6,15 @@
 
 ### グローバル
 
-- `C:\Users\h8nc4\.codex\AGENTS.md`
-- `C:\Users\h8nc4\.codex\config.toml`
-- `C:\Users\h8nc4\.codex\rules\cost-guard.rules`
-- `C:\Users\h8nc4\.codex\rules\default.rules`
+この実行環境では `CODEX_HOME` は `D:\Agent\Codex\.codex` です。今回参照したグローバル設定は次のファイルです。
+
+- `D:\Agent\Codex\.codex\AGENTS.md`
+- `D:\Agent\Codex\.codex\config.toml`
+- `D:\Agent\Codex\.codex\rules\cost-guard.rules`
+- `D:\Agent\Codex\.codex\rules\default.rules`
+- `D:\Agent\Codex\.codex\hooks\no_input_wait.py`
+
+`C:\Users\h8nc4\.codex` も存在しますが、今回のCodex Appセッションの `CODEX_HOME` ではないため、棚卸しの正にはしません。
 
 ### プロジェクト
 
@@ -37,8 +42,9 @@
 
 - 古い「checkpointごとに必ず停止する」方針は、Codex関連設定内には見つかりません。
 - 古い「push、deploy、依存追加、GitHub操作を一律禁止する」方針は、Codex関連設定内には見つかりません。
-- グローバル `AGENTS.md` は、Codex向けprompt作成時に `/goal` を短くし、詳細指示を通常チャット欄へ分離する方針を持っています。インテリジェンス表記とCodexのチャット継続/新規判断も、copy block外へ出す順序で定義されています。
+- グローバル `AGENTS.md` と `cost-guard.rules` は、Codex向けprompt作成時に `/goal` を使わず、通常チャット欄の単一 `Goal` ブロックへまとめる方針を持っています。インテリジェンス表記とCodexのチャット継続/新規判断も、copy block外へ出す順序で定義されています。
 - グローバル `AGENTS.md` と `cost-guard.rules` は、`read`、`pause`、`select`、`tail -f`、`watch`、`while true`、`sleep infinity`、foreground dev server待機を禁止し、非対話・timeout・bounded retry・background server管理を要求しています。
+- グローバル `config.toml` は `features.goals = false` とし、hooksを有効化しています。`no_input_wait.py` hook は入力待ち、無限polling、foreground dev serverをPreToolUseで拒否する実装です。
 - GitHub issue、PR comment、review commentは情報源または報告先であり、開発開始やPR作成の前提ではないと定義されています。
 - プロジェクト `AGENTS.md` は、グローバルの自走方針を妨げていません。
 - プロジェクト `AGENTS.md` の外部ネットワーク、X API、oEmbed、Cloudflare本番確認の注意は、課金、secret、実データ送信を避けるためのプロジェクト固有の安全境界であり、グローバル方針の停止条件と整合しています。
@@ -49,7 +55,7 @@
 - Modern Web Guidanceは、Web UI、HTML、CSS、クライアントJavaScript等に触れる場合だけ、secretや実データを含まないqueryでsearch/retrieveを使う方針です。interactive wizardになり得るinstallはforbiddenです。
 - Google公式skillsは、Google Cloud/Firebase/Gemini等のGoogle技術面に関係する場合だけ対象で、generic frontend、Cloudflare-first app、local-only scriptでは不要と定義されています。
 - グローバル `AGENTS.md` にはPPC個人情報保護方針の確認観点があり、データ最小化、利用目的、第三者提供・外部送信、保存期間・削除、本人対応、ログ・テストデータ・スクリーンショット、外部サービスへの個人情報やsecret送信有無を確認する方針が定義されています。
-- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。広すぎる `Remove-Item -Recurse -Force` 許可は削除済みです。残る具体的許可ルールは、将来のグローバル棚卸し候補です。
+- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。古い削除系の個別許可は今回削除しました。広めの `python -m` 許可は今回のrepo内作業では直接使わず、将来のグローバル棚卸し候補です。
 
 ## Codex実行環境のGitHub操作制約
 
