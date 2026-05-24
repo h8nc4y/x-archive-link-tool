@@ -51,9 +51,14 @@
 
 ## GitHub operations
 
-- 現時点のCodex実行環境では、`gh` CLIは認証状態が通常PowerShellと一致せずHTTP 401になるため、Codex内のGitHub操作前提にしない。
+- 現時点のCodex実行環境では、`gh` CLI実行ファイルは起動できてもGitHub API認証済み操作ではHTTP 401またはtoken invalidになるため、Codex内のGitHub操作前提にしない。
 - Codex内では `gh auth login` や認証待ちを繰り返さない。GitHubのIssue、PR、merge確認は、利用可能なGitHub connectorを優先し、connectorでできない場合はlocal commitと実際に通る `git push` までに留める。
 - PR URL、CI結果、merge結果は、GitHub connector、git remote状態、または別の確認済み証跡で確認できた場合だけ報告する。確認できない場合は未確認と書き、捏造しない。
+
+## Reporting
+
+- Codexの最終報告は、現在の日本時間 `YYYY/MM/DD HH:MM:SS` から開始する。
+- ChatGPT側のメタ判断欄はCodexの最終報告フォーマットではないため、Codexの報告に混入させない。
 
 ## Localization
 
