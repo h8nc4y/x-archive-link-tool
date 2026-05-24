@@ -45,9 +45,10 @@
 - プロジェクト `AGENTS.md` は、post-release外部・法務・課金・本番live確認の停止条件と、通常のrepo内docs/test/GitHub/Browser確認を分けています。
 - グローバル `config.toml` にはこのリポジトリの `trust_level = "trusted"` があり、グローバル方針と矛盾しません。
 - グローバル `config.toml` の `project_doc_fallback_filenames` は `AGENTS.md` を先頭に含み、`AGENT.md` はfallbackとして扱われています。グローバル `config.toml` に存在しないhook scriptへの参照は見つかりません。
-- グローバル `cost-guard.rules` は、Git/GitHubと非課金Cloudflare操作を許可し、OpenAI API、Workers AI、Vectorize、R2、remote D1、KV、Queues、Hyperdrive、Workflows、Google Cloud/Firebase/BigQuery/Cloud Storage/Kubernetesなど課金または実データ影響があり得る操作をprompt扱いにしており、グローバル `AGENTS.md` と整合しています。
+- グローバル `cost-guard.rules` は、Git/GitHubと非課金Cloudflare操作を許可し、OpenAI API、Workers AI、Vectorize、R2、remote D1、KV、Queues、Hyperdrive、Workflows、Google Cloud/Firebase/BigQuery/Cloud Storage/Kubernetesなど課金または実データ影響があり得る操作をprompt扱いにしており、グローバル `AGENTS.md` と整合しています。ただしこのリポジトリでは、Codex実行環境の `gh` CLI制約をプロジェクト固有の運用制約として優先します。
 - Modern Web Guidanceは、Web UI、HTML、CSS、クライアントJavaScript等に触れる場合だけ、secretや実データを含まないqueryでsearch/retrieveを使う方針です。interactive wizardになり得るinstallはforbiddenです。
 - Google公式skillsは、Google Cloud/Firebase/Gemini等のGoogle技術面に関係する場合だけ対象で、generic frontend、Cloudflare-first app、local-only scriptでは不要と定義されています。
+- グローバル `AGENTS.md` にはPPC個人情報保護方針の確認観点があり、データ最小化、利用目的、第三者提供・外部送信、保存期間・削除、本人対応、ログ・テストデータ・スクリーンショット、外部サービスへの個人情報やsecret送信有無を確認する方針が定義されています。
 - グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。広すぎる `Remove-Item -Recurse -Force` 許可は削除済みです。残る具体的許可ルールは、将来のグローバル棚卸し候補です。
 
 ## Codex実行環境のGitHub操作制約
@@ -66,6 +67,7 @@
 - X API Bearer Tokenをクライアントへ出さない。
 - `.env`、`data/`、`secrets`、`credentials`、`token`、`OAuth`、実データは読まない、表示しない、変更しない、コミットしない。
 - 本番 `/api/extract` やX API呼び出しを確認する場合も、記録はHTTP status、source、cached、mediaUrls件数、warnings件数など最小限にする。
+- PPC個人情報保護方針に関係する作業では、上記のデータ最小化、外部送信、ログ抑制に加え、保存期間・削除方針、本人からの問い合わせ・訂正・削除対応、外部サービスや委託先管理の確認状態を分けて扱う。未確定の法務・運用判断はCodexが断定せず、`docs/privacy-policy-draft.md`、`docs/post-release-operations-checklist.md`、`docs/post-release-human-verification-template.md` の未確認項目として残す。
 
 ## 今後の見直し候補
 
