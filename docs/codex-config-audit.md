@@ -54,9 +54,17 @@
 ## Codex実行環境のGitHub操作制約
 
 - 通常PowerShellでは `gh` CLIのread-only確認が成功する一方で、Codex実行環境では `gh auth status`、open PR/Issue一覧、repo viewがHTTP 401になる状態を確認しています。
+- 新規Codexチャットで再診断しても、`gh` 実行ファイル自体は起動できる一方、Codex実行環境からのGitHub API認証済み操作には使えませんでした。`gh auth status` はtoken invalid、repo view、authenticated user確認、Issue/PR一覧はHTTP 401、rate limit確認は未認証扱いに見える結果でした。
 - この差分はGitHubアカウント全体ではなく、Codex実行環境から見える `gh` credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
+- このリポジトリでは、通常の `git` 操作可否と `gh` CLIによるGitHub API操作可否を分離して扱います。`git status`、commit、pushが可能でも、`gh` CLIでIssue、PR、merge、CI結果を確認できるとは扱いません。
 - 今後のCodex作業では、GitHub Issue/PR/merge確認は利用可能なGitHub connectorを優先します。connectorで作成・mergeまで確認できない場合は、local commitと実際に通る `git push` までに留め、PR URL、CI結果、merge結果は確認できた場合だけ報告します。
 - `gh` CLI認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、通常PowerShellまたは人間操作による確認結果とCodex側で確認可能な証跡を分けて扱います。
+
+## Codex報告フォーマットの分離
+
+- ChatGPT側で使うメタ判断欄は、Codexの最終報告フォーマットではありません。Codexの最終報告には混入させません。
+- Codexの最終報告は、現在の日本時間 `YYYY/MM/DD HH:MM:SS` から開始します。
+- その後に、実施内容、変更ファイル、コマンド結果、検証結果、GitHub、未実行、未確認、残課題、次の最小手順を日本語で報告します。
 
 ## 今回残すプロジェクト固有方針
 
