@@ -59,12 +59,13 @@
 
 ## Codex実行環境のGitHub操作制約
 
-- 通常PowerShellでは `gh` CLIのread-only確認が成功する一方で、Codex実行環境では `gh auth status`、open PR/Issue一覧、repo viewがHTTP 401になる状態を確認しています。
-- 新規Codexチャットで再診断しても、`gh` 実行ファイル自体は起動できる一方、Codex実行環境からのGitHub API認証済み操作には使えませんでした。`gh auth status` はtoken invalid、repo view、authenticated user確認、Issue/PR一覧はHTTP 401、rate limit確認は未認証扱いに見える結果でした。
-- この差分はGitHubアカウント全体ではなく、Codex実行環境から見える `gh` credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
+- sandbox内の `gh auth status` が `token invalid` を返す、またはsandbox内のGit HTTPS操作が `SEC_E_NO_CREDENTIALS` を返すだけでは、GitHub認証破損とは判断しません。
+- 直近再診断では、sandbox外の `gh auth status -h github.com --json hosts` で `tokenSource=keyring` / `state=success` を確認し、sandbox外の `GIT_TERMINAL_PROMPT=0 git -C <repo> ls-remote origin HEAD` も成功しました。この場合は、GitHub認証はkeyring上で有効であり、sandbox内表示は誤判定リスクとして扱います。
+- `gh api user --jq .login` は、GitHub APIへ既存credentialを送る操作として実行ポリシーで拒否される場合があります。その場合は未確認として扱い、`gh auth login` が必要とは断定しません。
+- この差分はGitHubアカウント全体ではなく、Codex実行環境またはsandbox境界から見える `gh` / Git credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
 - このリポジトリでは、通常の `git` 操作可否と `gh` CLIによるGitHub API操作可否を分離して扱います。`git status`、commit、pushが可能でも、`gh` CLIでIssue、PR、merge、CI結果を確認できるとは扱いません。
 - 今後のCodex作業では、GitHub Issue/PR/merge確認は利用可能なGitHub connectorを優先します。connectorで作成・mergeまで確認できない場合は、local commitと実際に通る `git push` までに留め、PR URL、CI結果、merge結果は確認できた場合だけ報告します。
-- `gh` CLI認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、通常PowerShellまたは人間操作による確認結果とCodex側で確認可能な証跡を分けて扱います。
+- GitHub認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、sandbox外のkeyring確認、実API確認が許可された場合の `gh api user --jq .login`、非対話の `git ls-remote`、Codex側で確認可能な証跡を分けて扱います。
 
 ## Codex報告フォーマットの分離
 

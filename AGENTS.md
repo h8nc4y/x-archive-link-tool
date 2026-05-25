@@ -51,8 +51,9 @@
 
 ## GitHub operations
 
-- 現時点のCodex実行環境では、`gh` CLI実行ファイルは起動できてもGitHub API認証済み操作ではHTTP 401またはtoken invalidになるため、Codex内のGitHub操作前提にしない。
-- Codex内では `gh auth login` や認証待ちを繰り返さない。GitHubのIssue、PR、merge確認は、利用可能なGitHub connectorを優先し、connectorでできない場合はlocal commitと実際に通る `git push` までに留める。
+- sandbox内の `gh auth status` が `token invalid` を返す、またはsandbox内のGit HTTPS操作が `SEC_E_NO_CREDENTIALS` を返すだけでは、GitHub認証破損とは判断しない。
+- `gh auth login` や認証待ちを求める前に、sandbox外で既存Windows keyring認証を確認する。確認候補は `gh auth status -h github.com --json hosts` の `tokenSource=keyring` / `state=success`、`gh api user --jq .login`、`GIT_TERMINAL_PROMPT=0 git -C <repo> ls-remote origin HEAD`。`gh api user` が実行ポリシーで拒否された場合は未確認として扱い、他の証跡だけでログイン要求を断定しない。
+- GitHubのIssue、PR、merge確認は、利用可能なGitHub connectorを優先し、connectorでできない場合はlocal commitと実際に通る `git push` までに留める。
 - PR URL、CI結果、merge結果は、GitHub connector、git remote状態、または別の確認済み証跡で確認できた場合だけ報告する。確認できない場合は未確認と書き、捏造しない。
 
 ## Reporting
