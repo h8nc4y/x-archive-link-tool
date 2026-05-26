@@ -6,10 +6,15 @@
 
 ### グローバル
 
-- `C:\Users\h8nc4\.codex\AGENTS.md`
-- `C:\Users\h8nc4\.codex\config.toml`
-- `C:\Users\h8nc4\.codex\rules\cost-guard.rules`
-- `C:\Users\h8nc4\.codex\rules\default.rules`
+この実行環境では `CODEX_HOME` は `D:\Agent\Codex\.codex` です。今回参照したグローバル設定は次のファイルです。
+
+- `D:\Agent\Codex\.codex\AGENTS.md`
+- `D:\Agent\Codex\.codex\config.toml`
+- `D:\Agent\Codex\.codex\rules\cost-guard.rules`
+- `D:\Agent\Codex\.codex\rules\default.rules`
+- `D:\Agent\Codex\.codex\hooks\no_input_wait.py`
+
+`C:\Users\h8nc4\.codex` も存在しますが、今回のCodex Appセッションの `CODEX_HOME` ではないため、棚卸しの正にはしません。
 
 ### プロジェクト
 
@@ -37,8 +42,9 @@
 
 - 古い「checkpointごとに必ず停止する」方針は、Codex関連設定内には見つかりません。
 - 古い「push、deploy、依存追加、GitHub操作を一律禁止する」方針は、Codex関連設定内には見つかりません。
-- グローバル `AGENTS.md` は、Codex向けprompt作成時に `/goal` を短くし、詳細指示を通常チャット欄へ分離する方針を持っています。インテリジェンス表記とCodexのチャット継続/新規判断も、copy block外へ出す順序で定義されています。
+- グローバル `AGENTS.md` と `cost-guard.rules` は、Codex向けprompt作成時に `/goal` を使わず、通常チャット欄の単一 `Goal` ブロックへまとめる方針を持っています。インテリジェンス表記とCodexのチャット継続/新規判断も、copy block外へ出す順序で定義されています。
 - グローバル `AGENTS.md` と `cost-guard.rules` は、`read`、`pause`、`select`、`tail -f`、`watch`、`while true`、`sleep infinity`、foreground dev server待機を禁止し、非対話・timeout・bounded retry・background server管理を要求しています。
+- グローバル `config.toml` は `features.goals = false` とし、hooksを有効化しています。`no_input_wait.py` hook は入力待ち、無限polling、foreground dev serverをPreToolUseで拒否する実装です。
 - GitHub issue、PR comment、review commentは情報源または報告先であり、開発開始やPR作成の前提ではないと定義されています。
 - プロジェクト `AGENTS.md` は、グローバルの自走方針を妨げていません。
 - プロジェクト `AGENTS.md` の外部ネットワーク、X API、oEmbed、Cloudflare本番確認の注意は、課金、secret、実データ送信を避けるためのプロジェクト固有の安全境界であり、グローバル方針の停止条件と整合しています。
@@ -49,16 +55,17 @@
 - Modern Web Guidanceは、Web UI、HTML、CSS、クライアントJavaScript等に触れる場合だけ、secretや実データを含まないqueryでsearch/retrieveを使う方針です。interactive wizardになり得るinstallはforbiddenです。
 - Google公式skillsは、Google Cloud/Firebase/Gemini等のGoogle技術面に関係する場合だけ対象で、generic frontend、Cloudflare-first app、local-only scriptでは不要と定義されています。
 - グローバル `AGENTS.md` にはPPC個人情報保護方針の確認観点があり、データ最小化、利用目的、第三者提供・外部送信、保存期間・削除、本人対応、ログ・テストデータ・スクリーンショット、外部サービスへの個人情報やsecret送信有無を確認する方針が定義されています。
-- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。広すぎる `Remove-Item -Recurse -Force` 許可は削除済みです。残る具体的許可ルールは、将来のグローバル棚卸し候補です。
+- グローバル `default.rules` には他プロジェクト由来の具体的な許可ルールが残っています。古い削除系の個別許可は今回削除しました。広めの `python -m` 許可は今回のrepo内作業では直接使わず、将来のグローバル棚卸し候補です。
 
 ## Codex実行環境のGitHub操作制約
 
-- 通常PowerShellでは `gh` CLIのread-only確認が成功する一方で、Codex実行環境では `gh auth status`、open PR/Issue一覧、repo viewがHTTP 401になる状態を確認しています。
-- 新規Codexチャットで再診断しても、`gh` 実行ファイル自体は起動できる一方、Codex実行環境からのGitHub API認証済み操作には使えませんでした。`gh auth status` はtoken invalid、repo view、authenticated user確認、Issue/PR一覧はHTTP 401、rate limit確認は未認証扱いに見える結果でした。
-- この差分はGitHubアカウント全体ではなく、Codex実行環境から見える `gh` credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
+- sandbox内の `gh auth status` が `token invalid` を返す、またはsandbox内のGit HTTPS操作が `SEC_E_NO_CREDENTIALS` を返すだけでは、GitHub認証破損とは判断しません。
+- 直近再診断では、sandbox外の `gh auth status -h github.com --json hosts` で `tokenSource=keyring` / `state=success` を確認し、sandbox外の `GIT_TERMINAL_PROMPT=0 git -C <repo> ls-remote origin HEAD` も成功しました。この場合は、GitHub認証はkeyring上で有効であり、sandbox内表示は誤判定リスクとして扱います。
+- `gh api user --jq .login` は、GitHub APIへ既存credentialを送る操作として実行ポリシーで拒否される場合があります。その場合は未確認として扱い、`gh auth login` が必要とは断定しません。
+- この差分はGitHubアカウント全体ではなく、Codex実行環境またはsandbox境界から見える `gh` / Git credential状態の制約として扱います。Codex内で `gh auth login` や認証待ちは繰り返しません。
 - このリポジトリでは、通常の `git` 操作可否と `gh` CLIによるGitHub API操作可否を分離して扱います。`git status`、commit、pushが可能でも、`gh` CLIでIssue、PR、merge、CI結果を確認できるとは扱いません。
 - 今後のCodex作業では、GitHub Issue/PR/merge確認は利用可能なGitHub connectorを優先します。connectorで作成・mergeまで確認できない場合は、local commitと実際に通る `git push` までに留め、PR URL、CI結果、merge結果は確認できた場合だけ報告します。
-- `gh` CLI認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、通常PowerShellまたは人間操作による確認結果とCodex側で確認可能な証跡を分けて扱います。
+- GitHub認証復旧確認は、開発開始条件にはしません。復旧が必要な作業では、sandbox外のkeyring確認、実API確認が許可された場合の `gh api user --jq .login`、非対話の `git ls-remote`、Codex側で確認可能な証跡を分けて扱います。
 
 ## Codex報告フォーマットの分離
 
