@@ -18,6 +18,7 @@ const ERROR_MESSAGES = new Map([
   ["x_api_5xx", "X API側で一時的な問題が発生しています。時間を置いて再試行してください。"],
   ["x_api_error", "X APIからポスト情報を取得できませんでした。時間を置いて再試行してください。"]
 ]);
+const GENERIC_FETCH_ERROR_MESSAGE = "取得に失敗しました。時間を置いて再試行してください。";
 const WARNING_MESSAGES = new Map([
   ["最新取得に失敗したため期限切れキャッシュを返しました。", "最新情報を取得できなかったため、古い可能性があるキャッシュを表示しています。"],
   ["公式API未使用のため画像URLを取得できない場合があります。", "画像URLを取得できない場合があります。"],
@@ -33,7 +34,19 @@ export function buildGyotakuUrl(postUrl) {
 
 export function getUserErrorMessage(payload) {
   const code = typeof payload?.code === "string" ? payload.code : "";
-  return ERROR_MESSAGES.get(code) || "取得に失敗しました。時間を置いて再試行してください。";
+  return ERROR_MESSAGES.get(code) || GENERIC_FETCH_ERROR_MESSAGE;
+}
+
+function createUserFacingError(message) {
+  const error = new Error(message);
+  error.userMessage = message;
+  return error;
+}
+
+export function getUserFacingErrorMessage(error) {
+  return typeof error?.userMessage === "string" && error.userMessage
+    ? error.userMessage
+    : GENERIC_FETCH_ERROR_MESSAGE;
 }
 
 export function isValidArchiveUrl(value) {
@@ -72,12 +85,13 @@ export function buildCopyText(post, archiveUrl = "") {
   const postUrl = post.postUrl || post.canonicalUrl || "未取得";
   const userNumericId = post.userNumericId || "未取得";
   const username = post.username || "";
+  const accountId = username && username !== "未取得" ? `@${username}` : "未取得";
   const createdAt = post.createdAt || "未取得";
   const text = post.text || "未取得";
 
   return [
     `アカウント名：${accountName}`,
-    `アカウントID：${username ? `@${username}` : "未取得"}`,
+    `アカウントID：${accountId}`,
     `ユーザー数値ID：${userNumericId}`,
     `ポストURL：${postUrl}`,
     `ポスト投稿日：${createdAt}`,
@@ -184,7 +198,7 @@ function setupApp() {
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(getUserErrorMessage(payload));
+        throw createUserFacingError(getUserErrorMessage(payload));
       }
 
       currentPost = payload;
@@ -197,7 +211,7 @@ function setupApp() {
       currentPost = null;
       archiveSection.hidden = true;
       refreshCopyText();
-      setText(errorMessage, error.message || "取得に失敗しました。");
+      setText(errorMessage, getUserFacingErrorMessage(error));
     } finally {
       submitButton.disabled = false;
     }

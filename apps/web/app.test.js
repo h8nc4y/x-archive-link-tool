@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCopyText, buildGyotakuUrl, buildSourceMessage, getUserErrorMessage, hasArchiveUrlPasteNoise } from "./app.js";
+import {
+  buildCopyText,
+  buildGyotakuUrl,
+  buildSourceMessage,
+  getUserErrorMessage,
+  getUserFacingErrorMessage,
+  hasArchiveUrlPasteNoise
+} from "./app.js";
 
 const basePost = {
   accountName: "Example",
@@ -147,6 +154,16 @@ test("buildCopyText does not render @未取得 for missing username", () => {
   assert.equal(text.includes("@未取得"), false);
 });
 
+test("buildCopyText does not render @未取得 for explicit unavailable username", () => {
+  const text = buildCopyText({
+    ...basePost,
+    username: "未取得"
+  });
+
+  assert.match(text, /アカウントID：未取得/);
+  assert.equal(text.includes("@未取得"), false);
+});
+
 test("buildSourceMessage describes cache and oEmbed source", () => {
   assert.equal(buildSourceMessage({ cached: true }), "キャッシュから表示しています。");
   assert.equal(buildSourceMessage({ source: "oembed" }), "公式API未使用のため画像URLを取得できない場合があります。");
@@ -171,4 +188,19 @@ test("getUserErrorMessage maps API codes to Japanese messages", () => {
   assert.equal(getUserErrorMessage({ code: "invalid_host" }), "対応しているURLは x.com または twitter.com のポストURLです。");
   assert.equal(getUserErrorMessage({ code: "x_api_402" }), "X APIの利用枠または課金設定により取得できません。管理者側の確認が必要です。");
   assert.equal(getUserErrorMessage({ code: "unknown_code" }), "取得に失敗しました。時間を置いて再試行してください。");
+});
+
+test("getUserFacingErrorMessage uses generic Japanese text for unexpected client errors", () => {
+  const fallbackMessage = "取得に失敗しました。時間を置いて再試行してください。";
+
+  assert.equal(getUserFacingErrorMessage(new TypeError("Failed to fetch")), fallbackMessage);
+  assert.equal(getUserFacingErrorMessage(new SyntaxError("Unexpected token '<'")), fallbackMessage);
+  assert.equal(getUserFacingErrorMessage(new Error("Something went wrong")), fallbackMessage);
+});
+
+test("getUserFacingErrorMessage preserves approved API error messages", () => {
+  assert.equal(
+    getUserFacingErrorMessage({ userMessage: "対応しているURLは x.com または twitter.com のポストURLです。" }),
+    "対応しているURLは x.com または twitter.com のポストURLです。"
+  );
 });
