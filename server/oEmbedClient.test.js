@@ -37,6 +37,7 @@ test("fetchXPost requests oEmbed without bearer token and normalizes response", 
   assert.equal(requestUrl.searchParams.get("url"), parsedUrl.canonicalUrl);
   assert.equal(requestUrl.searchParams.get("omit_script"), "1");
   assert.equal(requestUrl.searchParams.get("dnt"), "true");
+  assert.equal(requestOptions.redirect, "error");
   assert.equal(requestOptions.headers.authorization, undefined);
   assert.deepEqual(result, {
     accountName: "Example User",

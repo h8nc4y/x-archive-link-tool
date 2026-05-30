@@ -103,6 +103,7 @@ export async function fetchXPost(parsedUrl, { fetchFn = globalThis.fetch } = {})
 
   const response = await fetchFn(buildOEmbedUrl(parsedUrl.canonicalUrl), {
     method: "GET",
+    redirect: "error",
     headers: {
       accept: "application/json"
     }

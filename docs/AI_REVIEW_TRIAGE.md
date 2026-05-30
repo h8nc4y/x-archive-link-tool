@@ -2,9 +2,11 @@
 
 ## Status
 
-ChatGPT triage recorded for the 2026-05-30 Codex implementation pass.
+ChatGPT triage recorded for the 2026-05-30 Codex implementation passes.
 
-Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation in this pass.
+Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
+
+Current update: after PR #31, ChatGPT approved CL-004 as the next single-item implementation pass. CL-001, CL-002, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
 
 ## Triage rules
 
@@ -50,6 +52,16 @@ Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approv
 - Validation: Run `node --test`.
 - Priority: P2
 
+### CL-004
+
+- Finding ID: CL-004
+- Reason for approval: Repository security guidance says provider redirects should not be followed, but the oEmbed and X API provider fetch calls did not explicitly disable automatic redirects.
+- Scope: Provider client fetch options and mock-fetch regression tests only.
+- Implementation task: Add `redirect: "error"` or equivalent non-following behavior to provider fetch calls in `server/oEmbedClient.js` and `server/xApiV2Client.js`.
+- Acceptance criteria: Both provider fetch calls pass a non-following redirect option; existing API error mapping and response shapes remain unchanged.
+- Validation: Add or update mock-fetch tests in `server/oEmbedClient.test.js` and `server/xApiV2Client.test.js`; run `node --test`.
+- Priority: P3
+
 ### Review coordination docs
 
 - Finding ID: ChatGPT review-governance decision
@@ -73,11 +85,6 @@ The following Claude findings are not approved for Codex implementation in this 
 - Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision and was explicitly not approved.
 - Information needed: Chosen TTL/non-cache policy for degraded fallback results.
 - Revisit condition: ChatGPT approves a concrete cache policy.
-
-- Finding ID: CL-004
-- Reason for deferral: Provider redirect handling hardening was explicitly not approved for this pass.
-- Information needed: Whether X API/oEmbed legitimate redirect behavior should be considered before changing fetch options.
-- Revisit condition: ChatGPT approves redirect behavior change and associated tests.
 
 - Finding ID: CL-006
 - Reason for deferral: Loading UI is optional UX scope and explicitly not approved.

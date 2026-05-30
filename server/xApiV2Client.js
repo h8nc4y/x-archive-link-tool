@@ -205,6 +205,7 @@ export async function fetchXPostFromApi(parsedUrl, { bearerToken, fetchFn = glob
 
   const response = await fetchFn(buildTweetUrl(parsedUrl.postId), {
     method: "GET",
+    redirect: "error",
     headers: {
       accept: "application/json",
       authorization: `Bearer ${bearerToken}`

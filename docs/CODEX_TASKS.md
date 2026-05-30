@@ -2,9 +2,9 @@
 
 ## Status
 
-ChatGPT-approved tasks recorded for the 2026-05-30 Codex implementation pass.
+ChatGPT-approved tasks recorded for the 2026-05-30 Codex implementation passes.
 
-Only the tasks below are approved for this pass. Do not implement any non-approved Claude findings.
+Current pass: implement CL-004 only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
 
 ## Source of truth
 
@@ -61,6 +61,71 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+### Task CL-004
+
+### Priority
+
+P3
+
+### Source finding
+
+CL-004, approved by ChatGPT for this follow-up implementation pass.
+
+### Goal
+
+Prevent provider fetch calls from automatically following redirects.
+
+### Scope
+
+Provider client fetch options and mock-fetch regression tests only.
+
+### Files likely affected
+
+- `server/oEmbedClient.js`
+- `server/xApiV2Client.js`
+- `server/oEmbedClient.test.js`
+- `server/xApiV2Client.test.js`
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+
+### Implementation plan
+
+Add `redirect: "error"` or equivalent non-following behavior to the oEmbed and X API provider fetch calls, then assert the option in mock-fetch tests.
+
+### Acceptance criteria
+
+- oEmbed provider fetch passes `redirect: "error"`.
+- X API v2 provider fetch passes `redirect: "error"`.
+- Existing API error mapping and response shapes remain unchanged.
+- No live X API, oEmbed, production, Cloudflare write, secret, OAuth, or real-data operation is used for validation.
+
+### Validation commands
+
+- `node --test server\oEmbedClient.test.js`
+- `node --test server\xApiV2Client.test.js`
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+
+### Out of scope
+
+- CL-001 and CL-002 cache behavior.
+- CL-006 loading UI.
+- CL-007 and CL-008 rate limiter or XFF behavior.
+- CL-009 production HEAD documentation update.
+- CL-011 CI warning or quality-gate changes.
+- CL-012 AGENTS.md role integration.
+- CL-013 local server logger injection.
+
+### Risks
+
+Real provider redirect behavior is not verified in this pass because live X API and oEmbed calls are out of scope. This is a conservative hardening change aligned with repository policy.
+
+### Completion notes
+
+To be reported by Codex final report for this pass.
 
 ### Task CL-003
 
@@ -205,7 +270,7 @@ Add tests before implementation, verify the focused test fails, then implement t
 
 ### Out of scope
 
-- Tests for CL-001, CL-002, CL-004, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, or CL-013.
+- Tests for CL-001, CL-002, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, or CL-013.
 
 ### Risks
 

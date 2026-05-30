@@ -106,6 +106,21 @@ Use this template for future decisions:
 - Related files: `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `apps/web/app.js`, `apps/web/app.test.js`.
 - Related review findings: CL-003, CL-005, CL-010.
 
+### Decision 007: Approve CL-004 as the next single-item follow-up
+
+- Date: 2026-05-30
+- Decision: ChatGPT approved only CL-004 for the next Codex implementation pass.
+- Context: PR #31 completed CL-003, CL-005, approved tests, and review coordination docs. ChatGPT then selected provider fetch redirect non-following as the next bounded task.
+- Options considered:
+  - Continue to defer CL-004.
+  - Implement CL-004 only.
+  - Implement CL-004 together with cache, loading UI, rate limiter, CI warning, or governance changes.
+- Rationale: CL-004 is a small hardening change that aligns provider client behavior with repository security guidance without requiring live X API, oEmbed, production, Cloudflare, secret, OAuth, or real-data validation.
+- Consequences: Codex may add non-following redirect options and mock-fetch tests for CL-004 only. CL-001, CL-002, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain out of scope for this pass.
+- Status: Active for this implementation pass.
+- Related files: `server/oEmbedClient.js`, `server/xApiV2Client.js`, `server/oEmbedClient.test.js`, `server/xApiV2Client.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-004.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
