@@ -52,7 +52,8 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - 公開URL `https://x-archive-link-tool.pages.dev/privacy.html` は静的表示を確認済み。表示項目は `プライバシーポリシー`、問い合わせ先、法務未レビュー表示。console errorは0件。
 - Wrangler 4.92.0で `wrangler whoami` が成功し、OAuth tokenが有効であることを確認済み。ただしtokenには広いwrite権限があるため、Cloudflare操作はdeployment一覧の読み取りだけに限定した。
 - 2026-05-18 20:40 JSTに `npx wrangler pages deployment list --project-name x-archive-link-tool --environment production --json` を実行し、レビューhardening反映時点のHEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` の短縮 `1a8fad5` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`、deployment URLは `https://a79ddcf6.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `16 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
-- 2026-05-18 20:50 JSTに同じWrangler読み取り確認を再実行し、PR #8 merge後の現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` の短縮 `2db0a89` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`、deployment URLは `https://aaadb2ac.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `4 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。
+- 2026-05-18 20:50 JSTに同じWrangler読み取り確認を再実行し、PR #8 merge後の当時確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` の短縮 `2db0a89` がCloudflare Pages Production deployment一覧にあることを正式証跡として確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`、deployment URLは `https://aaadb2ac.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `4 minutes ago`、Build URLは `https://dash.cloudflare.com/68b0957405bae91b41430d49645e230f/pages/view/x-archive-link-tool/aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。
+- 現在の本番稼働HEADは、この文書更新では確認していない。現在状態を確認するには、`docs/production-smoke-runbook.md` またはCloudflare deployment確認手順に沿った別承認・別記録が必要。
 - Wranglerのdeployment listは明示的な `Success` 文字列を返さず、Status欄は相対時刻表示だった。補助証跡として、同commitのGitHub上Cloudflare Pages check-run successと公開静的URLのHEAD/GET 200、主要security headersありを確認済み。
 
 ## CI導入状況
@@ -77,7 +78,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - Cloudflare Pages無料URLでの試験公開を継続し、独自ドメインは後工程で判断する。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
 - 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理する。問い合わせ先は `h8nc4y.sub01@gmail.com` を候補値として反映済みだが、法務レビュー済みではない。
-- プライバシーポリシーURL候補は `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Pages Production deployment一覧での正式証跡も確認済み。
-- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はWranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。
+- プライバシーポリシーURL候補は `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は当時のCloudflare Pages Production deployment一覧での正式証跡として確認済み。
+- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。`2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧での過去証跡として確認済み。現在の本番稼働HEADは未確認。
 - 公開前チェックリストを必要に応じて再確認する。
 - Cloudflare Pages静的アセット向けに `apps/web/_headers` を追加し、CSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` をローカルサーバーのsecurity headersと揃えた。

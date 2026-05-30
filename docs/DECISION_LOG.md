@@ -167,6 +167,21 @@ Use this template for future decisions:
 - Related files: `server/rateLimiter.js`, `server/rateLimiter.test.js`, `functions/api/extract.js`, `functions/api/extract.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-007, CL-008.
 
+### Decision 011: Approve CL-009 as docs-only production HEAD wording cleanup
+
+- Date: 2026-05-31
+- Decision: ChatGPT approved CL-009 as a documentation-only follow-up.
+- Context: Several docs described a 2026-05-18 Cloudflare deployment hash as the current production HEAD. Later merges mean that wording can be misread as a current verification result.
+- Options considered:
+  - Update docs to the latest Git commit without production verification.
+  - Run production smoke or Cloudflare verification.
+  - Preserve the old evidence as historical and mark current production state as unverified in this pass.
+- Rationale: Updating the production HEAD without Cloudflare evidence would create a new unverified claim. Production smoke, live API calls, and Cloudflare write/deploy are out of scope.
+- Consequences: Docs should distinguish dated historical production evidence from current production state. Current production HEAD remains unverified until a separate approved runbook or human Cloudflare verification records it.
+- Status: Active for this documentation pass.
+- Related files: `README.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/pre-release-checklist.md`, `docs/pre-release-operations-runbook.md`, `docs/privacy-policy-draft.md`, `docs/support-page-draft.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-009.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.

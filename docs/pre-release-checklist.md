@@ -23,13 +23,13 @@
 - `RATE_LIMIT_GLOBAL_PER_MINUTE=60`
 - `X_BEARER_TOKEN`: secretとして設定済み。値は記録しない。
 - Production redeploy: 人間側で実施済み。
-- Production deploy成功状態: `ca0bd79` は人間側で確認済み。レビューhardening反映時点の `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` と、現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はWranglerのCloudflare Pages Production deployment一覧で確認済み。
+- Production deploy成功状態: `ca0bd79` は人間側で確認済み。レビューhardening反映時点の `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` と、2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はWranglerのCloudflare Pages Production deployment一覧で確認済み。現在の本番稼働HEADはこの文書更新では未確認。
 - Production deploy確認の正式証跡: Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけ確認済みにする。GitHub check-run successだけではProduction deploy確認済みにしない。
 - Production URLトップページ表示: HTTP 200、title `Xポスト貼り付けテキスト生成`。
 - Static security headers: `apps/web/_headers` でCSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` を設定する。
 - 最新merge commit `cbe25119008814542df28bcd6ea7cc1159d7e3af`: GitHub上のCloudflare Pages check-runはsuccess、公開URL `https://x-archive-link-tool.pages.dev/privacy.html` の静的表示も確認済み。ただし、Cloudflare Pages deployment一覧またはDashboardでProduction deploymentとして成功した正式証跡は未確認。
 - レビューhardening反映HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7`: 2026-05-18 20:40 JSTにWrangler 4.92.0の `pages deployment list --environment production --json` でProduction deployment一覧に短縮 `1a8fad5` を確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`、deployment URLは `https://a79ddcf6.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `16 minutes ago`。
-- 現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39`: 2026-05-18 20:50 JSTに同じWrangler読み取り確認でProduction deployment一覧に短縮 `2db0a89` を確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`、deployment URLは `https://aaadb2ac.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `4 minutes ago`。
+- 2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39`: 同じWrangler読み取り確認でProduction deployment一覧に短縮 `2db0a89` を確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`、deployment URLは `https://aaadb2ac.x-archive-link-tool.pages.dev`、environmentは `Production`、branchは `master`、WranglerのStatus欄は `4 minutes ago`。
 - Wrangler listは明示的な `Success` 文字列を返さないため、Status欄の相対時刻、同commitのCloudflare Pages check-run success、公開静的HEAD/GET 200を補助証跡として扱う。
 - `/api/extract`、429本番確認、X API呼び出し: この確認では実行していない。実X API/oEmbed通信やcredits影響があり得るため、人間承認なしに実行しない。
 
@@ -73,7 +73,7 @@
 - ドメイン: Cloudflare Pages無料URL。独自ドメインは後回し。
 - レート制限値: Production初期値はper IP 10/min、global 60/min。
 - 問い合わせ先: `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。
-- プライバシーポリシーURL候補: `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。Cloudflare Pages deployment一覧で現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のProduction正式証跡も確認済み。
+- プライバシーポリシーURL候補: `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。Cloudflare Pages deployment一覧でHEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のProduction正式証跡も当時の確認記録として残す。現在の本番稼働HEADは未確認。
 - ログ保存期間: 未設定 / 人間判断待ち。ドラフトでは安全なログ項目だけを使う方針を記録済み。
 - KV障害時の正式切り戻し手順: 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただし実施判断者と正式手順は未確認。
 - X API credits / billing / usage capを見直す頻度: 未確認 / 人間判断待ち。
@@ -89,7 +89,7 @@
 
 ## 残確認
 
-- Cloudflare Pages Deployments上の `ca0bd79` Production deploy成功状態は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` はWranglerのCloudflare Pages Production deployment一覧で確認済み。
+- Cloudflare Pages Deployments上の `ca0bd79` Production deploy成功状態は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。`2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧で確認済み。現在の本番稼働HEADは未確認。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` の補助証跡: GitHub Cloudflare Pages check-run success、public `/privacy.html` 静的表示OK。正式証跡: 未確認。
 - rate limit設定後の実際の429挙動は未確認。確認する場合は、実X API通信回数を増やさない方法を別checkpointで決める。
 - 本番 `/api/extract` と本番429確認は、実X API/oEmbed通信やcredits影響があり得るため、今回実行しない。

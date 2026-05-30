@@ -2,10 +2,10 @@
 
 公開前に人間が判断する運用項目と、Codexが実行してよい確認範囲を分けて管理するRunbookです。
 
-## 現在の本番稼働HEAD
+## 2026-05-18時点の本番HEAD確認記録
 
 - HEAD: `2db0a89a39424ebb1d43268e4e4af7a19b01bc39`
-- 位置づけ: PR #8 merge後のdocs-only HEADで、現在の本番稼働HEAD。
+- 位置づけ: PR #8 merge後のdocs-only HEADで、2026-05-18 20:50 JST時点のCloudflare Pages Production確認対象。現在の本番稼働HEADはこの文書更新では未確認。
 - Cloudflare確認日時: 2026-05-18 20:50 JST
 - 確認コマンド: `npx wrangler pages deployment list --project-name x-archive-link-tool --environment production --json`
 - Deployment ID: `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`
@@ -18,10 +18,12 @@
 
 Wranglerのdeployment listは明示的な `Success` 文字列を返さず、Status欄は相対時刻を返す。GitHub check-run successや公開URL表示だけではProduction正式証跡として扱わず、Cloudflare Pages deployment一覧に対象HEADが出ていることを正式証跡として扱う。
 
+現在の本番稼働HEADを確認する場合は、この過去記録を更新せず、Cloudflare deployment確認または `docs/production-smoke-runbook.md` の承認済み手順に沿って別途記録する。
+
 ## 過去の証跡との位置づけ
 
 - `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7`: PR #7 merge後のレビューhardening反映時点の証跡。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
-- `2db0a89a39424ebb1d43268e4e4af7a19b01bc39`: PR #8 merge後のdocs-only HEADで、現在の本番稼働HEAD。
+- `2db0a89a39424ebb1d43268e4e4af7a19b01bc39`: PR #8 merge後のdocs-only HEADで、2026-05-18 20:50 JST時点のCloudflare Pages Production確認対象。
 
 ## Codexが実行してよい確認
 
