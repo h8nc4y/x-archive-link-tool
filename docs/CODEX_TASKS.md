@@ -2,9 +2,9 @@
 
 ## Status
 
-ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
+ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes.
 
-Current pass: implement CL-009 docs-only production HEAD wording only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
+Current closure state: no active Codex implementation task remains approved. PR #31 through PR #37 are merged, and the records below are historical completion records. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
 
 ## Source of truth
 
@@ -61,6 +61,12 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+No active approved task is queued for Codex at this time.
+
+CL-001 and CL-002 runtime cache behavior remain human/product/privacy decisions. CL-011 quality gates are not adopted for MVP unless later approved. CL-012 is resolved by tracked governance docs without application code changes. CL-013 local server logger injection is rejected unless ChatGPT later approves a specific safe-logging design.
+
+## Historical approved task records
 
 ### Task CL-009-docs-only
 
@@ -126,7 +132,7 @@ Historical production evidence may still be stale by design. Any current-product
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #37.
 
 ### Task CL-007-CL-008
 
@@ -192,7 +198,7 @@ The `x-forwarded-for` value is still treated as a fallback only when the Cloudfl
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #36.
 
 ### Task CL-006
 
@@ -255,7 +261,7 @@ The loading state is intentionally minimal and does not estimate network progres
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #35.
 
 ### Task CL-001-CL-002-docs-only
 
@@ -317,7 +323,7 @@ Future implementation still requires a product/privacy/legal retention decision 
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #33.
 
 ### Task CL-004
 
@@ -382,7 +388,7 @@ Real provider redirect behavior is not verified in this pass because live X API 
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #32.
 
 ### Task CL-003
 
@@ -435,7 +441,7 @@ Over-broad fallback could hide known API messages if implementation is not caref
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #31.
 
 ### Task CL-005
 
@@ -486,7 +492,7 @@ Only the exact unavailable sentinel should be suppressed; valid usernames must r
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #31.
 
 ### Task CL-010-approved-tests
 
@@ -587,8 +593,16 @@ Do not fabricate ChatGPT decisions beyond the provided prompt.
 
 ### Completion notes
 
-To be reported by Codex final report for this pass.
+Completed by PR #31 and subsequent review-management doc updates.
 
 ## Completed tasks
 
-Completion, commit, push, PR, and CI/check status are reported in the Codex final report for the 2026-05-30 follow-up.
+- PR #31: CL-003, CL-005, approved CL-010 regression coverage for those items, and review coordination docs.
+- PR #32: CL-004 provider fetch redirect non-following.
+- PR #33: CL-001/CL-002 documentation-only cache policy clarification; no runtime cache behavior change.
+- PR #34: GitHub Actions runtime warning follow-up. This did not adopt lint/typecheck/build/`node --check` gates as MVP policy.
+- PR #35: CL-006 minimal loading UI and regression coverage.
+- PR #36: CL-007/CL-008 rate limiter and IP key hardening.
+- PR #37: CL-009 documentation-only production HEAD wording cleanup.
+- CL-012: Resolved by tracked governance docs; no application code change and no tracked `CLAUDE.md` required.
+- CL-013: Rejected for implementation; no local server logger injection.

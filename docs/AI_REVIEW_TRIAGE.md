@@ -2,11 +2,27 @@
 
 ## Status
 
-ChatGPT triage recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
+ChatGPT triage and Claude review follow-up closure recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current update: after PR #36, ChatGPT approved CL-009 as a docs-only production HEAD wording pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-011, CL-012, and CL-013 remain not approved for this pass.
+Current closure update: PR #31 through PR #37 are merged. No active Codex implementation task remains approved at this time. CL-001 and CL-002 runtime cache behavior remains a human/product decision. CL-012 is resolved as tracked-document governance with no application code change. CL-013 remains rejected for implementation; local server logger injection is not approved.
+
+## Final disposition summary
+
+- CL-001: Documentation-only clarification completed in PR #33. Runtime KV stale-cache behavior remains deferred pending human/product/privacy decision.
+- CL-002: Documentation-only clarification completed in PR #33. Runtime degraded oEmbed fallback cache policy remains deferred pending human/product/privacy decision.
+- CL-003: Completed in PR #31.
+- CL-004: Completed in PR #32.
+- CL-005: Completed in PR #31.
+- CL-006: Completed in PR #35.
+- CL-007: Completed in PR #36.
+- CL-008: Completed in PR #36.
+- CL-009: Completed in PR #37 as docs-only production HEAD wording cleanup.
+- CL-010: Approved regression-test coverage was completed with the corresponding approved implementation PRs.
+- CL-011: GitHub Actions runtime warning follow-up was completed in PR #34. Adding lint/typecheck/build/`node --check` gates remains not adopted for MVP unless ChatGPT later approves it.
+- CL-012: Resolved without application code changes. Role separation is recorded in tracked docs: ChatGPT is commander, Claude Code is advisory read-only reviewer, and Codex implements only ChatGPT-approved tasks. Local ignored `CLAUDE.md` remains a convenience pointer to `AGENTS.md`, not a source of truth.
+- CL-013: Rejected for implementation. Local server logger injection remains intentionally not approved.
 
 ## Triage rules
 
@@ -114,7 +130,7 @@ Current update: after PR #36, ChatGPT approved CL-009 as a docs-only production 
 
 ## Deferred findings
 
-The following runtime or product behavior changes are not approved for Codex implementation in this pass. Documentation-only clarification for CL-001 and CL-002 is approved above, but behavior changes remain deferred.
+The following runtime or product behavior changes are not approved for Codex implementation after the Claude review follow-up closure. Documentation-only clarification for CL-001 and CL-002 is completed above, but behavior changes remain deferred.
 
 - Finding ID: CL-001
 - Reason for deferral: KV stale-cache behavior changes may affect retention/privacy behavior. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
@@ -127,23 +143,24 @@ The following runtime or product behavior changes are not approved for Codex imp
 - Revisit condition: ChatGPT approves a concrete cache behavior policy.
 
 - Finding ID: CL-011
-- Reason for deferral: Adding lint/typecheck/build/node-check gates was explicitly not approved.
+- Reason for deferral: Adding lint/typecheck/build/`node --check` quality gates was not adopted for MVP. PR #34 addressed the separate GitHub Actions runtime warning only.
 - Information needed: Whether no-dependency checks should become project policy.
 - Revisit condition: ChatGPT approves quality-gate changes.
 
-- Finding ID: CL-012
-- Reason for deferral: AGENTS.md integration of Claude role definition was explicitly not approved.
-- Information needed: Whether Claude role policy should live in tracked repo instructions.
-- Revisit condition: ChatGPT approves AGENTS/docs governance changes.
+## Resolved without code or runtime changes
 
-- Finding ID: CL-013
-- Reason for deferral: Local server logger injection was explicitly not approved.
-- Information needed: Whether local observability should change despite current safe default.
-- Revisit condition: ChatGPT approves logger behavior changes.
+- Finding ID: CL-012
+- Reason for resolution: Tracked docs already preserve the role split and `docs/claude-code-usage.md` documents that ignored local `CLAUDE.md` should only point Claude Code at `AGENTS.md`.
+- Scope: Documentation/governance state only.
+- Implementation decision: No application code change, no source behavior change, and no need to track local `CLAUDE.md`.
+- Notes: Future Claude prompts should attach or cite tracked docs rather than depending on a local ignored `CLAUDE.md`.
 
 ## Rejected findings
 
-No individual Claude finding is recorded here as permanently rejected from the provided prompt alone.
+- Finding ID: CL-013
+- Reason for rejection: Local server defaulting to no logger injection is the safer behavior for this MVP's strict no-sensitive-log policy, and ChatGPT did not approve changing local observability behavior.
+- Risk accepted: Local server observability remains minimal by default.
+- Notes: Do not add local server logger injection unless ChatGPT later approves a specific safe-logging design.
 
 Explicit out-of-scope work for this pass:
 
@@ -160,6 +177,6 @@ Explicit out-of-scope work for this pass:
 
 ## Open questions
 
-- Which non-approved CL items should be permanently rejected versus deferred?
-- Should these review-coordination docs be committed to Git?
-- Should future Claude review prompts include `docs/CHATGPT_HANDOFF.md` or the full set of review-coordination docs?
+- What exact runtime policy should be chosen for CL-001 KV physical retention versus logical stale-cache behavior?
+- What exact runtime policy should be chosen for CL-002 degraded oEmbed fallback caching?
+- Should future Claude review prompts include `docs/CHATGPT_HANDOFF.md`, the full review-coordination docs, or a refreshed single handoff?
