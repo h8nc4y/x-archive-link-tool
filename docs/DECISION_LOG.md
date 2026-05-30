@@ -121,6 +121,22 @@ Use this template for future decisions:
 - Related files: `server/oEmbedClient.js`, `server/xApiV2Client.js`, `server/oEmbedClient.test.js`, `server/xApiV2Client.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-004.
 
+### Decision 008: Clarify CL-001 and CL-002 as docs-only follow-up
+
+- Date: 2026-05-30
+- Decision: CL-001 and CL-002 are clarified in documentation only; runtime cache behavior is not changed in this pass.
+- Context: Claude identified possible mismatch between stale-cache wording and Cloudflare KV physical expiration, plus ambiguity around degraded oEmbed fallback caching after X API failure.
+- Options considered:
+  - Extend KV physical TTL beyond logical TTL.
+  - Make degraded oEmbed fallback results non-cacheable.
+  - Give degraded oEmbed fallback results a shorter TTL.
+  - Keep runtime behavior unchanged and document current limits plus open decisions.
+- Rationale: KV retention and degraded fallback caching affect privacy, legal, retention, and product behavior. ChatGPT approved documentation clarification only, not runtime cache changes.
+- Consequences: Current docs must not claim production KV guarantees `stale-cache` after KV physical expiration. Future runtime changes require explicit ChatGPT approval and should not use live X API, oEmbed, production smoke, Cloudflare write, secrets, OAuth, or real data without separate approval.
+- Status: Active for this documentation pass.
+- Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/incident-and-kv-failure-runbook.md`.
+- Related review findings: CL-001, CL-002.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
