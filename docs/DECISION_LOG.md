@@ -137,6 +137,21 @@ Use this template for future decisions:
 - Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/incident-and-kv-failure-runbook.md`.
 - Related review findings: CL-001, CL-002.
 
+### Decision 009: Approve CL-006 as the next single-item UI follow-up
+
+- Date: 2026-05-30
+- Decision: ChatGPT approved only CL-006 for the next Codex implementation pass.
+- Context: PR #34 completed the GitHub Actions Node deprecation warning update. ChatGPT then selected the minimal loading UI as the next bounded review follow-up.
+- Options considered:
+  - Continue to defer CL-006.
+  - Implement CL-006 only.
+  - Implement CL-006 together with cache, rate limiter, XFF, production docs, quality-gate, governance, or logging changes.
+- Rationale: CL-006 is a small UX improvement that can be tested with a mock fetch and local UI verification without live X API, oEmbed, production, Cloudflare write, secret, OAuth, or real-data operations.
+- Consequences: Codex may add minimal pending-state UI and regression tests for CL-006 only. CL-001/CL-002 runtime cache behavior, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain out of scope for this pass.
+- Status: Active for this implementation pass.
+- Related files: `apps/web/app.js`, `apps/web/app.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-006.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
