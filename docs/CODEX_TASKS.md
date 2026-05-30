@@ -2,9 +2,9 @@
 
 ## Status
 
-ChatGPT-approved tasks recorded for the 2026-05-30 Codex implementation passes.
+ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
 
-Current pass: implement CL-006 minimal loading UI only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
+Current pass: implement CL-007 / CL-008 rate-limit and IP key hardening only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
 
 ## Source of truth
 
@@ -61,6 +61,72 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+### Task CL-007-CL-008
+
+### Priority
+
+P2
+
+### Source finding
+
+CL-007 and CL-008, approved by ChatGPT for this bounded implementation pass after PR #35.
+
+### Goal
+
+Harden rate-limit housekeeping and Cloudflare Function client-IP key selection without changing API response shape.
+
+### Scope
+
+Rate limiter cleanup, IP key fallback normalization, and regression tests only.
+
+### Files likely affected
+
+- `server/rateLimiter.js`
+- `server/rateLimiter.test.js`
+- `functions/api/extract.js`
+- `functions/api/extract.test.js`
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+
+### Implementation plan
+
+Add bounded check-time cleanup for expired per-IP rate limiter counters. Keep `cf-connecting-ip` as the preferred key and use only the first `x-forwarded-for` candidate when the Cloudflare header is absent. Add focused tests for expired counter cleanup and comma-separated forwarded header handling.
+
+### Acceptance criteria
+
+- Expired per-IP counters are removed during bounded housekeeping.
+- No interval, watch loop, or unbounded cleanup loop is introduced.
+- `cf-connecting-ip` remains preferred over `x-forwarded-for`.
+- Comma-separated `x-forwarded-for` values use only the first candidate.
+- IP values are not logged by application code.
+- API response shape remains unchanged.
+- No CL-001/CL-002 runtime cache behavior, CL-009 docs wording, CL-012 governance role integration, or CL-013 logging behavior is changed in this pass.
+
+### Validation commands
+
+- `node --test server\rateLimiter.test.js`
+- `node --test functions\api\extract.test.js`
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+
+### Out of scope
+
+- KV TTL, fallback TTL, cache key, or provider fallback logic changes.
+- CL-009 production HEAD wording.
+- CL-012 AGENTS.md role integration.
+- CL-013 local server logger injection.
+- Production smoke, production `/api/extract`, live X API, live oEmbed, Cloudflare write, deploy, secrets, OAuth, or real-data operations.
+
+### Risks
+
+The `x-forwarded-for` value is still treated as a fallback only when the Cloudflare connecting IP header is absent. This does not make it a trusted production identity source.
+
+### Completion notes
+
+To be reported by Codex final report for this pass.
 
 ### Task CL-006
 

@@ -281,6 +281,39 @@ test("Cloudflare function uses forwarded IP when Cloudflare connecting IP is abs
   assert.equal(checkedIp, "198.51.100.20");
 });
 
+test("Cloudflare function uses only first forwarded IP candidate for rate limiting", async () => {
+  let checkedIp;
+  const response = await handleExtractRequest(
+    jsonRequest({
+      headers: {
+        "x-forwarded-for": "198.51.100.20, 203.0.113.30"
+      }
+    }),
+    {
+      env: {},
+      rateLimiter: {
+        check(ip) {
+          checkedIp = ip;
+          return { allowed: true };
+        }
+      },
+      extractPost: async (parsed) => ({
+        accountName: "Example User",
+        username: parsed.username,
+        userNumericId: "未取得",
+        postId: parsed.postId,
+        postUrl: parsed.canonicalUrl,
+        createdAt: "未取得",
+        text: "未取得",
+        mediaUrls: []
+      })
+    }
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(checkedIp, "198.51.100.20");
+});
+
 test("Cloudflare function rate limit response does not include sensitive values", async () => {
   const response = await handleExtractRequest(jsonRequest(), {
     env: { X_BEARER_TOKEN: "not-a-real-token-value" },

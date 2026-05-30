@@ -118,8 +118,21 @@ function getPostCache(env = {}) {
   return cache;
 }
 
+function readHeaderCandidate(value) {
+  const candidate = String(value || "").trim();
+  return candidate || undefined;
+}
+
+function readForwardedForCandidate(value) {
+  return readHeaderCandidate(String(value || "").split(",")[0]);
+}
+
 function getClientIp(request) {
-  return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+  return (
+    readHeaderCandidate(request.headers.get("cf-connecting-ip")) ||
+    readForwardedForCandidate(request.headers.get("x-forwarded-for")) ||
+    "unknown"
+  );
 }
 
 export async function handleExtractRequest(
