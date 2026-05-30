@@ -49,7 +49,7 @@ X API Bearer Tokenが設定されている場合はX API v2から取得します
 
 公開URLの静的表示: 確認済み
 
-現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Pages Production deployment正式証跡: 確認済み（Wrangler deployment ID `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`）
+2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Pages Production deployment正式証跡: 確認済み（Wrangler deployment ID `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`）。現在の本番稼働HEADはこの文書更新では未確認。
 
 ## 公開前レビューで決めること
 

@@ -6,7 +6,7 @@ ChatGPT triage recorded for the 2026-05-30 and 2026-05-31 Codex implementation p
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current update: after PR #35, ChatGPT approved CL-007 and CL-008 as one bounded rate-limit/IP-hardening implementation pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-009 is approved separately as a later docs-only pass. CL-011, CL-012, and CL-013 remain not approved for this pass.
+Current update: after PR #36, ChatGPT approved CL-009 as a docs-only production HEAD wording pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-011, CL-012, and CL-013 remain not approved for this pass.
 
 ## Triage rules
 
@@ -92,6 +92,16 @@ Current update: after PR #35, ChatGPT approved CL-007 and CL-008 as one bounded 
 - Validation: Add or update `server/rateLimiter.test.js` and `functions/api/extract.test.js`; run focused tests, `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
 - Priority: P2
 
+### CL-009 docs-only production HEAD wording
+
+- Finding ID: CL-009
+- Reason for approval: Docs that describe an old deployment hash as the current production HEAD can be misread after later merges.
+- Scope: Documentation wording only. No production verification, production smoke, Cloudflare write, deploy, runtime behavior, or code changes.
+- Implementation task: Reword stale current-production-HEAD claims into dated historical verification records, and state that current production state requires a separate runbook/Cloudflare verification step.
+- Acceptance criteria: Docs no longer claim old HEAD `2db0a89...` as the current production state; historical verification evidence remains dated and traceable; current production HEAD is explicitly unverified in this pass.
+- Validation: Run `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`; confirm changed files are docs only.
+- Priority: P3
+
 ### Review coordination docs
 
 - Finding ID: ChatGPT review-governance decision
@@ -115,11 +125,6 @@ The following runtime or product behavior changes are not approved for Codex imp
 - Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
 - Information needed: Chosen TTL/non-cache policy for degraded fallback results.
 - Revisit condition: ChatGPT approves a concrete cache behavior policy.
-
-- Finding ID: CL-009
-- Reason for deferral: Runtime or production verification remains out of scope. Docs-only wording clarification is approved as a separate later pass, but current production HEAD must not be updated without production verification.
-- Information needed: Fresh Cloudflare production evidence from an allowed read-only process or human confirmation for any future current-production claim.
-- Revisit condition: ChatGPT approves production verification or provides human-confirmed production evidence.
 
 - Finding ID: CL-011
 - Reason for deferral: Adding lint/typecheck/build/node-check gates was explicitly not approved.

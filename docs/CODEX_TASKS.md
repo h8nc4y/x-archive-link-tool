@@ -4,7 +4,7 @@
 
 ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
 
-Current pass: implement CL-007 / CL-008 rate-limit and IP key hardening only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
+Current pass: implement CL-009 docs-only production HEAD wording only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
 
 ## Source of truth
 
@@ -61,6 +61,72 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+### Task CL-009-docs-only
+
+### Priority
+
+P3
+
+### Source finding
+
+CL-009, approved by ChatGPT for this docs-only pass after PR #36.
+
+### Goal
+
+Prevent stale production HEAD evidence from being misread as the currently verified production state.
+
+### Scope
+
+Documentation wording only.
+
+### Files likely affected
+
+- `README.md`
+- `docs/current-status.md`
+- `docs/deployment-plan.md`
+- `docs/pre-release-checklist.md`
+- `docs/pre-release-operations-runbook.md`
+- `docs/privacy-policy-draft.md`
+- `docs/support-page-draft.md`
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+
+### Implementation plan
+
+Search docs for stale current-production-HEAD wording. Preserve dated historical Cloudflare deployment evidence, but reword it as a past verification record. Add explicit notes that current production HEAD is unverified in this pass and requires separate Cloudflare/runbook verification.
+
+### Acceptance criteria
+
+- Docs do not describe old HEAD `2db0a89...` as the currently verified production HEAD.
+- Dated 2026-05-18 production evidence remains traceable.
+- Current production verification is explicitly marked as not performed in this pass.
+- No code, tests, source behavior, cache behavior, provider behavior, CI config, dependencies, deployment config, Cloudflare write, deploy, production smoke, live X API, live oEmbed, secrets, OAuth, or real-data operation is changed.
+
+### Validation commands
+
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+- `git diff --name-only`
+- `git diff --stat`
+
+### Out of scope
+
+- Updating docs to a new production HEAD.
+- Cloudflare deployment verification.
+- Production smoke or production `/api/extract`.
+- Runtime code changes.
+- CL-001/CL-002 cache behavior, CL-012, or CL-013.
+
+### Risks
+
+Historical production evidence may still be stale by design. Any current-production statement requires a separate verification pass.
+
+### Completion notes
+
+To be reported by Codex final report for this pass.
 
 ### Task CL-007-CL-008
 

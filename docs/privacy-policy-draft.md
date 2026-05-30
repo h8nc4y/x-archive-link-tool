@@ -6,7 +6,7 @@
 
 公開URLの静的表示: 確認済み
 
-現在の本番稼働HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Pages Production deployment正式証跡: 確認済み（Wrangler deployment ID `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`）
+2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Pages Production deployment正式証跡: 確認済み（Wrangler deployment ID `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`）。現在の本番稼働HEADはこの文書更新では未確認。
 
 ## 取り扱う情報
 
@@ -48,6 +48,6 @@
 ## 公開前レビューで決めること
 
 - [x] 問い合わせ先: `h8nc4y.sub01@gmail.com`
-- [x] プライバシーポリシーURL: `/privacy.html` 候補。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは確認済み。最新HEADのCloudflare Pages Production deployment正式証跡も確認済み
+- [x] プライバシーポリシーURL: `/privacy.html` 候補。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。当時の確認対象HEADのCloudflare Pages Production deployment正式証跡も確認済み。現在の本番稼働HEADは未確認
 - [ ] ログ保存期間: 未設定 / 人間判断待ち
 - [ ] 法務または運用責任者による確認: 未設定 / 人間判断待ち
