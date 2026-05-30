@@ -6,7 +6,7 @@ ChatGPT triage recorded for the 2026-05-30 Codex implementation passes.
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current update: after PR #31, ChatGPT approved CL-004 as the next single-item implementation pass. CL-001, CL-002, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
+Current update: after PR #32, ChatGPT approved a docs-only clarification pass for CL-001 and CL-002. Behavior changes for CL-001 and CL-002 remain deferred. CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
 
 ## Triage rules
 
@@ -62,6 +62,16 @@ Current update: after PR #31, ChatGPT approved CL-004 as the next single-item im
 - Validation: Add or update mock-fetch tests in `server/oEmbedClient.test.js` and `server/xApiV2Client.test.js`; run `node --test`.
 - Priority: P3
 
+### CL-001 / CL-002 docs-only clarification
+
+- Finding ID: CL-001 / CL-002
+- Reason for approval: The current docs should not overstate production KV stale-cache guarantees or leave degraded oEmbed fallback cache behavior ambiguous.
+- Scope: Documentation only. No cache behavior, TTL, key version, provider fallback, KV retention, or runtime logic changes.
+- Implementation task: Clarify that production KV stale-cache is not guaranteed after KV physical expiration, that KV retention extension is undecided, and that degraded oEmbed fallback cache policy remains a product/privacy decision.
+- Acceptance criteria: Docs distinguish current behavior, production limitation, and unresolved policy decisions without changing application behavior.
+- Validation: Run `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
+- Priority: P2
+
 ### Review coordination docs
 
 - Finding ID: ChatGPT review-governance decision
@@ -74,17 +84,17 @@ Current update: after PR #31, ChatGPT approved CL-004 as the next single-item im
 
 ## Deferred findings
 
-The following Claude findings are not approved for Codex implementation in this pass. The prompt did not require Codex to split each item into final "deferred", "additional confirmation", or "rejected" buckets, so they are recorded here as not approved for this implementation pass.
+The following runtime or product behavior changes are not approved for Codex implementation in this pass. Documentation-only clarification for CL-001 and CL-002 is approved above, but behavior changes remain deferred.
 
 - Finding ID: CL-001
-- Reason for deferral: KV stale-cache reachability changes may affect retention/privacy behavior and were explicitly not approved.
+- Reason for deferral: KV stale-cache behavior changes may affect retention/privacy behavior. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
 - Information needed: Product/privacy decision on physical KV TTL versus documented stale-cache behavior.
-- Revisit condition: ChatGPT explicitly approves a specific cache-retention implementation or documentation-only change.
+- Revisit condition: ChatGPT explicitly approves a specific cache-retention implementation.
 
 - Finding ID: CL-002
-- Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision and was explicitly not approved.
+- Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
 - Information needed: Chosen TTL/non-cache policy for degraded fallback results.
-- Revisit condition: ChatGPT approves a concrete cache policy.
+- Revisit condition: ChatGPT approves a concrete cache behavior policy.
 
 - Finding ID: CL-006
 - Reason for deferral: Loading UI is optional UX scope and explicitly not approved.

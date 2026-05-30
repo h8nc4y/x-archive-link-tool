@@ -4,7 +4,7 @@
 
 ChatGPT-approved tasks recorded for the 2026-05-30 Codex implementation passes.
 
-Current pass: implement CL-004 only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
+Current pass: document CL-001 and CL-002 cache-policy follow-up only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
 
 ## Source of truth
 
@@ -61,6 +61,68 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+### Task CL-001-CL-002-docs-only
+
+### Priority
+
+P2
+
+### Source finding
+
+CL-001 and CL-002, approved by ChatGPT for documentation-only clarification after PR #32.
+
+### Goal
+
+Clarify cache-policy limits and unresolved decisions without changing runtime behavior.
+
+### Scope
+
+Documentation only.
+
+### Files likely affected
+
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+- `docs/api.md`
+- `docs/requirements.md`
+- `docs/current-status.md`
+- `docs/incident-and-kv-failure-runbook.md`
+
+### Implementation plan
+
+Document that production KV stale-cache is not guaranteed after KV physical expiration, that KV retention extension is a privacy/legal/retention decision, and that degraded oEmbed fallback caching remains a policy decision. Record current behavior where the existing implementation already makes it clear, without changing code.
+
+### Acceptance criteria
+
+- Docs state that current production KV should not be claimed to guarantee `stale-cache` after KV physical expiration.
+- Docs state that extending KV physical TTL is undecided.
+- Docs state that degraded oEmbed fallback behavior choices are non-cache, short TTL, or current behavior, and no runtime choice is made in this pass.
+- No server, functions, web app, scripts, tests, configuration, dependencies, deploy files, cache TTL, cache key, or provider fallback logic is changed.
+
+### Validation commands
+
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+
+### Out of scope
+
+- KV physical TTL extension.
+- fallback result non-caching.
+- fallback result short TTL.
+- cache version changes.
+- CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, or CL-013.
+- Live X API, oEmbed, production smoke, Cloudflare write, deploy, secret, OAuth, or real-data operations.
+
+### Risks
+
+Future implementation still requires a product/privacy/legal retention decision before changing physical retention or degraded fallback caching.
+
+### Completion notes
+
+To be reported by Codex final report for this pass.
 
 ### Task CL-004
 

@@ -75,6 +75,9 @@
 - X API認証、権限、rate limit、上流エラー時は、可能ならoEmbed fallbackへ戻し、warning付きで返す。
 - fallback warningには安全な範囲で上流HTTP statusだけを含める。401はBearer Token不正、402はX API credits / billing / payment required、403はApp権限/プラン/endpoint access不足、429はrate limit/usage capの可能性がある。402は機械可読code `x_api_402` として扱う。
 - Cloudflare Pages/FunctionsのProductionではCloudflare KV binding `X_POST_CACHE` を使う。
+- 現行KV実装ではphysical expiration TTLがlogical TTLと同じため、Cloudflare KVで期限切れ後の `stale-cache` 到達性は本番保証として主張しない。期限切れentryが取得可能なcache実装でのみ `stale-cache` を返せる。
+- `X_BEARER_TOKEN` 設定時にX API失敗後のoEmbed fallbackが成功した場合、現行実装ではそのfallback結果も通常の成功レスポンスとしてcache保存される。非cache、短TTL、現状維持のどれを正式方針にするかは未決。
+- KV physical TTL延長、fallback結果の非cache化、短TTL化、cache version変更はprivacy/legal/retentionまたはproduct判断が必要な別工程とする。
 - `X_POST_CACHE` binding未設定時はin-memory cacheへfallbackするが、serverless環境では永続化を期待しない。Cloudflare Functionsのin-memory cacheとrate limiterはisolate単位のbest-effortであり、真のglobal制限ではない。
 
 ## 魚拓リンク仕様
