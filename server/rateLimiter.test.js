@@ -74,3 +74,23 @@ test("rate limiter falls back to defaults for empty or invalid env values", () =
   assert.equal(hitMany(globalLimiter, 60).allowed, true);
   assert.equal(globalLimiter.check("ip-60").allowed, false);
 });
+
+test("rate limiter removes expired IP counters during bounded housekeeping", () => {
+  let nowMs = 0;
+  const rateLimiter = createRateLimiter({
+    env: {
+      RATE_LIMIT_PER_IP_PER_MINUTE: "100",
+      RATE_LIMIT_GLOBAL_PER_MINUTE: "100"
+    },
+    now: () => nowMs
+  });
+
+  rateLimiter.check("ip-1");
+  rateLimiter.check("ip-2");
+  assert.equal(rateLimiter.getIpCounterCount(), 2);
+
+  nowMs = 61 * 1000;
+  rateLimiter.check("ip-3");
+
+  assert.equal(rateLimiter.getIpCounterCount(), 1);
+});

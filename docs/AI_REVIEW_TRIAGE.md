@@ -2,11 +2,11 @@
 
 ## Status
 
-ChatGPT triage recorded for the 2026-05-30 Codex implementation passes.
+ChatGPT triage recorded for the 2026-05-30 and 2026-05-31 Codex implementation passes.
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current update: after PR #34, ChatGPT approved CL-006 as the next single-item implementation pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
+Current update: after PR #35, ChatGPT approved CL-007 and CL-008 as one bounded rate-limit/IP-hardening implementation pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-009 is approved separately as a later docs-only pass. CL-011, CL-012, and CL-013 remain not approved for this pass.
 
 ## Triage rules
 
@@ -82,6 +82,16 @@ Current update: after PR #34, ChatGPT approved CL-006 as the next single-item im
 - Validation: Add or update `apps/web/app.test.js`; run `node --test`; perform local-only UI verification without live X API, oEmbed, production, Cloudflare write, secrets, OAuth, or real data.
 - Priority: P3
 
+### CL-007 / CL-008
+
+- Finding ID: CL-007 / CL-008
+- Reason for approval: Long-lived local servers can retain expired per-IP rate-limit counters, and Cloudflare Function fallback handling for `x-forwarded-for` should avoid using the full header chain as a rate-limit key.
+- Scope: Rate limiter bounded housekeeping, Cloudflare Function IP key selection, and regression tests only.
+- Implementation task: Remove expired per-IP counters with bounded check-time cleanup, keep `cf-connecting-ip` as the preferred key, and use only the first `x-forwarded-for` candidate when the Cloudflare header is absent.
+- Acceptance criteria: Expired per-IP counters are removed without intervals or unbounded loops; `cf-connecting-ip` still wins; comma-separated `x-forwarded-for` values use only the first candidate; API response shape and safe logging remain unchanged.
+- Validation: Add or update `server/rateLimiter.test.js` and `functions/api/extract.test.js`; run focused tests, `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
+- Priority: P2
+
 ### Review coordination docs
 
 - Finding ID: ChatGPT review-governance decision
@@ -106,15 +116,10 @@ The following runtime or product behavior changes are not approved for Codex imp
 - Information needed: Chosen TTL/non-cache policy for degraded fallback results.
 - Revisit condition: ChatGPT approves a concrete cache behavior policy.
 
-- Finding ID: CL-007 / CL-008
-- Reason for deferral: Rate limiter and XFF behavior changes were explicitly not approved.
-- Information needed: Cloudflare/IP trust model and production risk priority.
-- Revisit condition: ChatGPT approves rate limiter or IP-source changes.
-
 - Finding ID: CL-009
-- Reason for deferral: Production HEAD update was explicitly not approved; production verification is out of scope.
-- Information needed: Fresh Cloudflare production evidence from an allowed read-only process or human confirmation.
-- Revisit condition: ChatGPT approves docs update with current verified evidence.
+- Reason for deferral: Runtime or production verification remains out of scope. Docs-only wording clarification is approved as a separate later pass, but current production HEAD must not be updated without production verification.
+- Information needed: Fresh Cloudflare production evidence from an allowed read-only process or human confirmation for any future current-production claim.
+- Revisit condition: ChatGPT approves production verification or provides human-confirmed production evidence.
 
 - Finding ID: CL-011
 - Reason for deferral: Adding lint/typecheck/build/node-check gates was explicitly not approved.

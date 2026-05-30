@@ -1,6 +1,7 @@
 const DEFAULT_PER_IP_LIMIT = 10;
 const DEFAULT_GLOBAL_LIMIT = 60;
 const WINDOW_MS = 60 * 1000;
+const CLEANUP_BATCH_SIZE = 100;
 
 function readPositiveInteger(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -25,6 +26,20 @@ function hitCounter(counter, nowMs, limit) {
   return { allowed: true, retryAfterSeconds: 0 };
 }
 
+function cleanupExpiredIpCounters(ipCounters, nowMs) {
+  let scanned = 0;
+  for (const [ipAddress, counter] of ipCounters) {
+    if (scanned >= CLEANUP_BATCH_SIZE) {
+      break;
+    }
+    scanned += 1;
+
+    if (nowMs >= counter.resetAt) {
+      ipCounters.delete(ipAddress);
+    }
+  }
+}
+
 export function createRateLimiter({ env = process.env, now = Date.now } = {}) {
   const perIpLimit = readPositiveInteger(env.RATE_LIMIT_PER_IP_PER_MINUTE, DEFAULT_PER_IP_LIMIT);
   const globalLimit = readPositiveInteger(env.RATE_LIMIT_GLOBAL_PER_MINUTE, DEFAULT_GLOBAL_LIMIT);
@@ -34,6 +49,8 @@ export function createRateLimiter({ env = process.env, now = Date.now } = {}) {
   return {
     check(ipAddress = "unknown") {
       const nowMs = now();
+      cleanupExpiredIpCounters(ipCounters, nowMs);
+
       const globalResult = hitCounter(globalCounter, nowMs, globalLimit);
       if (!globalResult.allowed) {
         return globalResult;
@@ -46,6 +63,9 @@ export function createRateLimiter({ env = process.env, now = Date.now } = {}) {
       }
 
       return hitCounter(ipCounter, nowMs, perIpLimit);
+    },
+    getIpCounterCount() {
+      return ipCounters.size;
     }
   };
 }

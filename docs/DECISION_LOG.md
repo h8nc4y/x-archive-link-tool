@@ -152,6 +152,21 @@ Use this template for future decisions:
 - Related files: `apps/web/app.js`, `apps/web/app.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-006.
 
+### Decision 010: Approve CL-007 and CL-008 as bounded rate-limit hardening
+
+- Date: 2026-05-31
+- Decision: ChatGPT approved CL-007 and CL-008 together for the next Codex implementation pass.
+- Context: PR #35 completed the minimal loading UI. ChatGPT then selected rate limiter housekeeping and IP key fallback hardening as the next low-risk implementation.
+- Options considered:
+  - Continue to defer CL-007 and CL-008.
+  - Implement CL-007 and CL-008 only.
+  - Implement CL-007 and CL-008 together with cache, production docs, governance, or local server logging changes.
+- Rationale: Both items are small server/function hardening changes that can be validated with local tests and do not require live X API, oEmbed, production smoke, Cloudflare write, secret, OAuth, deploy, or real-data operations.
+- Consequences: Codex may add bounded cleanup for expired per-IP rate limiter counters and normalize `x-forwarded-for` fallback to the first candidate only. CL-001/CL-002 runtime cache behavior, CL-009 docs-only production wording, CL-012, and CL-013 remain out of scope for this pass.
+- Status: Active for this implementation pass.
+- Related files: `server/rateLimiter.js`, `server/rateLimiter.test.js`, `functions/api/extract.js`, `functions/api/extract.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-007, CL-008.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
