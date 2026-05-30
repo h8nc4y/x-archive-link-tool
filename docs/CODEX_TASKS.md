@@ -4,7 +4,7 @@
 
 ChatGPT-approved tasks recorded for the 2026-05-30 Codex implementation passes.
 
-Current pass: document CL-001 and CL-002 cache-policy follow-up only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
+Current pass: implement CL-006 minimal loading UI only. Previous completed tasks remain recorded below for traceability. Do not implement any non-approved Claude findings.
 
 ## Source of truth
 
@@ -61,6 +61,69 @@ Claude finding ID or ChatGPT decision reference.
 ### Completion notes
 
 ## Approved task queue
+
+### Task CL-006
+
+### Priority
+
+P3
+
+### Source finding
+
+CL-006, approved by ChatGPT for this single-item implementation pass after PR #34.
+
+### Goal
+
+Show a minimal Japanese loading state while the extract request is pending.
+
+### Scope
+
+Web UI submit state and regression tests only.
+
+### Files likely affected
+
+- `apps/web/app.js`
+- `apps/web/app.test.js`
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+
+### Implementation plan
+
+Add a small loading-state helper around the existing submit flow. Keep the current disabled-submit protection, switch the submit label to `取得中…` during the pending fetch, expose `aria-busy`, and restore the idle state in `finally`. Add a mock-fetch DOM test for the pending state.
+
+### Acceptance criteria
+
+- Submit button shows `取得中…` while `/api/extract` is pending.
+- Submit button remains disabled during the pending request.
+- Form has `aria-busy="true"` while pending and returns to idle afterward.
+- Existing API error mapping and copy-text behavior remain unchanged.
+- No cache behavior, rate limiter, XFF, production docs, CI gates, AGENTS.md role integration, local server logging, live X API, oEmbed, production smoke, Cloudflare write, deploy, secret, OAuth, or real-data operation is changed.
+
+### Validation commands
+
+- `node --test apps\web\app.test.js`
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+
+### Out of scope
+
+- CL-001 and CL-002 cache behavior.
+- CL-007 and CL-008 rate limiter or XFF behavior.
+- CL-009 production HEAD documentation update.
+- CL-011 quality-gate changes beyond the already completed action-version update.
+- CL-012 AGENTS.md role integration.
+- CL-013 local server logger injection.
+- New loading overlays, spinners, progress bars, or API behavior changes.
+
+### Risks
+
+The loading state is intentionally minimal and does not estimate network progress.
+
+### Completion notes
+
+To be reported by Codex final report for this pass.
 
 ### Task CL-001-CL-002-docs-only
 

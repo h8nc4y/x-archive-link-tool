@@ -19,6 +19,7 @@ const ERROR_MESSAGES = new Map([
   ["x_api_error", "X APIからポスト情報を取得できませんでした。時間を置いて再試行してください。"]
 ]);
 const GENERIC_FETCH_ERROR_MESSAGE = "取得に失敗しました。時間を置いて再試行してください。";
+const LOADING_SUBMIT_LABEL = "取得中…";
 const WARNING_MESSAGES = new Map([
   ["最新取得に失敗したため期限切れキャッシュを返しました。", "最新情報を取得できなかったため、古い可能性があるキャッシュを表示しています。"],
   ["公式API未使用のため画像URLを取得できない場合があります。", "画像URLを取得できない場合があります。"],
@@ -153,6 +154,7 @@ function setupApp() {
   const sourceMessage = document.querySelector("#source-message");
   let currentPost = null;
   let archiveInputHasInvalidPaste = false;
+  const submitButtonLabel = submitButton?.textContent || "取得";
 
   if (
     !form ||
@@ -183,11 +185,22 @@ function setupApp() {
     setText(sourceMessage, buildSourceMessage(currentPost));
   }
 
+  function setLoadingState(isLoading) {
+    submitButton.disabled = isLoading;
+    submitButton.textContent = isLoading ? LOADING_SUBMIT_LABEL : submitButtonLabel;
+    if (isLoading) {
+      form.setAttribute("aria-busy", "true");
+      return;
+    }
+
+    form.removeAttribute("aria-busy");
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     setText(errorMessage, "");
     setText(copyMessage, "");
-    submitButton.disabled = true;
+    setLoadingState(true);
 
     try {
       const response = await fetch("/api/extract", {
@@ -213,7 +226,7 @@ function setupApp() {
       refreshCopyText();
       setText(errorMessage, getUserFacingErrorMessage(error));
     } finally {
-      submitButton.disabled = false;
+      setLoadingState(false);
     }
   });
 

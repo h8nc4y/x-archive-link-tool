@@ -6,7 +6,7 @@ ChatGPT triage recorded for the 2026-05-30 Codex implementation passes.
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current update: after PR #32, ChatGPT approved a docs-only clarification pass for CL-001 and CL-002. Behavior changes for CL-001 and CL-002 remain deferred. CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
+Current update: after PR #34, ChatGPT approved CL-006 as the next single-item implementation pass. Behavior changes for CL-001 and CL-002 remain deferred. CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain not approved for this pass.
 
 ## Triage rules
 
@@ -72,6 +72,16 @@ Current update: after PR #32, ChatGPT approved a docs-only clarification pass fo
 - Validation: Run `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
 - Priority: P2
 
+### CL-006
+
+- Finding ID: CL-006
+- Reason for approval: The submit button is disabled during extraction, but the UI does not otherwise tell users that retrieval is in progress.
+- Scope: Minimal Web UI loading state and regression tests only.
+- Implementation task: Show a short Japanese loading label while `/api/extract` is pending and expose busy state for assistive technology.
+- Acceptance criteria: During a pending extract request, the submit button shows `取得中…`, remains disabled, and the form has `aria-busy="true"`; after success or failure, the button label and busy state return to idle.
+- Validation: Add or update `apps/web/app.test.js`; run `node --test`; perform local-only UI verification without live X API, oEmbed, production, Cloudflare write, secrets, OAuth, or real data.
+- Priority: P3
+
 ### Review coordination docs
 
 - Finding ID: ChatGPT review-governance decision
@@ -95,11 +105,6 @@ The following runtime or product behavior changes are not approved for Codex imp
 - Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
 - Information needed: Chosen TTL/non-cache policy for degraded fallback results.
 - Revisit condition: ChatGPT approves a concrete cache behavior policy.
-
-- Finding ID: CL-006
-- Reason for deferral: Loading UI is optional UX scope and explicitly not approved.
-- Information needed: Desired loading copy/state and UI verification scope.
-- Revisit condition: ChatGPT approves loading-state work.
 
 - Finding ID: CL-007 / CL-008
 - Reason for deferral: Rate limiter and XFF behavior changes were explicitly not approved.

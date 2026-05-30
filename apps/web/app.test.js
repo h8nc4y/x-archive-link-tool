@@ -204,3 +204,114 @@ test("getUserFacingErrorMessage preserves approved API error messages", () => {
     "対応しているURLは x.com または twitter.com のポストURLです。"
   );
 });
+
+function createElement(overrides = {}) {
+  const listeners = new Map();
+  const attributes = new Map();
+  return {
+    textContent: "",
+    value: "",
+    disabled: false,
+    hidden: false,
+    href: "",
+    addEventListener(type, handler) {
+      listeners.set(type, handler);
+    },
+    dispatch(type, event = {}) {
+      return listeners.get(type)?.({
+        preventDefault() {},
+        ...event
+      });
+    },
+    setAttribute(name, value) {
+      attributes.set(name, String(value));
+    },
+    getAttribute(name) {
+      return attributes.has(name) ? attributes.get(name) : null;
+    },
+    removeAttribute(name) {
+      attributes.delete(name);
+    },
+    select() {},
+    ...overrides
+  };
+}
+
+function restoreGlobal(name, previousValue) {
+  if (previousValue === undefined) {
+    delete globalThis[name];
+    return;
+  }
+
+  globalThis[name] = previousValue;
+}
+
+async function createDomAppHarness(fetchImpl) {
+  const elements = {
+    "#extract-form": createElement(),
+    "#post-url": createElement({ value: "https://x.com/example_user/status/67890" }),
+    "#submit-button": createElement({ textContent: "取得" }),
+    "#error-message": createElement(),
+    "#archive-section": createElement({ hidden: true }),
+    "#gyotaku-link": createElement(),
+    "#archive-url": createElement(),
+    "#copy-text": createElement(),
+    "#copy-button": createElement({ disabled: true }),
+    "#copy-message": createElement(),
+    "#source-message": createElement()
+  };
+
+  const previousDocument = globalThis.document;
+  const previousFetch = globalThis.fetch;
+  globalThis.document = {
+    querySelector(selector) {
+      return elements[selector] || null;
+    }
+  };
+  globalThis.fetch = fetchImpl;
+
+  await import(`./app.js?dom-harness=${Date.now()}-${Math.random()}`);
+
+  return {
+    elements,
+    submit() {
+      return elements["#extract-form"].dispatch("submit");
+    },
+    cleanup() {
+      restoreGlobal("document", previousDocument);
+      restoreGlobal("fetch", previousFetch);
+    }
+  };
+}
+
+function createJsonResponse(payload, ok = true) {
+  return {
+    ok,
+    json: async () => payload
+  };
+}
+
+test("submit flow shows loading state while extract is pending", async () => {
+  let resolveFetch;
+  const pendingFetch = new Promise((resolve) => {
+    resolveFetch = resolve;
+  });
+  const harness = await createDomAppHarness(() => pendingFetch);
+
+  try {
+    const submitPromise = harness.submit();
+
+    assert.equal(harness.elements["#submit-button"].disabled, true);
+    assert.equal(harness.elements["#submit-button"].textContent, "取得中…");
+    assert.equal(harness.elements["#extract-form"].getAttribute("aria-busy"), "true");
+
+    resolveFetch(createJsonResponse(basePost));
+    await submitPromise;
+
+    assert.equal(harness.elements["#submit-button"].disabled, false);
+    assert.equal(harness.elements["#submit-button"].textContent, "取得");
+    assert.equal(harness.elements["#extract-form"].getAttribute("aria-busy"), null);
+  } finally {
+    harness.cleanup();
+  }
+});
