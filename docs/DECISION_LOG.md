@@ -182,6 +182,20 @@ Use this template for future decisions:
 - Related files: `README.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/pre-release-checklist.md`, `docs/pre-release-operations-runbook.md`, `docs/privacy-policy-draft.md`, `docs/support-page-draft.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-009.
 
+### Decision 012: Close Claude review follow-up implementation queue
+
+- Date: 2026-05-31
+- Decision: The Claude review follow-up queue is closed after PR #31 through PR #37. No active Codex implementation task remains approved.
+- Context: ChatGPT approved bounded follow-up work across multiple PRs: CL-003, CL-005, approved CL-010 regression coverage, CL-004, CL-001/CL-002 docs-only clarification, CL-006, CL-007, CL-008, CL-009, and review coordination docs. The remaining items require either a human/product decision or are not approved.
+- Options considered:
+  - Leave the review-management docs in a per-pass state.
+  - Record the final disposition of CL-001 through CL-013 and close the current Codex task queue.
+- Rationale: The repository should not leave stale "current pass" or pending task wording that could cause Codex to implement unapproved Claude suggestions later.
+- Consequences: `docs/AI_REVIEW_TRIAGE.md` records the final CL-001 through CL-013 disposition, and `docs/CODEX_TASKS.md` states that no active approved Codex task remains. CL-001/CL-002 runtime cache behavior remains a human/product/privacy decision. CL-012 is resolved through tracked governance docs without application code changes. CL-013 remains rejected for implementation.
+- Status: Active.
+- Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/CLAUDE_REVIEW.md`, `docs/CHATGPT_HANDOFF.md`, `docs/REVIEW_BRIEF.md`, `docs/claude-code-usage.md`.
+- Related review findings: CL-001, CL-002, CL-003, CL-004, CL-005, CL-006, CL-007, CL-008, CL-009, CL-010, CL-011, CL-012, CL-013.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
@@ -190,4 +204,6 @@ Use this template for future decisions:
 - Which issues are MVP-blocking.
 - Which severity taxonomy should be used consistently for Claude findings and ChatGPT triage.
 - Whether future Claude review should include production-operation docs or only code and tests.
-- Whether ignored local files such as `CLAUDE.md` should be included as context for Claude review.
+- Whether future Claude review should use a refreshed single handoff file or the full tracked review-management doc set.
+- Which runtime policy should be chosen for CL-001 KV physical retention versus logical stale-cache behavior.
+- Which runtime policy should be chosen for CL-002 degraded oEmbed fallback caching.

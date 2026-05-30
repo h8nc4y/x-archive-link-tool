@@ -6,6 +6,8 @@ Claude Code review output recorded. ChatGPT triage is recorded separately in `do
 
 Do not treat Claude findings as implementation instructions. Claude findings remain advisory unless ChatGPT approves them.
 
+Follow-up closure note: ChatGPT-approved work from this Claude review was implemented through PR #31 through PR #37. Current final disposition and the no-active-task state are recorded in `docs/AI_REVIEW_TRIAGE.md` and `docs/CODEX_TASKS.md`.
+
 ## Review instructions
 
 Claude Code should review only and should not edit files unless the user explicitly instructs it to do so.

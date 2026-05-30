@@ -6,7 +6,7 @@ Prepared by Codex from local repository inspection on 2026-05-29. This file is a
 
 Confirmed facts are based on repository files, Git metadata, CodeGraph index output, and safe read-only shell commands. Inferred assumptions are labeled as such. Anything not supported by repository evidence is marked as unknown or left as a question.
 
-Current-status note as of the 2026-05-30 follow-up: this brief is a historical pre-review context packet. Claude review output is now recorded in `docs/CLAUDE_REVIEW.md`; ChatGPT approval scope for the current implementation pass is recorded in `docs/AI_REVIEW_TRIAGE.md` and `docs/CODEX_TASKS.md`.
+Current-status note as of the 2026-05-31 Claude review follow-up closure: this brief is a historical pre-review context packet. Claude review output is recorded in `docs/CLAUDE_REVIEW.md`; ChatGPT triage and final CL-001 through CL-013 disposition are recorded in `docs/AI_REVIEW_TRIAGE.md`; completed Codex task history and the current no-active-task state are recorded in `docs/CODEX_TASKS.md`. PR #31 through PR #37 have completed the approved follow-up queue.
 
 ## Project summary
 
@@ -128,7 +128,8 @@ Unclear or not yet documented:
 - No explicit dependency manifest beyond Node.js built-ins and platform APIs visible in `package.json`.
 - No database or migration layer.
 - At creation time, no confirmed Claude review findings had been recorded yet. Current review output is in `docs/CLAUDE_REVIEW.md`.
-- At creation time, no ChatGPT triage decisions for Claude findings had been recorded yet. Current triage is in `docs/AI_REVIEW_TRIAGE.md`.
+- At creation time, no ChatGPT triage decisions for Claude findings had been recorded yet. Current triage and closure state are in `docs/AI_REVIEW_TRIAGE.md`.
+- At closure time, no active Codex implementation task remains approved. Completed task history is in `docs/CODEX_TASKS.md`.
 
 ### Broken or risky, if evidence exists
 
