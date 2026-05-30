@@ -37,6 +37,7 @@ test("fetchXPostFromApi requests X API v2 with injected bearer token", async () 
   assert.equal(String(requestUrl).startsWith("https://api.x.com/2/tweets/123?"), true);
   assert.equal(requestUrl.searchParams.get("expansions"), "attachments.media_keys,author_id");
   assert.equal(requestUrl.searchParams.get("tweet.fields"), "created_at,entities,attachments,note_tweet");
+  assert.equal(requestOptions.redirect, "error");
   assert.equal(requestOptions.headers.authorization, "Bearer test-token");
   assert.equal(result.source, "x-api-v2");
   assert.equal(result.authorName, "Example");
