@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { formatMarkdownLinkResults, validateMarkdownLinks } from "./verifyMarkdownLinks.js";
 
 export const REQUIRED_DOCS = [
   {
@@ -167,7 +168,12 @@ function main() {
     console.log(line);
   }
 
-  if (results.some((result) => !result.ok)) {
+  const markdownLinkResult = validateMarkdownLinks(getRepoRoot());
+  for (const line of formatMarkdownLinkResults(markdownLinkResult)) {
+    console.log(line);
+  }
+
+  if (results.some((result) => !result.ok) || !markdownLinkResult.ok) {
     process.exitCode = 1;
   }
 }

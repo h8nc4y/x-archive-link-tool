@@ -286,6 +286,21 @@ Use this template for future decisions:
 - Related files: `scripts/verifyPostReleaseDocs.js`, `scripts/verifyPostReleaseDocs.test.js`, `docs/post-release-operations-decision-packet.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: Issue #42.
 
+### Decision 019: Guard repo-local Markdown links without external URL checks
+
+- Date: 2026-05-31
+- Decision: Repository docs verification should check local Markdown file links in `README.md`, `AGENTS.md`, `SECURITY.md`, and `docs/`, while skipping external URLs, `mailto:`, `tel:`, fragment-only links, image links, and links inside fenced code blocks.
+- Context: The post-release docs set is increasingly used as a coordination boundary across ChatGPT, Codex, Claude Code, and humans. Broken local file links can silently weaken that boundary, but checking external URLs would add network and drift risk.
+- Options considered:
+  - Leave local links to manual review.
+  - Add a local-only Markdown link checker and integrate it into existing docs verification.
+  - Check external URL availability.
+- Rationale: Local file existence checks are deterministic, cheap, and safe. External URL availability checks are intentionally out of scope because they require network access and may be unstable.
+- Consequences: `scripts/verifyMarkdownLinks.js` verifies repo-local Markdown link targets. Anchor-specific validation is not enforced in this pass; links like `docs/file.md#anchor` only require the file to exist. `check:post-release-docs` runs this local link guard.
+- Status: Active.
+- Related files: `scripts/verifyMarkdownLinks.js`, `scripts/verifyMarkdownLinks.test.js`, `scripts/verifyPostReleaseDocs.js`, `docs/test-cases.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: Issue #42.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
