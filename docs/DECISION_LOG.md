@@ -241,6 +241,21 @@ Use this template for future decisions:
 - Related files: `docs/current-status.md`, `docs/deployment-plan.md`, `docs/post-release-human-verification-record.md`, `docs/post-claude-review-decision-backlog.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-009, Issue #41.
 
+### Decision 016: Keep Issue #42 open until post-release operations decisions are supplied
+
+- Date: 2026-05-31
+- Decision: Issue #42 should be treated as a human/ChatGPT decision packet, not as an implementation task. Codex may organize the decision checklist and safe recording boundaries, but must not decide privacy, legal, support, billing, credits, log retention, 429 policy, production smoke, Cloudflare logs, or incident ownership.
+- Context: Issue #42 covers post-release operations items that affect user trust, legal/privacy posture, API cost control, support responsibility, logs, and production verification. These cannot be safely finalized from repository files alone.
+- Options considered:
+  - Let Codex infer reasonable defaults and close Issue #42.
+  - Leave the existing scattered docs unchanged.
+  - Add a dedicated decision packet and keep Issue #42 open until decisions are explicitly supplied.
+- Rationale: A dedicated decision packet makes the remaining choices reviewable without changing runtime behavior or performing prohibited production, Cloudflare, billing, secret, or live-provider operations.
+- Consequences: `docs/post-release-operations-decision-packet.md` is the current coordination document for Issue #42. Future Codex work may only record explicit decisions or implement separately approved tasks. Issue #42 remains open while human decisions are incomplete.
+- Status: Active.
+- Related files: `docs/post-release-operations-decision-packet.md`, `docs/post-claude-review-decision-backlog.md`, `docs/post-release-operations-checklist.md`, `docs/post-release-human-verification-template.md`, `docs/production-smoke-runbook.md`, `docs/incident-and-kv-failure-runbook.md`, `docs/deployment-plan.md`, `docs/current-status.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: Issue #42.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
@@ -250,4 +265,4 @@ Use this template for future decisions:
 - Which severity taxonomy should be used consistently for Claude findings and ChatGPT triage.
 - Whether future Claude review should include production-operation docs or only code and tests.
 - Whether future Claude review should use a refreshed single handoff file or the full tracked review-management doc set.
-- Which Issue #42 post-release operations items are MVP-blocking.
+- Which Issue #42 post-release operations items are MVP-blocking, or whether any can be explicitly deferred/non-blocking.

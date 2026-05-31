@@ -128,6 +128,7 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 - [v0.1.0 Release Notes](docs/release-notes-v0.1.0.md)
 - [公開前運用Runbook](docs/pre-release-operations-runbook.md)
 - [v0.1.0後の人間確認チェックリスト](docs/post-release-operations-checklist.md)
+- [post-release operations判断パケット](docs/post-release-operations-decision-packet.md)
 - [本番API smoke Runbook](docs/production-smoke-runbook.md)
 - [人間確認結果テンプレート](docs/post-release-human-verification-template.md)
 - [人間確認結果記録](docs/post-release-human-verification-record.md)

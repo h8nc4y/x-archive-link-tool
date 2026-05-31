@@ -80,6 +80,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - レート制限値はProduction初期値としてper IP 10/min、global 60/minを設定済み。X API credits / billing / usage capを見直す頻度と429時の対応基準は未確認。
 - 公開前運用未決定項目は `docs/deployment-plan.md` の「運用未決定項目の分類」で管理する。問い合わせ先は `h8nc4y.sub01@gmail.com` を候補値として反映済みだが、法務レビュー済みではない。
 - プライバシーポリシーURL候補は `/privacy.html`。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は当時のCloudflare Pages Production deployment一覧での正式証跡として確認済み。
-- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。`2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧での過去証跡として確認済み。現在の本番稼働HEADは未確認。
+- `ca0bd79` のCloudflare Production deploy成功は人間側で確認済み。`1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡として確認済み。`2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧での過去証跡として確認済み。現在の本番稼働HEAD確認はIssue #41の記録を参照する。Issue #42では本番稼働HEADを再確認しない。
+- Issue #42のpost-release operations判断は `docs/post-release-operations-decision-packet.md` で整理する。privacy/legal、support、billing/credits、log retention、429 policy、Cloudflare logs、production smoke、KV/incident ownerは人間/ChatGPT判断待ちであり、Codexのactive implementation taskではない。
 - 公開前チェックリストを必要に応じて再確認する。
 - Cloudflare Pages静的アセット向けに `apps/web/_headers` を追加し、CSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy` をローカルサーバーのsecurity headersと揃えた。

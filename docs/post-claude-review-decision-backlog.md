@@ -13,7 +13,8 @@ Current repository state at preparation time:
 - Completed Codex follow-up tasks: recorded in `docs/CODEX_TASKS.md`.
 - Issue #40: approved and implemented CL-002 degraded fallback short TTL; CL-001 remains no runtime change.
 - Issue #41: current Production HEAD verified as master HEAD `a6fe436f3f08326c6479561ea997ed6bb3e23f9c` using read-only GitHub/Cloudflare Pages check metadata and static page GET checks.
-- Open PRs before this packet: none observed. Open issues before this packet included Issue #41 and Issue #42.
+- Issue #42: post-release operations decisions are organized in `docs/post-release-operations-decision-packet.md`. The issue remains open until human/ChatGPT decisions are supplied.
+- Open PRs before this packet: none observed. Open issues before this packet included Issue #42.
 
 ## Completed Claude Review Follow-Up
 
@@ -177,8 +178,9 @@ Create issues only if no duplicate open issue exists.
 
 3. `Decide post-release operations items`
    - Decision owner: human.
-   - Scope: privacy/legal/support, billing/credits, log retention, KV incident ownership, and 429 policy.
+   - Scope: tracked by Issue #42 and `docs/post-release-operations-decision-packet.md`.
    - Must not expose secrets, billing details, real URLs, real post content, or Cloudflare internal logs.
+   - Status: open until human/ChatGPT explicitly supplies or defers the remaining operations decisions.
 
 ## Related Documents
 
