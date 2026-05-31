@@ -2,9 +2,9 @@
 
 ## Status
 
-ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes, including the Issue #40 cache-policy follow-up.
+ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes, including the Issue #40 cache-policy follow-up and Issue #42 docs guardrail follow-up.
 
-Current closure state: Issue #40 approves CL-001 no runtime change and CL-002 degraded fallback short-TTL caching only. No additional Codex implementation task is approved. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
+Current closure state: Issue #40 approves CL-001 no runtime change and CL-002 degraded fallback short-TTL caching only. Issue #42 remains a human/ChatGPT decision item; the current Codex scope is limited to documentation verification guardrails. No additional runtime implementation task is approved. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
 
 ## Source of truth
 
@@ -677,5 +677,6 @@ Completed by PR #31 and subsequent review-management doc updates.
 - Issue #40 follow-up: CL-001 no runtime change and CL-002 degraded fallback short-TTL caching.
 - Issue #41 follow-up: current Production HEAD verification recorded from read-only metadata and static page checks.
 - Issue #42 follow-up: post-release operations decision packet recorded. Issue #42 remains a human/ChatGPT decision item, not an active Codex implementation task.
+- Issue #42 guardrail follow-up: `check:post-release-docs` verifies that the decision packet preserves human/ChatGPT decision status, required decision areas, Codex prohibitions, production/live-provider/secret/Cloudflare stop boundaries, and the keep-open condition.
 - CL-012: Resolved by tracked governance docs; no application code change and no tracked `CLAUDE.md` required.
 - CL-013: Rejected for implementation; no local server logger injection.

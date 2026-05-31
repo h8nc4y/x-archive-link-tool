@@ -4,7 +4,7 @@
 
 PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使う。
 
-直近確認: 132 tests pass。`package.json` の `npm test` は `node --test` の自動探索で `*.test.js` を実行し、URL validator、rate limiter、KV post cache、Cloudflare Functions extract tests、Web UI copy/static header testsを含む。
+直近確認: 134 tests pass。`package.json` の `npm test` は `node --test` の自動探索で `*.test.js` を実行し、URL validator、rate limiter、KV post cache、Cloudflare Functions extract tests、Web UI copy/static header testsを含む。
 
 ## Valid URL examples
 

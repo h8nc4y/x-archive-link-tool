@@ -271,6 +271,21 @@ Use this template for future decisions:
 - Related files: `README.md`, `docs/post-review-maintenance-audit.md`, `docs/test-cases.md`, `docs/post-release-operations-decision-packet.md`, `docs/current-status.md`.
 - Related review findings: Issue #42.
 
+### Decision 018: Guard Issue #42 decision boundaries in docs verification
+
+- Date: 2026-05-31
+- Decision: `npm.cmd run check:post-release-docs` should fail when `docs/post-release-operations-decision-packet.md` stops preserving Issue #42 as a human/ChatGPT decision item or loses required safety boundaries.
+- Context: Issue #42 remains open for privacy/legal, support, billing/credits, log retention, 429 policy, production smoke, Cloudflare logs, and incident ownership decisions. These must remain explicit and must not be silently weakened by future docs edits.
+- Options considered:
+  - Rely on manual review of the decision packet.
+  - Add deterministic docs verification for the packet's required sections and guardrail phrases.
+  - Close Issue #42 after adding the packet.
+- Rationale: A local docs guardrail is a low-risk way to preserve the governance boundary without making the human decisions or touching runtime behavior.
+- Consequences: `scripts/verifyPostReleaseDocs.js` validates the decision packet alongside the existing post-release operations docs. The script checks the keep-open status, decision areas, Codex prohibitions, production/live-provider/secret/Cloudflare stop boundaries, and close conditions. Issue #42 remains open.
+- Status: Active.
+- Related files: `scripts/verifyPostReleaseDocs.js`, `scripts/verifyPostReleaseDocs.test.js`, `docs/post-release-operations-decision-packet.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: Issue #42.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
