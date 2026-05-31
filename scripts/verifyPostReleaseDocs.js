@@ -41,6 +41,50 @@ export const REQUIRED_DOCS = [
       "## KV障害時の判断手順",
       "## 復旧後確認"
     ]
+  },
+  {
+    path: "docs/post-release-operations-decision-packet.md",
+    required: [
+      "## Status",
+      "## Issue #42 scope",
+      "## Decision item summary",
+      "## Codex prohibited work for Issue #42",
+      "## Production smoke approval gate",
+      "## Issue #42 close conditions",
+      "## Why Issue #42 remains open"
+    ],
+    requiredPhrases: [
+      "Issue #42 is open",
+      "human or ChatGPT decisions",
+      "privacy and legal review",
+      "support contact and support scope",
+      "billing, X API credits",
+      "log retention and Cloudflare Functions log handling",
+      "429 policy",
+      "production smoke approval boundaries",
+      "incident ownership",
+      "Codex must not",
+      "Close Issue #42 while human decisions remain incomplete",
+      "production `/api/extract`",
+      "live X API",
+      "live oEmbed",
+      "real X URL",
+      "Cloudflare write/deploy",
+      "secret/OAuth",
+      "real data"
+    ],
+    forbiddenTerms: [
+      "real X URL",
+      "post ID",
+      "username",
+      "post text",
+      "media URL",
+      "raw JSON",
+      "token",
+      "secret",
+      "OAuth",
+      "Authorization header"
+    ]
   }
 ];
 
@@ -61,14 +105,21 @@ export function readDoc(rootDir, relativePath) {
   return fs.readFileSync(path.join(rootDir, relativePath), "utf8");
 }
 
-export function validateDocText(text, requiredSections, forbiddenTerms = REQUIRED_FORBIDDEN_TERMS) {
+export function validateDocText(
+  text,
+  requiredSections,
+  forbiddenTerms = REQUIRED_FORBIDDEN_TERMS,
+  requiredPhrases = []
+) {
   const missingSections = requiredSections.filter((section) => !text.includes(section));
   const missingForbiddenTerms = forbiddenTerms.filter((term) => !text.includes(term));
+  const missingRequiredPhrases = requiredPhrases.filter((phrase) => !text.includes(phrase));
 
   return {
-    ok: missingSections.length === 0 && missingForbiddenTerms.length === 0,
+    ok: missingSections.length === 0 && missingForbiddenTerms.length === 0 && missingRequiredPhrases.length === 0,
     missingSections,
-    missingForbiddenTerms
+    missingForbiddenTerms,
+    missingRequiredPhrases
   };
 }
 
@@ -77,7 +128,7 @@ export function validatePostReleaseDocs(rootDir, docs = REQUIRED_DOCS) {
     const text = readDoc(rootDir, doc.path);
     return {
       path: doc.path,
-      ...validateDocText(text, doc.required)
+      ...validateDocText(text, doc.required, doc.forbiddenTerms ?? REQUIRED_FORBIDDEN_TERMS, doc.requiredPhrases ?? [])
     };
   });
 }
@@ -97,6 +148,9 @@ export function formatValidationResults(results) {
     }
     for (const term of result.missingForbiddenTerms) {
       lines.push(`missing forbidden-term reminder: ${term}`);
+    }
+    for (const phrase of result.missingRequiredPhrases ?? []) {
+      lines.push(`missing required phrase: ${phrase}`);
     }
   }
 
