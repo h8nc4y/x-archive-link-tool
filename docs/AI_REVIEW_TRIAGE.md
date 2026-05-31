@@ -6,12 +6,12 @@ ChatGPT triage and Claude review follow-up closure recorded for the 2026-05-30 a
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current closure update: PR #31 through PR #38 are merged. No active Codex implementation task remains approved at this time. CL-001 and CL-002 runtime cache behavior remains a human/product decision. CL-012 is resolved as tracked-document governance with no application code change. CL-013 remains rejected for implementation; local server logger injection is not approved. The current decision packet is `docs/post-claude-review-decision-backlog.md`.
+Current closure update: PR #31 through PR #39 are merged. Issue #40 records the next ChatGPT approval: CL-001 receives no runtime change and no KV physical TTL extension; CL-002 adopts short-TTL caching for degraded oEmbed fallback results only. CL-012 is resolved as tracked-document governance with no application code change. CL-013 remains rejected for implementation; local server logger injection is not approved. The current decision packet is `docs/post-claude-review-decision-backlog.md`.
 
 ## Final disposition summary
 
-- CL-001: Documentation-only clarification completed in PR #33. Runtime KV stale-cache behavior remains deferred pending human/product/privacy decision.
-- CL-002: Documentation-only clarification completed in PR #33. Runtime degraded oEmbed fallback cache policy remains deferred pending human/product/privacy decision.
+- CL-001: Documentation-only clarification completed in PR #33. Issue #40 closes the runtime decision as no runtime change and no KV physical TTL extension.
+- CL-002: Documentation-only clarification completed in PR #33. Issue #40 approves degraded oEmbed fallback short-TTL caching only.
 - CL-003: Completed in PR #31.
 - CL-004: Completed in PR #32.
 - CL-005: Completed in PR #31.
@@ -88,6 +88,16 @@ Current closure update: PR #31 through PR #38 are merged. No active Codex implem
 - Validation: Run `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
 - Priority: P2
 
+### CL-001 / CL-002 Issue #40 runtime policy
+
+- Finding ID: CL-001 / CL-002
+- Reason for approval: ChatGPT selected the remaining runtime policy for Issue #40 after the decision backlog was recorded.
+- Scope: CL-001 no runtime change and no KV physical TTL extension. CL-002 only changes degraded oEmbed fallback cache TTL when `X_BEARER_TOKEN` is configured, X API fails, and oEmbed fallback succeeds.
+- Implementation task: Cache degraded fallback results with a short TTL of 1 hour. Preserve the existing 30-day TTL for normal X API success results and token-missing oEmbed primary results.
+- Acceptance criteria: No cache key version change, no KV physical TTL extension, no provider fallback rewrite, no production smoke, no live X API/oEmbed, no Cloudflare write/deploy, and no secret or real-data access.
+- Validation: Add or update `server/extractService.test.js`; run focused tests, `node --test`, `npm.cmd run check:post-release-docs`, and `git diff --check`.
+- Priority: P2
+
 ### CL-006
 
 - Finding ID: CL-006
@@ -130,17 +140,7 @@ Current closure update: PR #31 through PR #38 are merged. No active Codex implem
 
 ## Deferred findings
 
-The following runtime or product behavior changes are not approved for Codex implementation after the Claude review follow-up closure. Documentation-only clarification for CL-001 and CL-002 is completed above, but behavior changes remain deferred.
-
-- Finding ID: CL-001
-- Reason for deferral: KV stale-cache behavior changes may affect retention/privacy behavior. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
-- Information needed: Product/privacy decision on physical KV TTL versus documented stale-cache behavior.
-- Revisit condition: ChatGPT explicitly approves a specific cache-retention implementation.
-
-- Finding ID: CL-002
-- Reason for deferral: Degraded oEmbed fallback cache TTL policy requires product decision. Documentation-only clarification is approved, but runtime behavior changes remain deferred.
-- Information needed: Chosen TTL/non-cache policy for degraded fallback results.
-- Revisit condition: ChatGPT approves a concrete cache behavior policy.
+The following runtime or product behavior changes are not approved for Codex implementation after the Claude review follow-up closure and Issue #40 runtime-policy approval. CL-001 and CL-002 are no longer open deferred items under Issue #40; any future cache-policy change requires a new explicit ChatGPT approval.
 
 - Finding ID: CL-011
 - Reason for deferral: Adding lint/typecheck/build/`node --check` quality gates was not adopted for MVP. PR #34 addressed the separate GitHub Actions runtime warning only.
@@ -172,12 +172,9 @@ Explicit out-of-scope work for this pass:
 - External API calls.
 - Production `/api/extract` checks.
 - Cloudflare write/deploy operations.
-- GitHub Issue/PR operations.
 - Dependency additions or `npm install`.
 
 ## Open questions
 
-- What exact runtime policy should be chosen for CL-001 KV physical retention versus logical stale-cache behavior?
-- What exact runtime policy should be chosen for CL-002 degraded oEmbed fallback caching?
+- Which decisions from Issue #41 and Issue #42 should be handled next?
 - Should future Claude review prompts include `docs/CHATGPT_HANDOFF.md`, the full review-coordination docs, or a refreshed single handoff?
-- Which GitHub issue from `docs/post-claude-review-decision-backlog.md` should be resolved first?

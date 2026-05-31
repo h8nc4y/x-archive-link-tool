@@ -210,6 +210,22 @@ Use this template for future decisions:
 - Related files: `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/requirements.md`, `docs/api.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/production-smoke-runbook.md`, `docs/post-release-operations-checklist.md`.
 - Related review findings: CL-001, CL-002, CL-009.
 
+### Decision 014: Resolve Issue #40 cache policy with degraded fallback short TTL
+
+- Date: 2026-05-31
+- Decision: CL-001 receives no runtime change and no KV physical TTL extension. CL-002 adopts short-TTL caching for degraded oEmbed fallback results only.
+- Context: Issue #40 asked for a concrete runtime cache policy after the decision backlog was created. ChatGPT approved keeping the existing CL-001 documentation stance while preventing X API failure fallback results from being cached for the normal 30-day TTL.
+- Options considered:
+  - Extend KV physical TTL beyond logical TTL.
+  - Make degraded oEmbed fallback results completely non-cacheable.
+  - Cache degraded oEmbed fallback results with a short TTL.
+  - Keep degraded oEmbed fallback results cached with the normal TTL.
+- Rationale: A 1-hour degraded fallback TTL limits the lifetime of fallback data after temporary X API failures without increasing KV physical retention, changing cache key version, or repeatedly calling providers on every miss.
+- Consequences: Normal X API success results and token-missing oEmbed primary results continue to use the normal 30-day TTL. Only token-configured X API failure followed by successful oEmbed fallback uses the 1-hour TTL. Production KV stale-cache remains not guaranteed after physical expiration.
+- Status: Active.
+- Related files: `server/extractService.js`, `server/extractService.test.js`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-001, CL-002.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
@@ -219,5 +235,5 @@ Use this template for future decisions:
 - Which severity taxonomy should be used consistently for Claude findings and ChatGPT triage.
 - Whether future Claude review should include production-operation docs or only code and tests.
 - Whether future Claude review should use a refreshed single handoff file or the full tracked review-management doc set.
-- Which runtime policy should be chosen for CL-001 KV physical retention versus logical stale-cache behavior.
-- Which runtime policy should be chosen for CL-002 degraded oEmbed fallback caching.
+- How Issue #41 production HEAD verification should be performed without production smoke or Cloudflare write operations.
+- Which Issue #42 post-release operations items are MVP-blocking.

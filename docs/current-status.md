@@ -11,7 +11,7 @@ BYOT/oEmbed fallback版Web MVPの現在状態です。
 - postId単位のcache-firstで、cache hit時はX API v2を呼ばない。
 - Cloudflare ProductionではKV binding `X_POST_CACHE` によりpostId単位のcacheを保存できる。
 - 現行KV実装ではphysical TTLがlogical TTLと同じため、Cloudflare KVで期限切れ後の `stale-cache` 到達性は本番保証として主張しない。
-- `X_BEARER_TOKEN` 設定時にX API失敗後のoEmbed fallbackが成功した場合、現行実装ではそのfallback結果も通常cache経路で保存される。非cache、短TTL、現状維持の正式方針は未決。
+- `X_BEARER_TOKEN` 設定時にX API一時失敗後のoEmbed fallbackが成功した場合、そのdegraded fallback結果だけ1時間TTLでcache保存する。通常のX API成功結果とtoken未設定時のoEmbed primary結果は30日TTLのまま。
 - Cloudflare Functionsのin-memory cacheとrate limiterはisolate単位のbest-effortであり、真のglobal制限ではない。
 - Web UIでコピー用テキストを `textarea` に表示できる。
 - 魚拓リンクを外部リンクとして表示できる。
