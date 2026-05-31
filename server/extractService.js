@@ -5,6 +5,7 @@ import { buildPostCacheKey, createMemoryPostCache, DEFAULT_CACHE_TTL_MS, POST_EX
 const OEMBED_MEDIA_WARNING = "公式API未使用のため画像URLを取得できない場合があります。";
 const STALE_CACHE_WARNING = "最新取得に失敗したため期限切れキャッシュを返しました。";
 const X_API_FALLBACK_WARNING = "X API provider failed; used oEmbed fallback.";
+const DEGRADED_OEMBED_FALLBACK_CACHE_TTL_MS = 60 * 60 * 1000;
 
 function getXApiFallbackWarning(error) {
   if (Number.isInteger(error?.responseStatusCode)) {
@@ -134,13 +135,14 @@ export async function extractPostWithCache(
 
     if (token) {
       const fallbackPost = await oEmbedProvider(parsedUrl);
+      const fallbackTtlMs = DEGRADED_OEMBED_FALLBACK_CACHE_TTL_MS;
       const normalized = normalizeProviderPost(fallbackPost, parsedUrl, {
         source: "oembed",
         fetchedAt,
-        ttlMs,
+        ttlMs: fallbackTtlMs,
         warnings: [OEMBED_MEDIA_WARNING, getXApiFallbackWarning(error)]
       });
-      await setCachedPost(postCache, parsedUrl.postId, normalized, ttlMs);
+      await setCachedPost(postCache, parsedUrl.postId, normalized, fallbackTtlMs);
       return normalized;
     }
 

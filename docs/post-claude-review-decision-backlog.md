@@ -4,13 +4,14 @@
 
 Prepared by Codex after Claude review follow-up PR #31 through PR #38 were merged.
 
-This document is a decision packet for human and ChatGPT review. It does not approve new runtime implementation. Codex must not change cache runtime behavior, production settings, Cloudflare configuration, live API checks, or operational policy until ChatGPT or a human explicitly approves a scoped follow-up.
+This document is a decision packet for human and ChatGPT review. Issue #40 later approved one scoped runtime cache update: CL-002 degraded oEmbed fallback results use a short cache TTL. Codex must not change any other cache runtime behavior, production settings, Cloudflare configuration, live API checks, or operational policy until ChatGPT or a human explicitly approves another scoped follow-up.
 
 Current repository state at preparation time:
 
 - Claude review output: recorded in `docs/CLAUDE_REVIEW.md`.
 - ChatGPT triage and closure: recorded in `docs/AI_REVIEW_TRIAGE.md`.
 - Completed Codex follow-up tasks: recorded in `docs/CODEX_TASKS.md`.
+- Issue #40: approved and implemented CL-002 degraded fallback short TTL; CL-001 remains no runtime change.
 - Current production HEAD: unverified in this pass.
 - Open PRs/issues before this packet: none observed.
 
@@ -31,8 +32,8 @@ Current repository state at preparation time:
 
 | ID | State | Notes |
 | --- | --- | --- |
-| CL-001 | Deferred runtime decision | Docs clarify that production KV stale-cache is not guaranteed after physical expiration. Runtime KV retention is undecided. |
-| CL-002 | Deferred runtime decision | Docs clarify that degraded oEmbed fallback cache policy is undecided. Runtime behavior is unchanged. |
+| CL-001 | Closed no runtime change | KV physical TTL extension is not implemented. Docs continue to avoid claiming production KV stale-cache is guaranteed after physical expiration. |
+| CL-002 | Completed | Degraded oEmbed fallback results use a short cache TTL when X API is configured and fails before fallback succeeds. |
 | CL-003 | Completed | Generic Japanese UI fallback for unexpected client errors. |
 | CL-004 | Completed | Provider fetch redirect non-following. |
 | CL-005 | Completed | No `@未取得` copy text. |
@@ -57,17 +58,17 @@ Current repository state at preparation time:
 
 ### ChatGPT Decision Required
 
-- CL-001 runtime policy: whether to keep current behavior, extend KV physical TTL beyond logical TTL, or choose another stale-cache design.
-- CL-002 runtime policy: whether degraded oEmbed fallback results should remain cached like normal success, be non-cacheable, or use a shorter TTL.
-- Whether any approved runtime cache change needs a cache key/schema version change.
+- CL-001 runtime policy: closed as no runtime change; do not extend KV physical TTL unless a new approval supersedes Issue #40.
+- CL-002 runtime policy: closed as degraded fallback short TTL. Current value: 1 hour.
+- Whether any future approved runtime cache change needs a cache key/schema version change.
 - Whether production smoke should be performed, and under which runbook limits.
 
 ### Codex Can Implement After Approval
 
 Codex can implement only after ChatGPT or a human provides an explicit scoped approval:
 
-- Update docs and tests for a chosen CL-001/CL-002 cache policy.
-- Implement a chosen CL-001/CL-002 runtime policy with mock/local tests only.
+- Update docs and tests for a future cache policy only after a new approval.
+- Implement future cache policy changes with mock/local tests only after a new approval.
 - Record human-provided production HEAD verification evidence without inventing values.
 - Record human-provided post-release operations decisions.
 - Run production smoke only under `docs/production-smoke-runbook.md` with explicit approval and no prohibited data recording.
@@ -102,8 +103,8 @@ The approved Claude review implementation queue is complete through PR #38. See 
 
 - Description: Store degraded fallback responses with a shorter TTL than normal successful X API responses.
 - Benefits: Reduces repeated external calls during temporary failures while limiting degraded-data lifetime.
-- Costs/Risks: Requires choosing a short TTL and possibly documenting separate cache semantics.
-- Needs: Product/privacy/API-usage decision and tests for TTL behavior.
+- Costs/Risks: Documents separate cache semantics for degraded fallback responses.
+- Decision: Adopted for Issue #40. Current TTL is 1 hour.
 
 ### Option D: Extend KV Physical TTL Beyond Logical TTL
 
@@ -149,8 +150,9 @@ Minimum required before any smoke:
 
 ## Codex Must Not Do Without Later Approval
 
-- Implement CL-001/CL-002 runtime cache behavior.
-- Change KV physical TTL, fallback TTL, cache key/schema version, or provider fallback logic.
+- Implement additional CL-001/CL-002 runtime cache behavior.
+- Change KV physical TTL, cache key/schema version, or provider fallback logic.
+- Change the degraded fallback short TTL again without a new approval.
 - Run production smoke or production `/api/extract`.
 - Call live X API or oEmbed.
 - Send real X post URLs.
@@ -165,8 +167,8 @@ Create issues only if no duplicate open issue exists.
 
 1. `Decide runtime cache policy for CL-001/CL-002`
    - Decision owner: ChatGPT / human.
-   - Scope: Choose current behavior, non-cache degraded fallback, short TTL degraded fallback, KV physical TTL extension, or another approved policy.
-   - Must not implement runtime changes until decision is recorded.
+   - Scope: Closed by Issue #40 after choosing CL-001 no runtime change and CL-002 degraded fallback short TTL.
+   - Further runtime changes require a new approval.
 
 2. `Run approved production HEAD verification`
    - Decision owner: human / ChatGPT.

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { extractPostWithCache } from "./extractService.js";
-import { buildPostCacheKey, createMemoryPostCache } from "./postCache.js";
+import { buildPostCacheKey, createMemoryPostCache, DEFAULT_CACHE_TTL_MS } from "./postCache.js";
 import { XApiV2ClientError } from "./xApiV2Client.js";
 
 const parsedUrl = {
@@ -9,6 +9,22 @@ const parsedUrl = {
   postId: "123",
   canonicalUrl: "https://x.com/source_user/status/123"
 };
+
+const EXPECTED_DEGRADED_FALLBACK_CACHE_TTL_MS = 60 * 60 * 1000;
+
+function createRecordingCache() {
+  const sets = [];
+
+  return {
+    sets,
+    async get() {
+      return null;
+    },
+    async set(key, post, metadata) {
+      sets.push({ key, post, metadata });
+    }
+  };
+}
 
 function providerPost(overrides = {}) {
   return {
@@ -106,6 +122,25 @@ test("cache miss calls X API provider once and stores result", async () => {
   assert.deepEqual(second.mediaUrls, ["https://pbs.twimg.com/media/one.jpg"]);
 });
 
+test("X API success stores normal result with default cache TTL", async () => {
+  const cache = createRecordingCache();
+
+  const result = await extractPostWithCache(parsedUrl, {
+    env: { X_BEARER_TOKEN: "test-token" },
+    cache,
+    now: () => 0,
+    xApiProvider: async () => providerPost({ mediaUrls: ["https://pbs.twimg.com/media/one.jpg"] })
+  });
+
+  assert.equal(result.source, "x-api-v2");
+  assert.equal(result.cached, false);
+  assert.equal(cache.sets.length, 1);
+  assert.equal(cache.sets[0].metadata.ttlMs, DEFAULT_CACHE_TTL_MS);
+  assert.equal(cache.sets[0].metadata.expiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(result.cacheExpiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(JSON.stringify(result).includes("test-token"), false);
+});
+
 test("missing X_BEARER_TOKEN uses oEmbed fallback and caches result", async () => {
   const cache = createMemoryPostCache({ now: () => 0 });
   let oembedCalls = 0;
@@ -133,6 +168,33 @@ test("missing X_BEARER_TOKEN uses oEmbed fallback and caches result", async () =
   assert.equal(result.authorName, "oEmbed User");
   assert.deepEqual(result.mediaUrls, []);
   assert.equal(result.warnings.includes("公式API未使用のため画像URLを取得できない場合があります。"), true);
+});
+
+test("missing X_BEARER_TOKEN oEmbed primary stores normal result with default cache TTL", async () => {
+  const cache = createRecordingCache();
+
+  const result = await extractPostWithCache(parsedUrl, {
+    env: {},
+    cache,
+    now: () => 0,
+    oEmbedProvider: async () => ({
+      accountName: "oEmbed User",
+      username: "source_user",
+      userNumericId: "未取得",
+      postId: "123",
+      postUrl: "https://x.com/source_user/status/123",
+      createdAt: "未取得",
+      text: "未取得",
+      mediaUrls: []
+    })
+  });
+
+  assert.equal(result.source, "oembed");
+  assert.equal(result.cached, false);
+  assert.equal(cache.sets.length, 1);
+  assert.equal(cache.sets[0].metadata.ttlMs, DEFAULT_CACHE_TTL_MS);
+  assert.equal(cache.sets[0].metadata.expiresAt, "1970-01-31T00:00:00.000Z");
+  assert.equal(result.cacheExpiresAt, "1970-01-31T00:00:00.000Z");
 });
 
 test("API failure returns stale cache with warning", async () => {
@@ -180,6 +242,38 @@ test("X API failure without stale cache falls back to oEmbed without leaking tok
   assert.equal(result.authorName, "Fallback User");
   assert.equal(result.warnings.includes("X API provider failed; used oEmbed fallback."), true);
   assert.equal(JSON.stringify(result).includes("secret-token"), false);
+});
+
+test("X API failure oEmbed fallback stores degraded result with short TTL", async () => {
+  const cache = createRecordingCache();
+
+  const result = await extractPostWithCache(parsedUrl, {
+    env: { X_BEARER_TOKEN: "test-token" },
+    cache,
+    now: () => 0,
+    xApiProvider: async () => {
+      throw new Error("x api failed");
+    },
+    oEmbedProvider: async () => ({
+      accountName: "Fallback User",
+      username: "source_user",
+      userNumericId: "未取得",
+      postId: "123",
+      postUrl: "https://x.com/source_user/status/123",
+      createdAt: "未取得",
+      text: "未取得",
+      mediaUrls: []
+    })
+  });
+
+  assert.equal(result.source, "oembed");
+  assert.equal(result.cached, false);
+  assert.equal(cache.sets.length, 1);
+  assert.equal(cache.sets[0].metadata.ttlMs, EXPECTED_DEGRADED_FALLBACK_CACHE_TTL_MS);
+  assert.equal(cache.sets[0].metadata.expiresAt, "1970-01-01T01:00:00.000Z");
+  assert.equal(result.cacheExpiresAt, "1970-01-01T01:00:00.000Z");
+  assert.equal(JSON.stringify(result).includes("test-token"), false);
+  assert.equal(JSON.stringify(cache.sets).includes("test-token"), false);
 });
 
 for (const status of [401, 403, 429]) {

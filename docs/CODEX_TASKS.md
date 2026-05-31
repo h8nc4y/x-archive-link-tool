@@ -2,9 +2,9 @@
 
 ## Status
 
-ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes.
+ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes, including the Issue #40 cache-policy follow-up.
 
-Current closure state: no active Codex implementation task remains approved. PR #31 through PR #38 are merged, and the records below are historical completion records. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
+Current closure state: Issue #40 approves CL-001 no runtime change and CL-002 degraded fallback short-TTL caching only. No additional Codex implementation task is approved. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
 
 ## Source of truth
 
@@ -62,13 +62,81 @@ Claude finding ID or ChatGPT decision reference.
 
 ## Approved task queue
 
-No active approved task is queued for Codex at this time.
+No active approved task is queued for Codex after the Issue #40 task recorded below.
 
-CL-001 and CL-002 runtime cache behavior remain human/product/privacy decisions. CL-011 quality gates are not adopted for MVP unless later approved. CL-012 is resolved by tracked governance docs without application code changes. CL-013 local server logger injection is rejected unless ChatGPT later approves a specific safe-logging design.
+CL-001 is closed as no runtime change and no KV physical TTL extension. CL-002 is approved only for degraded oEmbed fallback short-TTL caching. CL-011 quality gates are not adopted for MVP unless later approved. CL-012 is resolved by tracked governance docs without application code changes. CL-013 local server logger injection is rejected unless ChatGPT later approves a specific safe-logging design.
 
 Decision backlog: `docs/post-claude-review-decision-backlog.md`.
 
 ## Historical approved task records
+
+### Task CL-001-CL-002-issue-40
+
+### Priority
+
+P2
+
+### Source finding
+
+Issue #40 and ChatGPT-approved runtime cache policy.
+
+### Goal
+
+Record CL-001 as no runtime change and implement CL-002 degraded fallback short-TTL caching.
+
+### Scope
+
+`server/extractService.js`, `server/extractService.test.js`, and related cache-policy docs only.
+
+### Files likely affected
+
+- `server/extractService.js`
+- `server/extractService.test.js`
+- `docs/api.md`
+- `docs/requirements.md`
+- `docs/current-status.md`
+- `docs/post-claude-review-decision-backlog.md`
+- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/CODEX_TASKS.md`
+- `docs/DECISION_LOG.md`
+
+### Implementation plan
+
+Add a 1-hour TTL for degraded oEmbed fallback results only when `X_BEARER_TOKEN` is configured, X API retrieval fails, no stale cache is returned, and oEmbed fallback succeeds. Preserve the default 30-day TTL for normal X API success results and token-missing oEmbed primary results. Record that CL-001 has no runtime change.
+
+### Acceptance criteria
+
+- CL-001 does not extend KV physical TTL and does not claim production KV stale-cache is guaranteed after physical expiration.
+- CL-002 degraded fallback results are cached for 1 hour.
+- X API success results continue to use the default 30-day TTL.
+- Token-missing oEmbed primary results continue to use the default 30-day TTL.
+- Cache key version, provider fallback flow, provider clients, rate limiter, web UI, Cloudflare config, dependencies, and deployment files are unchanged.
+- No production smoke, production `/api/extract`, live X API, live oEmbed, Cloudflare write/deploy, secret/OAuth, or real-data access is performed.
+
+### Validation commands
+
+- `node --test server\extractService.test.js`
+- `node --test`
+- `npm.cmd run check:post-release-docs`
+- `git diff --check`
+
+### Out of scope
+
+- KV physical TTL extension.
+- Cache key version changes.
+- Degraded fallback complete non-caching.
+- Provider fallback rewrite.
+- Issue #41 production HEAD verification.
+- Issue #42 post-release operations decisions.
+- Production smoke, live provider calls, Cloudflare write/deploy, secrets, OAuth, or real-data operations.
+
+### Risks
+
+Repeated X API failures can still cache degraded fallback data for up to 1 hour. This is the approved compromise between long-lived degraded cache entries and repeated provider calls.
+
+### Completion notes
+
+Implemented in the Issue #40 follow-up PR.
 
 ### Task CL-009-docs-only
 
@@ -606,5 +674,6 @@ Completed by PR #31 and subsequent review-management doc updates.
 - PR #35: CL-006 minimal loading UI and regression coverage.
 - PR #36: CL-007/CL-008 rate limiter and IP key hardening.
 - PR #37: CL-009 documentation-only production HEAD wording cleanup.
+- Issue #40 follow-up: CL-001 no runtime change and CL-002 degraded fallback short-TTL caching.
 - CL-012: Resolved by tracked governance docs; no application code change and no tracked `CLAUDE.md` required.
 - CL-013: Rejected for implementation; no local server logger injection.
