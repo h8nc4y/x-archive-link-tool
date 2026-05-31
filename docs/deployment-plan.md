@@ -20,7 +20,7 @@ Codexは次の実値を独断で決めない。ユーザー指定値は候補と
 | 項目 | 分類 | 現状 | 次アクション |
 | --- | --- | --- | --- |
 | 問い合わせ先 | 公開前に決めるべき項目 | `h8nc4y.sub01@gmail.com` をユーザー指定値として反映済み。法務レビュー済みではない。 | 公開前にサポート範囲と運用責任者を確認する。 |
-| プライバシーポリシーURL | 公開前に決めるべき項目 | `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。Cloudflare Pages deployment一覧でHEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のProduction正式証跡も当時の確認記録として残す。現在の本番稼働HEADは別途確認が必要。 | 公開前に法務レビュー要否を確認する。 |
+| プライバシーポリシーURL | 公開前に決めるべき項目 | `/privacy.html` 候補を作成済み。公開URLでは `/privacy` へredirectされ、静的表示と主要security headersは2026-05-18時点で確認済み。Cloudflare Pages deployment一覧でHEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のProduction正式証跡も当時の確認記録として残す。現在の本番稼働HEAD確認はIssue #41の記録を参照する。Issue #42では本番稼働HEADを再確認しない。 | 公開前に法務レビュー要否を確認する。 |
 | ログ保存期間 | 公開前に決めるべき項目 | 未設定 / 人間判断待ち。ドラフトでは安全なログ項目のみ記録する方針を記載済み。 | 推奨案は安全ログ項目だけを30日以内、またはCloudflare既定の短い保持期間に合わせること。法務/運用責任者が確定し、プライバシーポリシーへ反映する。 |
 | KV障害時の正式切り戻し手順 | 公開前に決めるべき項目 | 候補は `X_POST_CACHE` bindingを外してProduction redeployし、in-memory fallbackで継続すること。ただしCloudflare write操作を伴うためCodexは未実施。 | 実施判断者、切り戻し条件、復旧後の再有効化手順、承認文言を決める。 |
 | X API credits / billing / usage cap見直し頻度 | 公開前に決めるべき項目 | 未確認 / 人間判断待ち | 推奨案は公開前、公開直後、以後週次、安定後月次で人間がX Developer Portalを確認すること。tokenやsecretは共有しない。 |

@@ -6,6 +6,8 @@
 
 この文書は手順整理用です。作成時点では、本番 `/api/extract`、本番429確認、X API live通信、oEmbed live通信、実X投稿URL送信、Cloudflare write操作、secret / token / OAuth / 実データの読み取りは実行していません。
 
+Issue #42の現在の判断パケットは `docs/post-release-operations-decision-packet.md`。このチェックリストは個別項目の作業台帳であり、Issue #42のclose可否は判断パケットのclose条件に従う。
+
 ## 残タスクの分類
 
 | 分類 | 項目 | Codexの扱い | 次の入力 |
