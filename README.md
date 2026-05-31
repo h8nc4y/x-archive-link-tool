@@ -5,7 +5,7 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです
 Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URLで初回デプロイ済みです。iOSアプリ、DB、独自ドメイン設定は未実装です。
 
 公開URL: https://x-archive-link-tool.pages.dev
-プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（`/privacy` へredirect後の静的表示は2026-05-18時点で確認済み。Cloudflare Pages Production deployment一覧で確認したHEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点の過去証跡です。現在の本番稼働HEADはこの作業では未確認です。）
+プライバシーポリシーURL候補: https://x-archive-link-tool.pages.dev/privacy.html（`/privacy` へredirect後の静的表示は2026-05-18時点で確認済み。Cloudflare Pages Production deployment一覧で確認したHEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点の過去証跡です。現在のProduction HEAD確認は `docs/post-release-human-verification-record.md` のIssue #41記録を参照してください。このmaintenance auditでは本番API、production smoke、live provider確認を再実行していません。）
 
 Cloudflare Pages無料URL（`*.pages.dev`）では、静的UIは `apps/web` を配信し、`/api/extract` は Cloudflare Pages Functions / Workers で実行します。静的ページ用のセキュリティヘッダは `apps/web/_headers` で指定します。
 
@@ -129,6 +129,7 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 - [公開前運用Runbook](docs/pre-release-operations-runbook.md)
 - [v0.1.0後の人間確認チェックリスト](docs/post-release-operations-checklist.md)
 - [post-release operations判断パケット](docs/post-release-operations-decision-packet.md)
+- [post-review maintenance audit](docs/post-review-maintenance-audit.md)
 - [本番API smoke Runbook](docs/production-smoke-runbook.md)
 - [人間確認結果テンプレート](docs/post-release-human-verification-template.md)
 - [人間確認結果記録](docs/post-release-human-verification-record.md)
