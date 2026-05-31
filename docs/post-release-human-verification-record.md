@@ -1,5 +1,50 @@
 # Post-release Human Verification Record
 
+## Production HEAD verification for Issue #41
+
+2026/05/31 12:51 JST時点のCodex read-only確認結果:
+
+| 項目 | 結果 |
+| --- | --- |
+| Issue | #41 |
+| 判断 | verified |
+| 確認対象commit | `a6fe436f3f08326c6479561ea997ed6bb3e23f9c` |
+| branch | `master` |
+| GitHub check suite | `71569644229` |
+| Cloudflare Pages check-run | `78690922988` |
+| Cloudflare Pages deployment ID | `143cd043-10bf-406b-b8c8-3a22bb6a9ca2` |
+| Cloudflare Pages check result | `Latest commit: a6fe436`, `Deploy successful` |
+| Production static `/` | GET 200 |
+| Production static `/privacy.html` | GET 200, effective path `/privacy` |
+| Deployment URL static `/` | GET 200 |
+| root ETag comparison | production URL and deployment URL matched |
+| GitHub Deployments API | no deployment records returned |
+| Wrangler deployment list | not run; no global or local `wrangler` command was installed |
+
+根拠:
+
+- `master` HEADは `a6fe436f3f08326c6479561ea997ed6bb3e23f9c`。
+- GitHub branches APIで `master` が同commitを指すことを確認した。
+- Cloudflare Workers and Pages GitHub Appのcheck suite `71569644229` は `head_branch=master`, `head_sha=a6fe436f3f08326c6479561ea997ed6bb3e23f9c`, conclusion `success`。
+- Cloudflare Pages check-run `78690922988` は `Latest commit: a6fe436`, `Deploy successful`, deployment ID `143cd043-10bf-406b-b8c8-3a22bb6a9ca2`。
+- `docs/deployment-plan.md` 上のProduction branchは `master`。
+- Cloudflare Pages公式docsでは、production branchへのcommitが `*.pages.dev` production URLを更新し、non-production branchはpreview deploymentとして扱われる。
+- 公開Production URLの静的 `/` と `/privacy.html` はGET 200。deployment URLの静的 `/` もGET 200。root pageのETagはproduction URLとdeployment URLで一致した。
+
+確認していないこと:
+
+- 本番 `/api/extract`。
+- production smoke。
+- live X API。
+- live oEmbed。
+- Cloudflare Dashboard/API/CLI deployment list。
+- Cloudflare Functions logs。
+- secrets、OAuth credentials、tokens、`.env`、`tmp/approved-smoke-target.txt`、実データ。
+
+禁止事項の遵守:
+
+- 本番 `/api/extract`、production smoke、X API live通信、oEmbed live通信、実X URL送信、Cloudflare write/deploy/rollback/config変更、dependency追加、`npm install` は実行していない。
+
 2026/05/21 14:26:02 JST
 
 v0.1.0後の人間確認結果を、実X投稿URL、postId、username、投稿本文、media URL、raw JSON values、token値、secret、OAuth credential、Authorization header、Cookieを含めずに記録する。

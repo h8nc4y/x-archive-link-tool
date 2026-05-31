@@ -226,6 +226,21 @@ Use this template for future decisions:
 - Related files: `server/extractService.js`, `server/extractService.test.js`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-001, CL-002.
 
+### Decision 015: Verify current Production HEAD without production API smoke
+
+- Date: 2026-05-31
+- Decision: Issue #41 verified the current Cloudflare Pages Production HEAD as master HEAD `a6fe436f3f08326c6479561ea997ed6bb3e23f9c` using read-only metadata and static page checks only.
+- Context: Current Production HEAD had remained unverified after PR #31 through PR #43. ChatGPT approved Production HEAD verification without production `/api/extract`, production smoke, live X API, live oEmbed, Cloudflare write/deploy, secret/OAuth, or real-data access.
+- Options considered:
+  - Use only the GitHub Cloudflare Pages check-run.
+  - Use Cloudflare Pages read-only deployment listing.
+  - Combine GitHub Cloudflare Pages check metadata, documented production branch, Cloudflare Pages docs, and static page GET checks.
+- Rationale: GitHub Deployments API returned no deployment records and Wrangler was not installed locally or globally. The available evidence shows the Cloudflare Workers and Pages App check suite ran on `head_branch=master` at `head_sha=a6fe436f3f08326c6479561ea997ed6bb3e23f9c`, completed successfully, and reported deployment ID `143cd043-10bf-406b-b8c8-3a22bb6a9ca2` with latest commit `a6fe436`. The public production URL and the deployment URL both returned static root page HTTP 200 with matching ETag.
+- Consequences: Docs may state the current Production HEAD verification result for Issue #41. This does not authorize production `/api/extract`, smoke tests, Cloudflare write/deploy/rollback/config changes, or Issue #42 operations work.
+- Status: Active.
+- Related files: `docs/current-status.md`, `docs/deployment-plan.md`, `docs/post-release-human-verification-record.md`, `docs/post-claude-review-decision-backlog.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: CL-009, Issue #41.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
@@ -235,5 +250,4 @@ Use this template for future decisions:
 - Which severity taxonomy should be used consistently for Claude findings and ChatGPT triage.
 - Whether future Claude review should include production-operation docs or only code and tests.
 - Whether future Claude review should use a refreshed single handoff file or the full tracked review-management doc set.
-- How Issue #41 production HEAD verification should be performed without production smoke or Cloudflare write operations.
 - Which Issue #42 post-release operations items are MVP-blocking.
