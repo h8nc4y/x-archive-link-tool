@@ -256,6 +256,21 @@ Use this template for future decisions:
 - Related files: `docs/post-release-operations-decision-packet.md`, `docs/post-claude-review-decision-backlog.md`, `docs/post-release-operations-checklist.md`, `docs/post-release-human-verification-template.md`, `docs/production-smoke-runbook.md`, `docs/incident-and-kv-failure-runbook.md`, `docs/deployment-plan.md`, `docs/current-status.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: Issue #42.
 
+### Decision 017: Keep the post-review maintenance audit docs-only
+
+- Date: 2026-05-31
+- Decision: The post-review maintenance audit is limited to repository documentation inventory, stale wording cleanup, docs index upkeep, and local validation. It must not change runtime behavior, resolve Issue #42, or perform production, Cloudflare, live-provider, secret, OAuth, or real-data operations.
+- Context: PR #31 through PR #45 closed the approved Claude-review implementation and documentation follow-ups, while Issue #42 remains open for human/ChatGPT post-release operations decisions.
+- Options considered:
+  - Treat the audit as a new implementation pass.
+  - Use the audit only to record repository state and fix docs inventory drift.
+  - Close Issue #42 based on existing docs.
+- Rationale: The remaining open work is decision-oriented and may affect privacy/legal, billing, support, log retention, production smoke, 429 policy, and incident ownership. Codex can make the docs easier to review, but cannot supply those decisions.
+- Consequences: `docs/post-review-maintenance-audit.md` records the audit results. `README.md` links the audit and avoids stale current-production wording. `docs/test-cases.md` reflects the current local test count. Issue #42 remains open.
+- Status: Active.
+- Related files: `README.md`, `docs/post-review-maintenance-audit.md`, `docs/test-cases.md`, `docs/post-release-operations-decision-packet.md`, `docs/current-status.md`.
+- Related review findings: Issue #42.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
