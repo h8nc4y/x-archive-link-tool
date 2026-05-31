@@ -6,7 +6,7 @@ ChatGPT triage and Claude review follow-up closure recorded for the 2026-05-30 a
 
 Claude Code review output is recorded in `docs/CLAUDE_REVIEW.md`. ChatGPT approved only the limited items listed below for Codex implementation.
 
-Current closure update: PR #31 through PR #37 are merged. No active Codex implementation task remains approved at this time. CL-001 and CL-002 runtime cache behavior remains a human/product decision. CL-012 is resolved as tracked-document governance with no application code change. CL-013 remains rejected for implementation; local server logger injection is not approved.
+Current closure update: PR #31 through PR #38 are merged. No active Codex implementation task remains approved at this time. CL-001 and CL-002 runtime cache behavior remains a human/product decision. CL-012 is resolved as tracked-document governance with no application code change. CL-013 remains rejected for implementation; local server logger injection is not approved. The current decision packet is `docs/post-claude-review-decision-backlog.md`.
 
 ## Final disposition summary
 
@@ -180,3 +180,4 @@ Explicit out-of-scope work for this pass:
 - What exact runtime policy should be chosen for CL-001 KV physical retention versus logical stale-cache behavior?
 - What exact runtime policy should be chosen for CL-002 degraded oEmbed fallback caching?
 - Should future Claude review prompts include `docs/CHATGPT_HANDOFF.md`, the full review-coordination docs, or a refreshed single handoff?
+- Which GitHub issue from `docs/post-claude-review-decision-backlog.md` should be resolved first?

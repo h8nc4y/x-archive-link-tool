@@ -196,6 +196,20 @@ Use this template for future decisions:
 - Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/CLAUDE_REVIEW.md`, `docs/CHATGPT_HANDOFF.md`, `docs/REVIEW_BRIEF.md`, `docs/claude-code-usage.md`.
 - Related review findings: CL-001, CL-002, CL-003, CL-004, CL-005, CL-006, CL-007, CL-008, CL-009, CL-010, CL-011, CL-012, CL-013.
 
+### Decision 013: Package remaining decisions before runtime work
+
+- Date: 2026-05-31
+- Decision: Remaining post-Claude-review items should be organized as a decision backlog before any further runtime or production work.
+- Context: PR #31 through PR #38 completed the approved Claude review follow-up queue, but CL-001/CL-002 runtime cache policy, current production HEAD verification, production smoke, and post-release operations decisions remain unresolved.
+- Options considered:
+  - Leave the remaining items scattered across release, operations, and review docs.
+  - Create one decision backlog packet and matching GitHub issues for human/ChatGPT decisions.
+- Rationale: The remaining work is decision-heavy and can affect privacy, retention, API usage, production verification, billing, and operations. Codex should not infer these choices from implementation convenience.
+- Consequences: `docs/post-claude-review-decision-backlog.md` becomes the coordination packet for the next human/ChatGPT decisions. Future implementation still requires explicit approval and must preserve the existing secret, real-data, Cloudflare write, production smoke, and live API boundaries.
+- Status: Active.
+- Related files: `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/requirements.md`, `docs/api.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/production-smoke-runbook.md`, `docs/post-release-operations-checklist.md`.
+- Related review findings: CL-001, CL-002, CL-009.
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.
