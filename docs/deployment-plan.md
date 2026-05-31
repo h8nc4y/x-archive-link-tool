@@ -155,9 +155,10 @@ redeploy後の最小確認方針:
 - `ca0bd79` deploy後のProduction URLトップページはHTTP 200、title `Xポスト貼り付けテキスト生成` として確認済み。
 - `cbe25119008814542df28bcd6ea7cc1159d7e3af` はGitHub check-runと公開URL静的表示を確認済み。ただしCloudflare Pages deployment一覧またはDashboardでのProduction正式証跡は未確認。
 - `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` はレビューhardening反映時点の証跡としてWranglerのCloudflare Pages Production deployment一覧で確認済み。
-- `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧で正式証跡を確認済み。現在の本番稼働HEADはこの文書更新では未確認。
+- `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` は2026-05-18 20:50 JST時点のWrangler Cloudflare Pages Production deployment一覧で正式証跡を確認済み。
+- 2026-05-31 12:51 JSTにIssue #41として現在の本番稼働HEADを確認済み。確認対象はmaster HEAD `a6fe436f3f08326c6479561ea997ed6bb3e23f9c`。Cloudflare Workers and Pages GitHub Appのcheck suite `71569644229` は `head_branch=master`, `head_sha=a6fe436f3f08326c6479561ea997ed6bb3e23f9c`, conclusion `success`。Cloudflare Pages check-run `78690922988` は `Latest commit: a6fe436`, `Deploy successful`, deployment ID `143cd043-10bf-406b-b8c8-3a22bb6a9ca2`。Production URL静的 `/` と `/privacy.html` はGET 200、deployment URL静的 `/` もGET 200。root pageのETagはproduction URLとdeployment URLで一致した。
 - Production URLトップページ表示はCodex側でHTTP 200を確認済み。ただしトップページ表示だけでは、特定commitのProduction deploy成功は断定しない。
-- GitHub check-run successだけではCloudflare Production正式証跡として扱わない。Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧などで該当commitのProduction Successを確認できた場合だけProduction確認済みとして記録する。
+- GitHub check-run successだけではCloudflare Production正式証跡として扱わない。Cloudflare Dashboard、Cloudflare plugin、Pages deployment一覧、またはIssue #41のようにCloudflare Workers and Pages GitHub Appのmaster向けcheck suite/check-run、repoのProduction branch記録、公式docs、公開静的URLの一致を組み合わせた証跡で該当commitのProduction反映を確認できた場合だけProduction確認済みとして記録する。
 - `/api/extract` は `ca0bd79` deploy後には再実行していない。429本番確認とX API呼び出しも未実施。
 
 通常確認:
@@ -255,7 +256,8 @@ Rate limit:
 - [x] Cloudflare Pages deploy status確認: 人間側で `ca0bd79` のProduction成功を確認済み。
 - [ ] `cbe25119008814542df28bcd6ea7cc1159d7e3af` のCloudflare Production deploy成功状態: GitHub check-runと公開URL静的表示は確認済み。Cloudflare Pages deployment一覧またはDashboardでの正式証跡は未確認。
 - [x] レビューhardening反映HEAD `1a8fad5b02f540ec1c60ab5e62ffa0c4597533f7` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `a79ddcf6-83ba-4dd3-929d-1bb6adc4ecf6`。
-- [x] 2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。現在の本番稼働HEADは未確認。
+- [x] 2026-05-18 20:50 JST時点の確認対象HEAD `2db0a89a39424ebb1d43268e4e4af7a19b01bc39` のCloudflare Production deploy状態: WranglerのCloudflare Pages Production deployment一覧で正式証跡を確認済み。deployment IDは `aaadb2ac-bd83-43f5-a4e2-960f9f7a1e4e`。
+- [x] 2026-05-31 12:51 JST時点の現在master HEAD `a6fe436f3f08326c6479561ea997ed6bb3e23f9c` のProduction HEAD確認: read-only GitHub/Cloudflare Pages check metadataと静的ページGETで確認済み。Cloudflare Pages deployment listはWrangler未導入のため未実行。
 - [ ] Cloudflare Functionsログ確認の運用責任者: 未設定 / 人間判断待ち。
 - [ ] ログ保存期間: 未設定 / 人間判断待ち。
 - [ ] KV namespace / binding / TTL運用: namespaceは `x-archive-link-tool-post-cache`、bindingは `X_POST_CACHE`、TTLは30日。TTL長期運用時の定期確認方法は未確認。

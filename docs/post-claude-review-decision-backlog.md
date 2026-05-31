@@ -12,8 +12,8 @@ Current repository state at preparation time:
 - ChatGPT triage and closure: recorded in `docs/AI_REVIEW_TRIAGE.md`.
 - Completed Codex follow-up tasks: recorded in `docs/CODEX_TASKS.md`.
 - Issue #40: approved and implemented CL-002 degraded fallback short TTL; CL-001 remains no runtime change.
-- Current production HEAD: unverified in this pass.
-- Open PRs/issues before this packet: none observed.
+- Issue #41: current Production HEAD verified as master HEAD `a6fe436f3f08326c6479561ea997ed6bb3e23f9c` using read-only GitHub/Cloudflare Pages check metadata and static page GET checks.
+- Open PRs before this packet: none observed. Open issues before this packet included Issue #41 and Issue #42.
 
 ## Completed Claude Review Follow-Up
 
@@ -172,8 +172,8 @@ Create issues only if no duplicate open issue exists.
 
 2. `Run approved production HEAD verification`
    - Decision owner: human / ChatGPT.
-   - Scope: Confirm current Cloudflare Pages Production commit through approved read-only or human evidence.
-   - Must not run production `/api/extract`, production smoke, deploy, or Cloudflare write.
+   - Scope: Closed by Issue #41 after confirming current Production HEAD with read-only metadata and static page checks.
+   - Further production smoke or Cloudflare write work still requires a separate approval.
 
 3. `Decide post-release operations items`
    - Decision owner: human.

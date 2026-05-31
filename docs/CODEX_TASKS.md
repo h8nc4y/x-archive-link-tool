@@ -675,5 +675,6 @@ Completed by PR #31 and subsequent review-management doc updates.
 - PR #36: CL-007/CL-008 rate limiter and IP key hardening.
 - PR #37: CL-009 documentation-only production HEAD wording cleanup.
 - Issue #40 follow-up: CL-001 no runtime change and CL-002 degraded fallback short-TTL caching.
+- Issue #41 follow-up: current Production HEAD verification recorded from read-only metadata and static page checks.
 - CL-012: Resolved by tracked governance docs; no application code change and no tracked `CLAUDE.md` required.
 - CL-013: Rejected for implementation; no local server logger injection.
