@@ -4,7 +4,7 @@
 
 ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes.
 
-Current closure state: no active Codex implementation task remains approved. PR #31 through PR #37 are merged, and the records below are historical completion records. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
+Current closure state: no active Codex implementation task remains approved. PR #31 through PR #38 are merged, and the records below are historical completion records. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
 
 ## Source of truth
 
@@ -65,6 +65,8 @@ Claude finding ID or ChatGPT decision reference.
 No active approved task is queued for Codex at this time.
 
 CL-001 and CL-002 runtime cache behavior remain human/product/privacy decisions. CL-011 quality gates are not adopted for MVP unless later approved. CL-012 is resolved by tracked governance docs without application code changes. CL-013 local server logger injection is rejected unless ChatGPT later approves a specific safe-logging design.
+
+Decision backlog: `docs/post-claude-review-decision-backlog.md`.
 
 ## Historical approved task records
 
