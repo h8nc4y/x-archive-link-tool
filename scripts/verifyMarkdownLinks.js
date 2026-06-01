@@ -57,7 +57,6 @@ function normalizeDestination(rawHref) {
 function isSkippedDestination(destination) {
   return (
     destination === "" ||
-    destination.startsWith("#") ||
     destination.startsWith("//") ||
     /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(destination)
   );
@@ -74,6 +73,75 @@ function decodeDestination(destination) {
   } catch {
     return destination;
   }
+}
+
+function splitDestination(destination) {
+  const hashIndex = destination.indexOf("#");
+  const pathPart = hashIndex === -1 ? destination : destination.slice(0, hashIndex);
+  const anchorPart = hashIndex === -1 ? "" : destination.slice(hashIndex + 1);
+
+  return {
+    pathPart: decodeDestination(pathPart.split("?", 1)[0]),
+    anchor: decodeDestination(anchorPart)
+  };
+}
+
+function stripMarkdownHeadingMarkup(text) {
+  return text
+    .replace(/<[^>]*>/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_`~]/g, "")
+    .trim();
+}
+
+export function slugifyHeading(text) {
+  return stripMarkdownHeadingMarkup(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+export function extractHeadingAnchors(text) {
+  const anchors = new Set();
+  const seen = new Map();
+  let inFence = false;
+  let fenceMarker = null;
+
+  for (const line of text.split(/\r?\n/)) {
+    const fenceMatch = line.match(/^\s*(```|~~~)/);
+    if (fenceMatch) {
+      if (!inFence) {
+        inFence = true;
+        fenceMarker = fenceMatch[1];
+      } else if (fenceMatch[1] === fenceMarker) {
+        inFence = false;
+        fenceMarker = null;
+      }
+      continue;
+    }
+
+    if (inFence) {
+      continue;
+    }
+
+    const headingMatch = line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (!headingMatch) {
+      continue;
+    }
+
+    const baseSlug = slugifyHeading(headingMatch[2]);
+    if (!baseSlug) {
+      continue;
+    }
+
+    const count = seen.get(baseSlug) ?? 0;
+    const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`;
+    seen.set(baseSlug, count + 1);
+    anchors.add(slug);
+  }
+
+  return anchors;
 }
 
 export function extractMarkdownLinks(text) {
@@ -119,15 +187,30 @@ export function extractMarkdownLinks(text) {
 }
 
 function resolveLocalTarget(rootDir, sourceFile, href) {
-  const targetPath = decodeDestination(stripAnchorAndQuery(href));
-  const absoluteTarget = path.resolve(path.dirname(sourceFile), targetPath);
+  const { pathPart, anchor } = splitDestination(href);
+  const targetPath = pathPart === "" ? sourceFile : path.resolve(path.dirname(sourceFile), stripAnchorAndQuery(pathPart));
+  const absoluteTarget = path.resolve(targetPath);
   const relativeTarget = path.relative(rootDir, absoluteTarget);
 
   return {
     absoluteTarget,
     relativeTarget: relativeTarget.split(path.sep).join("/"),
+    anchor,
     outsideRepo: relativeTarget.startsWith("..") || path.isAbsolute(relativeTarget)
   };
+}
+
+function hasAnchor(absoluteTarget, anchor) {
+  if (anchor === "") {
+    return true;
+  }
+
+  if (!isMarkdownFile(absoluteTarget)) {
+    return true;
+  }
+
+  const anchors = extractHeadingAnchors(fs.readFileSync(absoluteTarget, "utf8"));
+  return anchors.has(anchor.toLowerCase());
 }
 
 export function validateMarkdownLinks(rootDir, options = {}) {
@@ -156,12 +239,18 @@ export function validateMarkdownLinks(rootDir, options = {}) {
       const target = resolveLocalTarget(rootDir, sourceFile, link.href);
       const checkedRecord = {
         ...linkRecord,
-        targetPath: target.relativeTarget
+        targetPath: target.relativeTarget,
+        anchor: target.anchor
       };
       checkedLinks.push(checkedRecord);
 
       if (target.outsideRepo || !fs.existsSync(target.absoluteTarget)) {
-        brokenLinks.push(checkedRecord);
+        brokenLinks.push({ ...checkedRecord, reason: "missing-target" });
+        continue;
+      }
+
+      if (!hasAnchor(target.absoluteTarget, target.anchor)) {
+        brokenLinks.push({ ...checkedRecord, reason: "missing-anchor" });
       }
     }
   }
@@ -184,7 +273,12 @@ export function formatMarkdownLinkResults(result) {
 
   return [
     "NG markdown local links",
-    ...result.brokenLinks.map((link) => `missing local target: ${link.sourcePath}:${link.line} -> ${link.href}`)
+    ...result.brokenLinks.map((link) => {
+      if (link.reason === "missing-anchor") {
+        return `missing local anchor: ${link.sourcePath}:${link.line} -> ${link.href}`;
+      }
+      return `missing local target: ${link.sourcePath}:${link.line} -> ${link.href}`;
+    })
   ];
 }
 

@@ -72,6 +72,7 @@ test("validateMarkdownLinks skips external, mail, phone, and fragment-only links
         "[External](https://example.com/path)",
         "[Mail](mailto:owner@example.com)",
         "[Phone](tel:+81000000000)",
+        "# Local Heading",
         "[Fragment](#local-heading)"
       ].join("\n")
     },
@@ -79,15 +80,31 @@ test("validateMarkdownLinks skips external, mail, phone, and fragment-only links
   );
 
   assert.equal(result.ok, true);
-  assert.equal(result.checkedLinks.length, 0);
-  assert.equal(result.skippedLinks.length, 4);
+  assert.equal(result.checkedLinks.length, 1);
+  assert.equal(result.skippedLinks.length, 3);
 });
 
-test("validateMarkdownLinks checks only file existence for anchor links", () => {
+test("validateMarkdownLinks passes existing same-file anchors", () => {
   const result = withFixture(
     {
-      "README.md": "[With anchor](docs/guide.md#section)",
-      "docs/guide.md": "# Different heading"
+      "README.md": [
+        "# Local Heading",
+        "[Same file](#local-heading)"
+      ].join("\n")
+    },
+    (rootDir) => validateMarkdownLinks(rootDir, { roots: ["README.md"] })
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.brokenLinks.length, 0);
+  assert.equal(result.checkedLinks.length, 1);
+});
+
+test("validateMarkdownLinks passes existing anchors in another markdown file", () => {
+  const result = withFixture(
+    {
+      "README.md": "[Guide](docs/guide.md#日本語-heading)",
+      "docs/guide.md": "## 日本語 Heading"
     },
     (rootDir) => validateMarkdownLinks(rootDir, { roots: ["README.md", "docs"] })
   );
@@ -95,4 +112,37 @@ test("validateMarkdownLinks checks only file existence for anchor links", () => 
   assert.equal(result.ok, true);
   assert.equal(result.brokenLinks.length, 0);
   assert.equal(result.checkedLinks.length, 1);
+});
+
+test("validateMarkdownLinks reports missing anchors", () => {
+  const result = withFixture(
+    {
+      "README.md": "[Missing anchor](docs/guide.md#missing-section)",
+      "docs/guide.md": "## Existing Section"
+    },
+    (rootDir) => validateMarkdownLinks(rootDir, { roots: ["README.md", "docs"] })
+  );
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.brokenLinks.map((link) => link.href), ["docs/guide.md#missing-section"]);
+  assert.deepEqual(formatMarkdownLinkResults(result), [
+    "NG markdown local links",
+    "missing local anchor: README.md:1 -> docs/guide.md#missing-section"
+  ]);
+});
+
+test("validateMarkdownLinks supports duplicate heading anchor suffixes", () => {
+  const result = withFixture(
+    {
+      "README.md": "[Duplicate](docs/guide.md#section-1)",
+      "docs/guide.md": [
+        "## Section",
+        "## Section"
+      ].join("\n")
+    },
+    (rootDir) => validateMarkdownLinks(rootDir, { roots: ["README.md", "docs"] })
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.brokenLinks.length, 0);
 });

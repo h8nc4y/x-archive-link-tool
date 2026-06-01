@@ -289,17 +289,32 @@ Use this template for future decisions:
 ### Decision 019: Guard repo-local Markdown links without external URL checks
 
 - Date: 2026-05-31
-- Decision: Repository docs verification should check local Markdown file links in `README.md`, `AGENTS.md`, `SECURITY.md`, and `docs/`, while skipping external URLs, `mailto:`, `tel:`, fragment-only links, image links, and links inside fenced code blocks.
+- Decision: Repository docs verification should check local Markdown file links in `README.md`, `AGENTS.md`, `SECURITY.md`, and `docs/`, while skipping external URLs, `mailto:`, `tel:`, image links, and links inside fenced code blocks.
 - Context: The post-release docs set is increasingly used as a coordination boundary across ChatGPT, Codex, Claude Code, and humans. Broken local file links can silently weaken that boundary, but checking external URLs would add network and drift risk.
 - Options considered:
   - Leave local links to manual review.
   - Add a local-only Markdown link checker and integrate it into existing docs verification.
   - Check external URL availability.
 - Rationale: Local file existence checks are deterministic, cheap, and safe. External URL availability checks are intentionally out of scope because they require network access and may be unstable.
-- Consequences: `scripts/verifyMarkdownLinks.js` verifies repo-local Markdown link targets. Anchor-specific validation is not enforced in this pass; links like `docs/file.md#anchor` only require the file to exist. `check:post-release-docs` runs this local link guard.
+- Consequences: `scripts/verifyMarkdownLinks.js` verifies repo-local Markdown link targets. PR #49 adds local Markdown heading-anchor validation for fragment-only links and `docs/file.md#anchor` links; see Decision 020. `check:post-release-docs` runs this local link guard.
 - Status: Active.
 - Related files: `scripts/verifyMarkdownLinks.js`, `scripts/verifyMarkdownLinks.test.js`, `scripts/verifyPostReleaseDocs.js`, `docs/test-cases.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: Issue #42.
+
+### Decision 020: Guard repo-local Markdown heading anchors
+
+- Date: 2026-06-01
+- Decision: Extend the local Markdown link guard so fragment-only links such as `#section` and Markdown file links such as `docs/file.md#section` must resolve to a heading anchor in the target Markdown file.
+- Context: The previous local link guard verified file existence but could not catch stale in-page anchors. The new scope remains local-only and does not add external URL HTTP checks.
+- Options considered:
+  - Keep file-existence-only checks.
+  - Add a local Markdown heading-anchor parser with stable GitHub-like slug behavior.
+  - Add full GitHub Markdown anchor reproduction.
+- Rationale: A bounded local parser catches the common stale-anchor failure without making docs verification dependent on external services or exact GitHub rendering behavior.
+- Consequences: Duplicate headings are accepted with `-1`, `-2` suffixes. External URLs, `mailto:`, `tel:`, image links, and fenced code block links remain skipped. Runtime app behavior is unchanged.
+- Status: Accepted and implemented.
+- Related files: `scripts/verifyMarkdownLinks.js`, `scripts/verifyMarkdownLinks.test.js`, `scripts/verifyPostReleaseDocs.js`, `docs/test-cases.md`, `docs/CODEX_TASKS.md`.
+- Related review findings: Documentation guardrail follow-up; not a runtime Claude finding.
 
 ## Open decisions
 
