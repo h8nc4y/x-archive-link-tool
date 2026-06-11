@@ -68,6 +68,14 @@ CL-001 is closed as no runtime change and no KV physical TTL extension. CL-002 i
 
 Decision backlog: `docs/post-claude-review-decision-backlog.md`.
 
+## Current backlog inventory
+
+| ID | タスク名 | 出典 | 優先度 | 規模 | 状態 |
+| --- | --- | --- | --- | --- | --- |
+| BT-001 | Markdown link verifier tests use repo-local fixture temp directory fallback | `node --test` failure in `scripts/verifyMarkdownLinks.test.js`; OS temp `mkdtemp` returned `EPERM` in Codex managed sandbox | 高 | S | todo |
+| BT-002 | Post-release operations owner and production policy decisions remain human-confirmation items | `README.md`, `docs/current-status.md`, `docs/pre-release-checklist.md`, `docs/deployment-plan.md`; live provider, billing, legal, owner, and production checks are outside Codex local implementation scope | 低 | L | skip: human/ChatGPT decision, billing/legal/live-production boundary |
+| BT-003 | Open GitHub issue inventory | `gh issue list` attempted but network socket access was denied by the managed sandbox | 低 | S | skip: GitHub issue list unavailable in current execution environment |
+
 ## Historical approved task records
 
 ### Task CL-001-CL-002-issue-40
