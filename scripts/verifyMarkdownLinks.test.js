@@ -3,14 +3,41 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   extractMarkdownLinks,
   formatMarkdownLinkResults,
   validateMarkdownLinks
 } from "./verifyMarkdownLinks.js";
 
+const localTempPrefix = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "tmp",
+  "markdown-links-"
+);
+
+function makeFixtureRoot() {
+  const prefixes = [
+    path.join(os.tmpdir(), "markdown-links-"),
+    localTempPrefix
+  ];
+  let lastError;
+
+  for (const prefix of prefixes) {
+    try {
+      fs.mkdirSync(path.dirname(prefix), { recursive: true });
+      return fs.mkdtempSync(prefix);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 function withFixture(files, callback) {
-  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "markdown-links-"));
+  const rootDir = makeFixtureRoot();
   try {
     for (const [relativePath, text] of Object.entries(files)) {
       const absolutePath = path.join(rootDir, relativePath);
