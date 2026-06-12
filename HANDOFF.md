@@ -22,7 +22,7 @@
 - `0d51ebd` `docs: inventory task backlog`: `docs/CODEX_TASKS.md` にcurrent backlog inventoryを追加。
 - `37f75bf` `test: stabilize markdown link fixtures`: `scripts/verifyMarkdownLinks.test.js` のfixture作成をOS temp失敗時にrepo-local `tmp` fallbackするよう変更。
 - `f0db0fc` `docs: record github issue inventory`: `gh issue list` でopen issue #42を確認し、backlogに反映。
-- この `HANDOFF.md` と `TASKS_BACKLOG.md` の追加は、このファイルを含む後続commitで確認すること。
+- `b92ad75` `docs: add handoff backlog`: `HANDOFF.md` と `TASKS_BACKLOG.md` を追加。
 
 ## 未完了/skipタスク
 
