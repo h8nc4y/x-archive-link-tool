@@ -27,11 +27,18 @@
           <p id="error-message" class="message error" role="alert" tabindex="-1"></p>
         </form>
 
-        <section id="archive-section" class="archive" hidden>
-          <h2>魚拓が必要な場合</h2>
-          <a id="gyotaku-link" target="_blank" rel="noopener">魚拓を取得する場合はこちら</a>
+        <section id="archive-section" class="archive" aria-labelledby="archive-title">
+          <h2 id="archive-title">魚拓URL（任意）</h2>
+          <p class="hint archive-help">ポストが削除・非公開になっても内容を後から参照できるよう、外部サイトで魚拓（保存用スナップショット）を残せます。必須ではありません。</p>
+          <ol class="archive-steps">
+            <li>「魚拓を取得する場合はこちら」を開きます（別タブで開きます）。</li>
+            <li>開いた外部サイトで魚拓を作成し、できたページのURLをコピーします。</li>
+            <li>このページに戻り、コピーしたURLを下の欄に貼り付けます。</li>
+          </ol>
+          <a id="gyotaku-link" target="_blank" rel="noopener" aria-disabled="true">魚拓を取得する場合はこちら</a>
           <label for="archive-url">取得後の魚拓URL</label>
-          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/...">
+          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/..." disabled aria-describedby="archive-status">
+          <p id="archive-status" class="hint">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
         </section>
 
         <section class="output" aria-labelledby="output-title">

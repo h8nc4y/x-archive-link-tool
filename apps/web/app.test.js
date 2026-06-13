@@ -257,9 +257,10 @@ async function createDomAppHarness(fetchImpl) {
     "#post-url": createElement({ value: "https://x.com/example_user/status/67890" }),
     "#submit-button": createElement({ textContent: "取得" }),
     "#error-message": createElement(),
-    "#archive-section": createElement({ hidden: true }),
+    "#archive-section": createElement(),
     "#gyotaku-link": createElement(),
     "#archive-url": createElement(),
+    "#archive-status": createElement(),
     "#copy-text": createElement(),
     "#copy-button": createElement({ disabled: true }),
     "#copy-hint": createElement(),
@@ -372,7 +373,8 @@ test("submit flow rejects invalid URLs on the client without fetching", async ()
       "URLの形式を確認してください。例：https://x.com/username/status/1234567890"
     );
     assert.ok(harness.elements["#error-message"].focusCount >= 1);
-    assert.equal(harness.elements["#archive-section"].hidden, true);
+    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), "true");
+    assert.equal(harness.elements["#archive-url"].disabled, true);
   } finally {
     harness.cleanup();
   }
@@ -391,6 +393,92 @@ test("submit flow moves focus to the error message when the server returns an er
       "対象のポストを取得できませんでした。削除済み、非公開、または埋め込み不可の可能性があります。"
     );
     assert.ok(harness.elements["#error-message"].focusCount >= 1);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("archive link and input stay disabled until a post is extracted", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), "true");
+    assert.equal(harness.elements["#archive-url"].disabled, true);
+    assert.match(harness.elements["#archive-status"].textContent, /取得すると/);
+
+    await harness.submit();
+
+    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), null);
+    assert.equal(harness.elements["#archive-url"].disabled, false);
+    assert.equal(
+      harness.elements["#gyotaku-link"].href,
+      "https://gyo.tc/https://x.com/example_user/status/67890"
+    );
+    assert.match(harness.elements["#archive-status"].textContent, /リセット/);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("archive link returns to disabled state after an error", async () => {
+  let call = 0;
+  const harness = await createDomAppHarness(() => {
+    call += 1;
+    return call === 1
+      ? Promise.resolve(createJsonResponse(basePost))
+      : Promise.resolve(createJsonResponse({ code: "oembed_429" }, false));
+  });
+
+  try {
+    await harness.submit();
+    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), null);
+
+    await harness.submit();
+    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), "true");
+    assert.equal(harness.elements["#archive-url"].disabled, true);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("re-extracting the same post keeps the entered archive URL", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+    harness.elements["#archive-url"].value = "https://megalodon.jp/2026-0509-0000-00/example";
+
+    await harness.submit();
+
+    assert.equal(
+      harness.elements["#archive-url"].value,
+      "https://megalodon.jp/2026-0509-0000-00/example"
+    );
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("extracting a different post resets the entered archive URL", async () => {
+  let call = 0;
+  const harness = await createDomAppHarness(() => {
+    call += 1;
+    return Promise.resolve(
+      createJsonResponse(
+        call === 1
+          ? basePost
+          : { ...basePost, postUrl: "https://x.com/example_user/status/99999" }
+      )
+    );
+  });
+
+  try {
+    await harness.submit();
+    harness.elements["#archive-url"].value = "https://megalodon.jp/2026-0509-0000-00/example";
+
+    await harness.submit();
+
+    assert.equal(harness.elements["#archive-url"].value, "");
   } finally {
     harness.cleanup();
   }
