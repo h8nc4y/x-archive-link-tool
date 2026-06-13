@@ -22,6 +22,13 @@ test("keyboard focus and error focus are visually indicated", async () => {
   assert.match(css, /\.message\.error:focus\s*{[^}]*outline:[^}]*}/s);
 });
 
+test("copy success feedback has a dedicated style and even header spacing", async () => {
+  const css = await readFile(new URL("./styles.css", import.meta.url), "utf8");
+
+  assert.match(css, /\.message\.is-success\s*{[^}]*}/s);
+  assert.match(css, /\.output-header h2\s*{[^}]*margin-bottom:\s*0;[^}]*}/s);
+});
+
 test("Cloudflare Pages static headers mirror server security headers", async () => {
   const headers = await readFile(new URL("./_headers", import.meta.url), "utf8");
 

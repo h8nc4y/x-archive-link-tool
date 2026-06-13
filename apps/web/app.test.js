@@ -209,6 +209,7 @@ test("getUserFacingErrorMessage preserves approved API error messages", () => {
 function createElement(overrides = {}) {
   const listeners = new Map();
   const attributes = new Map();
+  const classes = new Set();
   return {
     textContent: "",
     value: "",
@@ -216,6 +217,26 @@ function createElement(overrides = {}) {
     hidden: false,
     href: "",
     focusCount: 0,
+    classList: {
+      add(name) {
+        classes.add(name);
+      },
+      remove(name) {
+        classes.delete(name);
+      },
+      contains(name) {
+        return classes.has(name);
+      },
+      toggle(name, force) {
+        const shouldHave = force === undefined ? !classes.has(name) : force;
+        if (shouldHave) {
+          classes.add(name);
+        } else {
+          classes.delete(name);
+        }
+        return shouldHave;
+      }
+    },
     focus() {
       this.focusCount += 1;
     },
@@ -251,6 +272,22 @@ function restoreGlobal(name, previousValue) {
   globalThis[name] = previousValue;
 }
 
+// globalThis.navigator はNodeでは読み取り専用getterのため、defineProperty経由で差し替える。
+function overrideNavigator(value) {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  Object.defineProperty(globalThis, "navigator", { value, configurable: true, writable: true });
+  return previous;
+}
+
+function restoreNavigator(previousDescriptor) {
+  if (previousDescriptor) {
+    Object.defineProperty(globalThis, "navigator", previousDescriptor);
+    return;
+  }
+
+  delete globalThis.navigator;
+}
+
 async function createDomAppHarness(fetchImpl) {
   const elements = {
     "#extract-form": createElement(),
@@ -283,6 +320,9 @@ async function createDomAppHarness(fetchImpl) {
     elements,
     submit() {
       return elements["#extract-form"].dispatch("submit");
+    },
+    copy() {
+      return elements["#copy-button"].dispatch("click");
     },
     cleanup() {
       restoreGlobal("document", previousDocument);
@@ -481,5 +521,58 @@ test("extracting a different post resets the entered archive URL", async () => {
     assert.equal(harness.elements["#archive-url"].value, "");
   } finally {
     harness.cleanup();
+  }
+});
+
+test("copy button reports success with a success style via the clipboard API", async () => {
+  let written = "";
+  const previousNavigator = overrideNavigator({ clipboard: { writeText: async (value) => { written = value; } } });
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+    await harness.copy();
+
+    assert.equal(harness.elements["#copy-message"].textContent, "コピーしました。");
+    assert.equal(harness.elements["#copy-message"].classList.contains("is-success"), true);
+    assert.match(written, /アカウント名：Example/);
+  } finally {
+    harness.cleanup();
+    restoreNavigator(previousNavigator);
+  }
+});
+
+test("copy button gives manual instructions when the clipboard API is unavailable", async () => {
+  const previousNavigator = overrideNavigator({});
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+    await harness.copy();
+
+    assert.match(harness.elements["#copy-message"].textContent, /自動コピーできませんでした/);
+    assert.match(harness.elements["#copy-message"].textContent, /Ctrl\+C/);
+    assert.equal(harness.elements["#copy-message"].classList.contains("is-success"), false);
+  } finally {
+    harness.cleanup();
+    restoreNavigator(previousNavigator);
+  }
+});
+
+test("starting a new extract clears prior copy success feedback", async () => {
+  const previousNavigator = overrideNavigator({ clipboard: { writeText: async () => {} } });
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+    await harness.copy();
+    assert.equal(harness.elements["#copy-message"].classList.contains("is-success"), true);
+
+    await harness.submit();
+    assert.equal(harness.elements["#copy-message"].textContent, "");
+    assert.equal(harness.elements["#copy-message"].classList.contains("is-success"), false);
+  } finally {
+    harness.cleanup();
+    restoreNavigator(previousNavigator);
   }
 });
