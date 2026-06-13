@@ -123,6 +123,7 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 - [API案](docs/api.md)
 - [テストケース](docs/test-cases.md)
 - [現状まとめ](docs/current-status.md)
+- [UX改善候補リスト](docs/ux-improvement-candidates.md)
 - [公開前チェックリスト](docs/pre-release-checklist.md)
 - [リリース候補メモ](docs/release-candidate.md)
 - [v0.1.0 Release Notes](docs/release-notes-v0.1.0.md)
