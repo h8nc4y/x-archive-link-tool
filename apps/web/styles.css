@@ -73,8 +73,14 @@ h2 {
 }
 
 .lead,
-.message {
+.message,
+.hint {
   color: var(--muted);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.85rem;
 }
 
 .form,
@@ -107,10 +113,19 @@ input {
   padding: 9px 11px;
 }
 
+input:disabled {
+  background: var(--bg);
+  cursor: not-allowed;
+}
+
 textarea {
   min-height: 300px;
   padding: 12px;
   resize: vertical;
+}
+
+textarea[readonly] {
+  background: var(--bg);
 }
 
 button {
@@ -129,14 +144,26 @@ button:hover:not(:disabled) {
   background: var(--accent-dark);
 }
 
+/* disabled時はopacityでなく、白文字とのコントラスト比をWCAG AA(4.5:1)以上に保つグレー背景にする。 */
 button:disabled {
+  background: var(--muted);
   cursor: not-allowed;
-  opacity: 0.55;
 }
 
 a {
   color: var(--accent-dark);
   font-weight: 700;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* エラー表示時はJSでフォーカスを移すため、危険色のアウトラインで注意を促す。 */
+.message.error:focus {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
 }
 
 .output-header {

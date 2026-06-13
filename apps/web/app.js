@@ -1,5 +1,10 @@
 const ARCHIVE_URL_PATTERN = /^https:\/\/(?:megalodon\.jp|s[0-9]+\.megalodon\.jp)\/\S+$/;
+const POST_URL_ALLOWED_HOSTS = new Set(["x.com", "twitter.com", "mobile.twitter.com"]);
+const POST_URL_USERNAME_PATTERN = /^[A-Za-z0-9_]{1,15}$/;
+const POST_URL_POST_ID_PATTERN = /^[0-9]{1,19}$/;
 const ERROR_MESSAGES = new Map([
+  ["invalid_input", "XポストURLを入力してください。"],
+  ["invalid_url", "URLの形式を確認してください。例：https://x.com/username/status/1234567890"],
   ["invalid_protocol", "httpsのXポストURLを入力してください。"],
   ["invalid_host", "対応しているURLは x.com または twitter.com のポストURLです。"],
   ["invalid_path", "XポストURLの形式を確認してください。"],
@@ -31,6 +36,52 @@ const WARNING_MESSAGES = new Map([
 
 export function buildGyotakuUrl(postUrl) {
   return `https://gyo.tc/${postUrl}`;
+}
+
+// server/urlValidator.js の parseXPostUrl と同じ判定を、例外ではなくコードで返す。
+// クライアント側で先に検証し、ブラウザ標準tooltipと分裂しない統一メッセージを出すために使う。
+export function validatePostUrl(input) {
+  if (typeof input !== "string" || input.trim() === "") {
+    return { valid: false, code: "invalid_input" };
+  }
+
+  let url;
+  try {
+    url = new URL(input.trim());
+  } catch {
+    return { valid: false, code: "invalid_url" };
+  }
+
+  if (url.protocol !== "https:") {
+    return { valid: false, code: "invalid_protocol" };
+  }
+
+  if (!POST_URL_ALLOWED_HOSTS.has(url.hostname)) {
+    return { valid: false, code: "invalid_host" };
+  }
+
+  const parts = url.pathname.split("/");
+  if (parts.length === 5 && parts[0] === "" && parts[1] === "i" && parts[2] === "web" && parts[3] === "status") {
+    if (!POST_URL_POST_ID_PATTERN.test(parts[4])) {
+      return { valid: false, code: "invalid_post_id" };
+    }
+
+    return { valid: true };
+  }
+
+  if (parts.length !== 4 || parts[0] !== "" || parts[2] !== "status") {
+    return { valid: false, code: "invalid_path" };
+  }
+
+  if (!POST_URL_USERNAME_PATTERN.test(parts[1])) {
+    return { valid: false, code: "invalid_username" };
+  }
+
+  if (!POST_URL_POST_ID_PATTERN.test(parts[3])) {
+    return { valid: false, code: "invalid_post_id" };
+  }
+
+  return { valid: true };
 }
 
 export function getUserErrorMessage(payload) {
@@ -150,6 +201,7 @@ function setupApp() {
   const archiveInput = document.querySelector("#archive-url");
   const copyText = document.querySelector("#copy-text");
   const copyButton = document.querySelector("#copy-button");
+  const copyHint = document.querySelector("#copy-hint");
   const copyMessage = document.querySelector("#copy-message");
   const sourceMessage = document.querySelector("#source-message");
   let currentPost = null;
@@ -177,16 +229,23 @@ function setupApp() {
       copyText.value = "";
       copyButton.disabled = true;
       setText(sourceMessage, "");
+      if (copyHint) {
+        copyHint.hidden = false;
+      }
       return;
     }
 
     copyText.value = buildCopyText(currentPost, archiveInputHasInvalidPaste ? "" : archiveInput.value);
     copyButton.disabled = false;
     setText(sourceMessage, buildSourceMessage(currentPost));
+    if (copyHint) {
+      copyHint.hidden = true;
+    }
   }
 
   function setLoadingState(isLoading) {
     submitButton.disabled = isLoading;
+    urlInput.disabled = isLoading;
     submitButton.textContent = isLoading ? LOADING_SUBMIT_LABEL : submitButtonLabel;
     if (isLoading) {
       form.setAttribute("aria-busy", "true");
@@ -196,10 +255,25 @@ function setupApp() {
     form.removeAttribute("aria-busy");
   }
 
+  function showError(message) {
+    currentPost = null;
+    archiveSection.hidden = true;
+    refreshCopyText();
+    setText(errorMessage, message);
+    errorMessage.focus();
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     setText(errorMessage, "");
     setText(copyMessage, "");
+
+    const validation = validatePostUrl(urlInput.value);
+    if (!validation.valid) {
+      showError(getUserErrorMessage({ code: validation.code }));
+      return;
+    }
+
     setLoadingState(true);
 
     try {
@@ -221,10 +295,7 @@ function setupApp() {
       archiveSection.hidden = false;
       refreshCopyText();
     } catch (error) {
-      currentPost = null;
-      archiveSection.hidden = true;
-      refreshCopyText();
-      setText(errorMessage, getUserFacingErrorMessage(error));
+      showError(getUserFacingErrorMessage(error));
     } finally {
       setLoadingState(false);
     }
