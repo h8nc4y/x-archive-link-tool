@@ -6,7 +6,8 @@ import {
   buildSourceMessage,
   getUserErrorMessage,
   getUserFacingErrorMessage,
-  hasArchiveUrlPasteNoise
+  hasArchiveUrlPasteNoise,
+  validatePostUrl
 } from "./app.js";
 
 const basePost = {
@@ -214,6 +215,10 @@ function createElement(overrides = {}) {
     disabled: false,
     hidden: false,
     href: "",
+    focusCount: 0,
+    focus() {
+      this.focusCount += 1;
+    },
     addEventListener(type, handler) {
       listeners.set(type, handler);
     },
@@ -257,6 +262,7 @@ async function createDomAppHarness(fetchImpl) {
     "#archive-url": createElement(),
     "#copy-text": createElement(),
     "#copy-button": createElement({ disabled: true }),
+    "#copy-hint": createElement(),
     "#copy-message": createElement(),
     "#source-message": createElement()
   };
@@ -291,6 +297,23 @@ function createJsonResponse(payload, ok = true) {
   };
 }
 
+test("validatePostUrl accepts canonical and i/web/status URLs", () => {
+  assert.deepEqual(validatePostUrl("https://x.com/example_user/status/67890"), { valid: true });
+  assert.deepEqual(validatePostUrl("https://twitter.com/example_user/status/67890"), { valid: true });
+  assert.deepEqual(validatePostUrl("https://x.com/i/web/status/67890"), { valid: true });
+  assert.deepEqual(validatePostUrl(" https://x.com/example_user/status/67890 "), { valid: true });
+});
+
+test("validatePostUrl reports specific codes for invalid input", () => {
+  assert.deepEqual(validatePostUrl(""), { valid: false, code: "invalid_input" });
+  assert.deepEqual(validatePostUrl("not a url"), { valid: false, code: "invalid_url" });
+  assert.deepEqual(validatePostUrl("http://x.com/example_user/status/67890"), { valid: false, code: "invalid_protocol" });
+  assert.deepEqual(validatePostUrl("https://example.com/example_user/status/67890"), { valid: false, code: "invalid_host" });
+  assert.deepEqual(validatePostUrl("https://x.com/example_user"), { valid: false, code: "invalid_path" });
+  assert.deepEqual(validatePostUrl("https://x.com/invalid-name!/status/67890"), { valid: false, code: "invalid_username" });
+  assert.deepEqual(validatePostUrl("https://x.com/example_user/status/abc"), { valid: false, code: "invalid_post_id" });
+});
+
 test("submit flow shows loading state while extract is pending", async () => {
   let resolveFetch;
   const pendingFetch = new Promise((resolve) => {
@@ -303,6 +326,7 @@ test("submit flow shows loading state while extract is pending", async () => {
 
     assert.equal(harness.elements["#submit-button"].disabled, true);
     assert.equal(harness.elements["#submit-button"].textContent, "取得中…");
+    assert.equal(harness.elements["#post-url"].disabled, true);
     assert.equal(harness.elements["#extract-form"].getAttribute("aria-busy"), "true");
 
     resolveFetch(createJsonResponse(basePost));
@@ -310,7 +334,63 @@ test("submit flow shows loading state while extract is pending", async () => {
 
     assert.equal(harness.elements["#submit-button"].disabled, false);
     assert.equal(harness.elements["#submit-button"].textContent, "取得");
+    assert.equal(harness.elements["#post-url"].disabled, false);
     assert.equal(harness.elements["#extract-form"].getAttribute("aria-busy"), null);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("submit flow hides copy hint after a successful extract", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    assert.equal(harness.elements["#copy-hint"].hidden, false);
+    await harness.submit();
+
+    assert.equal(harness.elements["#copy-button"].disabled, false);
+    assert.equal(harness.elements["#copy-hint"].hidden, true);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("submit flow rejects invalid URLs on the client without fetching", async () => {
+  let fetchCalls = 0;
+  const harness = await createDomAppHarness(() => {
+    fetchCalls += 1;
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+  harness.elements["#post-url"].value = "not a url";
+
+  try {
+    await harness.submit();
+
+    assert.equal(fetchCalls, 0);
+    assert.equal(
+      harness.elements["#error-message"].textContent,
+      "URLの形式を確認してください。例：https://x.com/username/status/1234567890"
+    );
+    assert.ok(harness.elements["#error-message"].focusCount >= 1);
+    assert.equal(harness.elements["#archive-section"].hidden, true);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("submit flow moves focus to the error message when the server returns an error", async () => {
+  const harness = await createDomAppHarness(() =>
+    Promise.resolve(createJsonResponse({ code: "oembed_404" }, false))
+  );
+
+  try {
+    await harness.submit();
+
+    assert.equal(
+      harness.elements["#error-message"].textContent,
+      "対象のポストを取得できませんでした。削除済み、非公開、または埋め込み不可の可能性があります。"
+    );
+    assert.ok(harness.elements["#error-message"].focusCount >= 1);
   } finally {
     harness.cleanup();
   }
