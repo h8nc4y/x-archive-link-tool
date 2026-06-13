@@ -199,13 +199,18 @@ function setupApp() {
   const archiveSection = document.querySelector("#archive-section");
   const gyotakuLink = document.querySelector("#gyotaku-link");
   const archiveInput = document.querySelector("#archive-url");
+  const archiveStatus = document.querySelector("#archive-status");
   const copyText = document.querySelector("#copy-text");
   const copyButton = document.querySelector("#copy-button");
   const copyHint = document.querySelector("#copy-hint");
   const copyMessage = document.querySelector("#copy-message");
   const sourceMessage = document.querySelector("#source-message");
   let currentPost = null;
+  // 取得済みポストのキー（postUrl）。同じポストの再取得では魚拓URLを保持し、別ポストではリセットする。
+  let currentPostKey = "";
   let archiveInputHasInvalidPaste = false;
+  const ARCHIVE_STATUS_IDLE = "先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。";
+  const ARCHIVE_STATUS_ACTIVE = "別のXポストを取得すると、入力した魚拓URLはリセットされます。";
   const submitButtonLabel = submitButton?.textContent || "取得";
 
   if (
@@ -255,9 +260,30 @@ function setupApp() {
     form.removeAttribute("aria-busy");
   }
 
+  // 魚拓セクションは常時表示し、ポスト取得前は魚拓リンクと入力欄を無効化する。
+  // currentPostKey は保持したまま無効化するので、同じポストの再取得後に魚拓URLを残せる。
+  function refreshArchiveState() {
+    if (currentPost) {
+      gyotakuLink.href = buildGyotakuUrl(currentPost.postUrl || currentPost.canonicalUrl);
+      gyotakuLink.removeAttribute("aria-disabled");
+      archiveInput.disabled = false;
+      if (archiveStatus) {
+        setText(archiveStatus, ARCHIVE_STATUS_ACTIVE);
+      }
+      return;
+    }
+
+    gyotakuLink.removeAttribute("href");
+    gyotakuLink.setAttribute("aria-disabled", "true");
+    archiveInput.disabled = true;
+    if (archiveStatus) {
+      setText(archiveStatus, ARCHIVE_STATUS_IDLE);
+    }
+  }
+
   function showError(message) {
     currentPost = null;
-    archiveSection.hidden = true;
+    refreshArchiveState();
     refreshCopyText();
     setText(errorMessage, message);
     errorMessage.focus();
@@ -288,11 +314,15 @@ function setupApp() {
         throw createUserFacingError(getUserErrorMessage(payload));
       }
 
+      const newPostKey = payload.postUrl || payload.canonicalUrl || "";
+      if (newPostKey !== currentPostKey) {
+        // 別のポストに切り替わったときだけ、前のポスト向けに入力した魚拓URLをリセットする。
+        archiveInput.value = "";
+        archiveInputHasInvalidPaste = false;
+      }
+      currentPostKey = newPostKey;
       currentPost = payload;
-      archiveInput.value = "";
-      archiveInputHasInvalidPaste = false;
-      gyotakuLink.href = buildGyotakuUrl(payload.postUrl || payload.canonicalUrl);
-      archiveSection.hidden = false;
+      refreshArchiveState();
       refreshCopyText();
     } catch (error) {
       showError(getUserFacingErrorMessage(error));
@@ -336,6 +366,9 @@ function setupApp() {
     copyText.select();
     setText(copyMessage, "選択状態にしました。手動でコピーしてください。");
   });
+
+  // 初期表示で魚拓リンク・入力欄を無効状態に揃える。
+  refreshArchiveState();
 }
 
 if (typeof document !== "undefined") {
