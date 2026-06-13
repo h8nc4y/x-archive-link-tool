@@ -292,7 +292,7 @@ function setupApp() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     setText(errorMessage, "");
-    setText(copyMessage, "");
+    setCopyFeedback("", false);
 
     const validation = validatePostUrl(urlInput.value);
     if (!validation.valid) {
@@ -348,6 +348,13 @@ function setupApp() {
     refreshCopyText();
   });
 
+  function setCopyFeedback(message, isSuccess) {
+    setText(copyMessage, message);
+    if (copyMessage.classList) {
+      copyMessage.classList.toggle("is-success", isSuccess === true);
+    }
+  }
+
   copyButton.addEventListener("click", async () => {
     if (!copyText.value) {
       return;
@@ -356,7 +363,7 @@ function setupApp() {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(copyText.value);
-        setText(copyMessage, "コピーしました。");
+        setCopyFeedback("コピーしました。", true);
         return;
       }
     } catch {
@@ -364,7 +371,10 @@ function setupApp() {
     }
 
     copyText.select();
-    setText(copyMessage, "選択状態にしました。手動でコピーしてください。");
+    setCopyFeedback(
+      "自動コピーできませんでした。テキストを選択したので、コピー操作（Windowsは Ctrl+C、Macは Cmd+C）でコピーしてください。",
+      false
+    );
   });
 
   // 初期表示で魚拓リンク・入力欄を無効状態に揃える。

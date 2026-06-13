@@ -197,9 +197,20 @@ a[aria-disabled="true"] {
   margin-bottom: 10px;
 }
 
+/* flexコンテナ内ではh2のmargin-bottomがgapに加算され縦積み時に間隔が不均一になるため打ち消す。 */
+.output-header h2 {
+  margin-bottom: 0;
+}
+
 .message {
   min-height: 1.5em;
   margin-bottom: 0;
+}
+
+/* コピー成功時は本文色（緑系アクセント）+太字で、色覚に依存しない✓相当の肯定的フィードバックにする。 */
+.message.is-success {
+  color: var(--accent-dark);
+  font-weight: 700;
 }
 
 .footer {
