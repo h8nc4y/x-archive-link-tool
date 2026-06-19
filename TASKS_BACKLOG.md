@@ -6,6 +6,7 @@
 
 ## 状態サマリ
 
+- 2026-06-20: 主実装をCodex（自律主開発）へ再委譲。Codexの運用契約は `docs/CODEX_HANDOFF.md`（自走範囲・4ゲート・デザインブリーフ仲介・セルフレビュー既定）。起動時は `docs/CODEX_HANDOFF.md` → `AGENTS.md` → 本ファイルの順で読む。
 - 2026-06-13: Claude Codeが主実装を引き継ぎ。次の目標はWeb UIの機能・UX改善（検証済み12候補をテーマ別5PRで段階実装し、PRごとに本番反映）。
 - 改善候補の詳細と不採用理由は `docs/ux-improvement-candidates.md` を参照。
 - post-release operationsはIssue #42に集約済みで、人間/ChatGPT判断待ち。Claude Codeは判断材料整理（CC-007）のみ支援する。
