@@ -130,33 +130,81 @@ function formatMediaUrls(mediaUrls) {
   return validUrls.length > 0 ? validUrls.join("\n") : "なし";
 }
 
-export function buildCopyText(post, archiveUrl = "") {
+export function formatCreatedAt(isoString, format = "iso") {
+  const fallback = isoString || "未取得";
+  if (format !== "japanese") {
+    return fallback;
+  }
+
+  // ISO 8601はUTC文字列として扱い、タイムゾーン変換で日付がずれないよう日付部分だけを使う。
+  const match = typeof isoString === "string" ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})/) : null;
+  return match ? `${match[1]}年${match[2]}月${match[3]}日` : fallback;
+}
+
+function getCopyValues(post, archiveUrl, options = {}) {
+  const dateFormat = options.dateFormat === "japanese" ? "japanese" : "iso";
   const validArchiveUrl = isValidArchiveUrl(archiveUrl) ? archiveUrl.trim() : "未取得";
-  const mediaUrls = formatMediaUrls(post.mediaUrls);
-  const accountName = post.accountName || post.authorName || "未取得";
-  const postUrl = post.postUrl || post.canonicalUrl || "未取得";
-  const userNumericId = post.userNumericId || "未取得";
   const username = post.username || "";
-  const accountId = username && username !== "未取得" ? `@${username}` : "未取得";
-  const createdAt = post.createdAt || "未取得";
-  const text = post.text || "未取得";
+
+  // 表示用の「未取得」はコピー先で機械的に読めるよう維持し、UI側の補足文で理由を補う。
+  return {
+    accountName: post.accountName || post.authorName || "未取得",
+    accountId: username && username !== "未取得" ? `@${username}` : "未取得",
+    userNumericId: post.userNumericId || "未取得",
+    postUrl: post.postUrl || post.canonicalUrl || "未取得",
+    createdAt: formatCreatedAt(post.createdAt, dateFormat),
+    text: post.text || "未取得",
+    mediaUrls: formatMediaUrls(post.mediaUrls),
+    archiveUrl: validArchiveUrl
+  };
+}
+
+export function buildCopyText(post, archiveUrl = "", options = {}) {
+  const values = getCopyValues(post, archiveUrl, options);
 
   return [
-    `アカウント名：${accountName}`,
-    `アカウントID：${accountId}`,
-    `ユーザー数値ID：${userNumericId}`,
-    `ポストURL：${postUrl}`,
-    `ポスト投稿日：${createdAt}`,
+    `アカウント名：${values.accountName}`,
+    `アカウントID：${values.accountId}`,
+    `ユーザー数値ID：${values.userNumericId}`,
+    `ポストURL：${values.postUrl}`,
+    `ポスト投稿日：${values.createdAt}`,
     "",
     "ポスト内容：",
-    text,
+    values.text,
     "",
     "メディアURL：",
-    mediaUrls,
+    values.mediaUrls,
     "",
     "魚拓URL：",
-    validArchiveUrl
+    values.archiveUrl
   ].join("\n");
+}
+
+export function buildMarkdownCopyText(post, archiveUrl = "", options = {}) {
+  const values = getCopyValues(post, archiveUrl, options);
+
+  return [
+    `- アカウント名：${values.accountName}`,
+    `- アカウントID：${values.accountId}`,
+    `- ユーザー数値ID：${values.userNumericId}`,
+    `- ポストURL：${values.postUrl}`,
+    `- ポスト投稿日：${values.createdAt}`,
+    "",
+    "## ポスト内容",
+    values.text,
+    "",
+    "## メディアURL",
+    values.mediaUrls,
+    "",
+    "## 魚拓URL",
+    values.archiveUrl
+  ].join("\n");
+}
+
+function buildCopyTextForOptions(post, archiveUrl = "", options = {}) {
+  return options.format === "markdown"
+    ? buildMarkdownCopyText(post, archiveUrl, options)
+    : buildCopyText(post, archiveUrl, options);
 }
 
 export function buildSourceMessage(post) {
@@ -171,6 +219,9 @@ export function buildSourceMessage(post) {
 
   if (post.source === "oembed") {
     messages.push("公式API未使用のため画像URLを取得できない場合があります。");
+    if (!post.userNumericId || post.userNumericId === "未取得") {
+      messages.push("ユーザー数値IDはX API使用時のみ取得できます。");
+    }
   }
 
   for (const warning of Array.isArray(post.warnings) ? post.warnings : []) {
@@ -200,6 +251,10 @@ function setupApp() {
   const gyotakuLink = document.querySelector("#gyotaku-link");
   const archiveInput = document.querySelector("#archive-url");
   const archiveStatus = document.querySelector("#archive-status");
+  const formatPlain = document.querySelector("#format-plain");
+  const formatMarkdown = document.querySelector("#format-markdown");
+  const dateIso = document.querySelector("#date-iso");
+  const dateJapanese = document.querySelector("#date-japanese");
   const copyText = document.querySelector("#copy-text");
   const copyButton = document.querySelector("#copy-button");
   const copyHint = document.querySelector("#copy-hint");
@@ -221,12 +276,23 @@ function setupApp() {
     !archiveSection ||
     !gyotakuLink ||
     !archiveInput ||
+    !formatPlain ||
+    !formatMarkdown ||
+    !dateIso ||
+    !dateJapanese ||
     !copyText ||
     !copyButton ||
     !copyMessage ||
     !sourceMessage
   ) {
     return;
+  }
+
+  function getCopyOptions() {
+    return {
+      format: formatMarkdown.checked ? "markdown" : "plain",
+      dateFormat: dateJapanese.checked ? "japanese" : "iso"
+    };
   }
 
   function refreshCopyText() {
@@ -236,15 +302,21 @@ function setupApp() {
       setText(sourceMessage, "");
       if (copyHint) {
         copyHint.hidden = false;
+        copyButton.setAttribute("aria-describedby", "copy-hint");
       }
       return;
     }
 
-    copyText.value = buildCopyText(currentPost, archiveInputHasInvalidPaste ? "" : archiveInput.value);
+    copyText.value = buildCopyTextForOptions(
+      currentPost,
+      archiveInputHasInvalidPaste ? "" : archiveInput.value,
+      getCopyOptions()
+    );
     copyButton.disabled = false;
     setText(sourceMessage, buildSourceMessage(currentPost));
     if (copyHint) {
       copyHint.hidden = true;
+      copyButton.removeAttribute("aria-describedby");
     }
   }
 
@@ -347,6 +419,11 @@ function setupApp() {
     archiveInputHasInvalidPaste = false;
     refreshCopyText();
   });
+
+  // 出力設定は取得済みデータを再利用してtextareaだけを更新し、外部APIやサーバー再取得を発生させない。
+  for (const optionInput of [formatPlain, formatMarkdown, dateIso, dateJapanese]) {
+    optionInput.addEventListener("change", refreshCopyText);
+  }
 
   function setCopyFeedback(message, isSuccess) {
     setText(copyMessage, message);

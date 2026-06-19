@@ -118,6 +118,15 @@ input:disabled {
   cursor: not-allowed;
 }
 
+/* ネイティブradioを使い、既存アクセント色だけを反映してアクセシビリティ実装を複雑化しない。 */
+input[type="radio"] {
+  width: auto;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  accent-color: var(--accent);
+}
+
 textarea {
   min-height: 300px;
   padding: 12px;
@@ -202,6 +211,39 @@ a[aria-disabled="true"] {
   margin-bottom: 0;
 }
 
+.output-options {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.output-options legend,
+.option-group-title {
+  font-weight: 700;
+}
+
+.option-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.option-group {
+  display: grid;
+  gap: 4px;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-weight: 400;
+}
+
 .message {
   min-height: 1.5em;
   margin-bottom: 0;
@@ -256,7 +298,8 @@ a[aria-disabled="true"] {
   }
 
   .input-row,
-  .output-header {
+  .output-header,
+  .option-row {
     grid-template-columns: 1fr;
   }
 
