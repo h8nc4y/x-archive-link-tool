@@ -316,6 +316,21 @@ Use this template for future decisions:
 - Related files: `scripts/verifyMarkdownLinks.js`, `scripts/verifyMarkdownLinks.test.js`, `scripts/verifyPostReleaseDocs.js`, `docs/test-cases.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: Documentation guardrail follow-up; not a runtime Claude finding.
 
+### Decision 021: Re-delegate primary implementation to Codex as autonomous primary developer
+
+- Date: 2026-06-20
+- Decision: Primary implementation of this repository is re-delegated to Codex acting as an autonomous primary developer. Codex self-drives task selection, implementation, self-verification, Japanese commits, and PR creation without per-task approval. The operating contract is `docs/CODEX_HANDOFF.md`. Claude Code returns to an orchestrator-plus-reviewer role.
+- Context: On 2026-06-13 implementation was handed from Codex to Claude Code for the UX backlog (CC-002 through CC-008). The user now wants Codex to run as the autonomous primary developer under a four-rule model, with Claude reserved for orchestration and review and a human-mediated brief for front-end visual design.
+- Options considered:
+  - Keep Claude Code as the primary implementer (2026-06-13 state).
+  - Keep the original ChatGPT-triage / Codex-implements-only-approved / Claude-review-only model (Decisions 001-004).
+  - Re-delegate primary implementation to Codex as an autonomous primary developer with human-approved gates.
+- Rationale: Autonomous Codex implementation up to PR creation maximizes throughput while keeping production deploy, billing/paid API, secret/real-data egress, and product-requirement changes under human approval. Visual-design creation stays human-mediated so Codex implements a returned design rather than inventing one.
+- Consequences: This supersedes the implementation-authority parts of Decisions 001, 002, 003, and 004 (ChatGPT per-task approval, Claude review-only, Codex implements only ChatGPT-approved tasks). Reviews default to Codex self-review (`check:all` green plus adversarial self-review); ChatGPT or Claude review is requested only when needed. The four human-approval gates are: (1) deploy/Actions/release/tag, including merge to `master` (Cloudflare Pages production); (2) billing/paid API; (3) secret, real-asset, and real-data external transmission; (4) product-requirement changes. Codex does not merge its own PR. The security and data boundaries in `AGENTS.md` (Prohibitions, Post-release operations) and the Issue #42 human-decision status (Decision 016) remain unchanged.
+- Status: Active.
+- Related files: `docs/CODEX_HANDOFF.md`, `CLAUDE.md`, `AGENTS.md`, `TASKS_BACKLOG.md`, `README.md`.
+- Related review findings: none (workflow/governance decision).
+
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.

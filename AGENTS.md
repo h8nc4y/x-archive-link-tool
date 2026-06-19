@@ -2,6 +2,14 @@
 
 このリポジトリでは、グローバルの Codex 設定を基本とし、ここにはプロジェクト固有の範囲、禁止事項、検証方法だけを置く。
 
+## Implementation role
+
+- このリポジトリの主実装は Codex（自律的な主開発者）が担当する（2026-06-20 再委譲。`docs/DECISION_LOG.md` Decision 021）。Codex の運用契約は `docs/CODEX_HANDOFF.md` を正とする。
+- Codex はタスク選定→実装→自己検証→日本語コミット→PR 作成までを承認待ちなしで自走する。レビューは原則 Codex のセルフレビュー（`check:all` 緑＋敵対的自己レビュー）で、必要時のみ ChatGPT/Claude へ依頼する。
+- 次の4ゲートは人間承認を維持する: ①デプロイ/Actions/release・tag（master への merge ＝ Cloudflare Pages 本番反映を含む）②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。Codex は自分の PR を merge しない。
+- Claude Code は司令塔（orchestrator）＋レビュー担当。フロントのビジュアルデザインの「創出」が必要なときは、Codex は `docs/CODEX_HANDOFF.md` §12 のブリーフを書いて停止し、人間が Claude の frontend-design skill に渡す。
+- 本セクションは実装体制の定義であり、下記「Prohibitions」「Post-release operations」のセキュリティ・データ境界は上書きしない。
+
 ## Project scope
 
 - プロジェクト種別: Node.js ESM。
