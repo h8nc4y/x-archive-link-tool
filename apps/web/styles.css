@@ -246,6 +246,85 @@ a[aria-disabled="true"] {
   color: var(--danger);
 }
 
+/* OS/ブラウザで高コントラストを求めるユーザー向けに、既存tokenだけを強い値へ差し替える。 */
+@media (prefers-contrast: more) {
+  :root {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --text: #111111;
+    --muted: #374151;
+    --line: #111827;
+    --accent: #005a52;
+    --accent-dark: #003f3a;
+    --danger: #8a120b;
+  }
+
+  .panel,
+  input,
+  textarea {
+    border-color: var(--line);
+  }
+
+  button {
+    border: 1px solid var(--accent-dark);
+  }
+
+  button:disabled {
+    border-color: var(--muted);
+    color: #ffffff;
+  }
+
+  a {
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.18em;
+  }
+
+  a[aria-disabled="true"] {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--accent-dark);
+  }
+
+  .message.error:focus {
+    outline: 3px solid var(--danger);
+  }
+
+  .error {
+    font-weight: 700;
+  }
+}
+
+/* Windows High Contrastなどの強制色では、装飾色ではなくOSのsystem colorへ任せる。 */
+@media (forced-colors: active) {
+  :root {
+    --bg: Canvas;
+    --panel: Canvas;
+    --text: CanvasText;
+    --muted: GrayText;
+    --line: CanvasText;
+    --accent: Highlight;
+    --accent-dark: LinkText;
+    --danger: CanvasText;
+  }
+
+  button {
+    border-color: ButtonText;
+  }
+
+  button:disabled {
+    border-color: GrayText;
+    background: Canvas;
+    color: GrayText;
+  }
+
+  a[aria-disabled="true"] {
+    color: GrayText;
+  }
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 12px;
