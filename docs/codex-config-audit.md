@@ -6,15 +6,15 @@
 
 ### グローバル
 
-この実行環境では `CODEX_HOME` は `D:\Agent\Codex\.codex` です。今回参照したグローバル設定は次のファイルです。
+この実行環境では `CODEX_HOME` は `<local-codex-root>\.codex` です。今回参照したグローバル設定は次のファイルです。
 
-- `D:\Agent\Codex\.codex\AGENTS.md`
-- `D:\Agent\Codex\.codex\config.toml`
-- `D:\Agent\Codex\.codex\rules\cost-guard.rules`
-- `D:\Agent\Codex\.codex\rules\default.rules`
-- `D:\Agent\Codex\.codex\hooks\no_input_wait.py`
+- `<local-codex-root>\.codex\AGENTS.md`
+- `<local-codex-root>\.codex\config.toml`
+- `<local-codex-root>\.codex\rules\cost-guard.rules`
+- `<local-codex-root>\.codex\rules\default.rules`
+- `<local-codex-root>\.codex\hooks\no_input_wait.py`
 
-`C:\Users\h8nc4\.codex` も存在しますが、今回のCodex Appセッションの `CODEX_HOME` ではないため、棚卸しの正にはしません。
+`<user-profile>\.codex` も存在しますが、今回のCodex Appセッションの `CODEX_HOME` ではないため、棚卸しの正にはしません。
 
 ### プロジェクト
 

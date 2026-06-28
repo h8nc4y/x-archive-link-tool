@@ -14,7 +14,7 @@ Attach or paste this file into ChatGPT and ask ChatGPT to create a Claude Code r
 
 ChatGPT should remain the commander. Claude Code should act as an independent read-only reviewer. Codex should implement only tasks that ChatGPT explicitly approves after Claude's review findings are returned.
 
-ChatGPT cannot automatically read the local path `D:\Agent\Codex\Projects\004_x-archive-link-tool` unless files are uploaded or made available through a supported connector. This handoff is therefore written as a self-contained context packet, with file paths listed for traceability.
+ChatGPT cannot automatically read the local path `<local-projects-root>\004_x-archive-link-tool` unless files are uploaded or made available through a supported connector. This handoff is therefore written as a self-contained context packet, with file paths listed for traceability.
 
 ## Repository identity
 
@@ -294,7 +294,7 @@ This handoff creation did not run product tests, lint, typecheck, build, dev ser
 
 These commands are audit evidence from the handoff creation session, not reusable
 setup instructions. Plugin cache hashes under
-`D:\Agent\Codex\.codex\plugins\cache\openai-curated\superpowers\<hash>` are
+`<local-codex-root>\.codex\plugins\cache\openai-curated\superpowers\<hash>` are
 environment-specific and may change between Codex sessions. A future Codex
 reviewer should resolve the active Superpowers skill path from the current skill
 inventory or by locating the relevant `skills\...\SKILL.md` file before loading a
@@ -302,11 +302,11 @@ workflow. Volatile cache hashes are normalized below as `<session-cache-hash>`.
 
 Successful commands:
 
-- `type D:\Agent\Codex\.codex\plugins\cache\openai-curated\superpowers\<session-cache-hash>\skills\verification-before-completion\SKILL.md`
+- `type <local-codex-root>\.codex\plugins\cache\openai-curated\superpowers\<session-cache-hash>\skills\verification-before-completion\SKILL.md`
   - Loaded the verification-before-completion workflow from the Superpowers
     cache hash that existed in the original handoff environment. Resolve
     `<session-cache-hash>` in the current session before running this command.
-- `rg -n "004_x-archive-link-tool|CHATGPT_HANDOFF|REVIEW_BRIEF|CLAUDE_REVIEW|AI_REVIEW_TRIAGE|CODEX_TASKS|DECISION_LOG" D:\Agent\Codex\.codex\memories\MEMORY.md`
+- `rg -n "004_x-archive-link-tool|CHATGPT_HANDOFF|REVIEW_BRIEF|CLAUDE_REVIEW|AI_REVIEW_TRIAGE|CODEX_TASKS|DECISION_LOG" <local-codex-root>\.codex\memories\MEMORY.md`
   - No matching memory entries were returned.
 - `git status --short`
   - Showed the five existing review-coordination docs as untracked before this handoff file was created.
