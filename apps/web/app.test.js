@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildMarkdownCopyText,
   buildCopyText,
   buildGyotakuUrl,
   buildSourceMessage,
+  formatCreatedAt,
   getUserErrorMessage,
   getUserFacingErrorMessage,
   hasArchiveUrlPasteNoise,
@@ -28,6 +30,32 @@ test("buildCopyText includes media URLs", () => {
   });
 
   assert.match(text, /メディアURL：\nhttps:\/\/pbs\.twimg\.com\/media\/one\.jpg\nhttps:\/\/video\.twimg\.com\/two\.mp4/);
+});
+
+test("formatCreatedAt keeps ISO text or formats only the UTC date in Japanese", () => {
+  assert.equal(formatCreatedAt("2026-05-09T00:00:00.000Z", "iso"), "2026-05-09T00:00:00.000Z");
+  assert.equal(formatCreatedAt("2026-05-09T23:59:59.000Z", "japanese"), "2026年05月09日");
+  assert.equal(formatCreatedAt("", "japanese"), "未取得");
+});
+
+test("buildCopyText can show the post date in Japanese date format", () => {
+  const text = buildCopyText(basePost, "", { dateFormat: "japanese" });
+
+  assert.match(text, /ポスト投稿日：2026年05月09日/);
+});
+
+test("buildMarkdownCopyText formats the same fields for Markdown paste targets", () => {
+  const text = buildMarkdownCopyText(
+    basePost,
+    "https://megalodon.jp/2026-0509-0000-00/example",
+    { dateFormat: "japanese" }
+  );
+
+  assert.match(text, /^- アカウント名：Example/m);
+  assert.match(text, /^- アカウントID：@example_user/m);
+  assert.match(text, /^- ポスト投稿日：2026年05月09日/m);
+  assert.match(text, new RegExp("^## ポスト内容\\nplain post text", "m"));
+  assert.match(text, new RegExp("^## 魚拓URL\\nhttps://megalodon\\.jp/2026-0509-0000-00/example", "m"));
 });
 
 test("buildCopyText uses なし without media URLs", () => {
@@ -167,7 +195,10 @@ test("buildCopyText does not render @未取得 for explicit unavailable username
 
 test("buildSourceMessage describes cache and oEmbed source", () => {
   assert.equal(buildSourceMessage({ cached: true }), "キャッシュから表示しています。");
-  assert.equal(buildSourceMessage({ source: "oembed" }), "公式API未使用のため画像URLを取得できない場合があります。");
+  assert.equal(
+    buildSourceMessage({ source: "oembed", userNumericId: "未取得" }),
+    "公式API未使用のため画像URLを取得できない場合があります。 ユーザー数値IDはX API使用時のみ取得できます。"
+  );
 });
 
 test("buildSourceMessage maps warnings to Japanese user messages", () => {
@@ -207,8 +238,9 @@ test("getUserFacingErrorMessage preserves approved API error messages", () => {
 });
 
 function createElement(overrides = {}) {
+  const { initialAttributes = {}, ...elementOverrides } = overrides;
   const listeners = new Map();
-  const attributes = new Map();
+  const attributes = new Map(Object.entries(initialAttributes));
   const classes = new Set();
   return {
     textContent: "",
@@ -259,7 +291,7 @@ function createElement(overrides = {}) {
       attributes.delete(name);
     },
     select() {},
-    ...overrides
+    ...elementOverrides
   };
 }
 
@@ -299,8 +331,12 @@ async function createDomAppHarness(fetchImpl) {
     "#gyotaku-link": createElement(),
     "#archive-url": createElement(),
     "#archive-status": createElement(),
+    "#format-plain": createElement({ checked: true }),
+    "#format-markdown": createElement({ checked: false }),
+    "#date-iso": createElement({ checked: true }),
+    "#date-japanese": createElement({ checked: false }),
     "#copy-text": createElement(),
-    "#copy-button": createElement({ disabled: true }),
+    "#copy-button": createElement({ disabled: true, initialAttributes: { "aria-describedby": "copy-hint" } }),
     "#copy-hint": createElement(),
     "#copy-message": createElement(),
     "#source-message": createElement()
@@ -321,6 +357,9 @@ async function createDomAppHarness(fetchImpl) {
     elements,
     submit() {
       return elements["#extract-form"].dispatch("submit");
+    },
+    change(selector) {
+      return elements[selector].dispatch("change");
     },
     copy() {
       return elements["#copy-button"].dispatch("click");
@@ -409,6 +448,35 @@ test("submit flow hides copy hint after a successful extract", async () => {
 
     assert.equal(harness.elements["#copy-button"].disabled, false);
     assert.equal(harness.elements["#copy-hint"].hidden, true);
+    assert.equal(harness.elements["#copy-button"].getAttribute("aria-describedby"), null);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("output settings update the generated copy text without a new fetch", async () => {
+  let fetchCalls = 0;
+  const harness = await createDomAppHarness(() => {
+    fetchCalls += 1;
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+
+  try {
+    await harness.submit();
+    assert.equal(fetchCalls, 1);
+    assert.match(harness.elements["#copy-text"].value, /アカウント名：Example/);
+    assert.match(harness.elements["#copy-text"].value, /ポスト投稿日：2026-05-09T00:00:00.000Z/);
+
+    harness.elements["#format-plain"].checked = false;
+    harness.elements["#format-markdown"].checked = true;
+    await harness.change("#format-markdown");
+    assert.match(harness.elements["#copy-text"].value, new RegExp("^## ポスト内容\\nplain post text", "m"));
+
+    harness.elements["#date-iso"].checked = false;
+    harness.elements["#date-japanese"].checked = true;
+    await harness.change("#date-japanese");
+    assert.match(harness.elements["#copy-text"].value, /^- ポスト投稿日：2026年05月09日/m);
+    assert.equal(fetchCalls, 1);
   } finally {
     harness.cleanup();
   }

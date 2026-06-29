@@ -48,6 +48,22 @@
             <button id="copy-button" type="button" disabled aria-describedby="copy-hint">コピー</button>
           </div>
           <p class="hint output-help">記事・チャット・ドキュメントへの貼り付けや、リンク切れ・削除に備えた保存用として使えます。</p>
+          <fieldset class="output-options" aria-describedby="output-format-hint">
+            <legend>出力設定</legend>
+            <div class="option-row">
+              <div class="option-group">
+                <span class="option-group-title">形式</span>
+                <label class="choice" for="format-plain"><input id="format-plain" name="copy-format" type="radio" value="plain" checked>プレーンテキスト</label>
+                <label class="choice" for="format-markdown"><input id="format-markdown" name="copy-format" type="radio" value="markdown">Markdown</label>
+              </div>
+              <div class="option-group">
+                <span class="option-group-title">日付</span>
+                <label class="choice" for="date-iso"><input id="date-iso" name="date-format" type="radio" value="iso" checked>ISO</label>
+                <label class="choice" for="date-japanese"><input id="date-japanese" name="date-format" type="radio" value="japanese">日本語日付</label>
+              </div>
+            </div>
+            <p id="output-format-hint" class="hint">形式や日付を変えると、下のコピー用テキストにすぐ反映されます。</p>
+          </fieldset>
           <p id="copy-hint" class="hint">ポストを取得するとコピーできます。</p>
           <p id="source-message" class="message" role="status" aria-live="polite"></p>
           <textarea id="copy-text" readonly rows="14"></textarea>
