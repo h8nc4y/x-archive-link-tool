@@ -20,10 +20,11 @@
           <div class="input-row">
             <input id="post-url" name="url" type="url" autocomplete="off" required
               placeholder="https://x.com/username/status/1234567890"
-              aria-describedby="post-url-hint">
+              aria-describedby="post-url-hint post-url-paste-message">
             <button id="submit-button" type="submit">取得</button>
           </div>
           <p id="post-url-hint" class="hint">例：https://x.com/username/status/1234567890（x.com または twitter.com のポストURL）</p>
+          <p id="post-url-paste-message" class="message error" role="status" aria-live="polite" hidden></p>
           <p id="error-message" class="message error" role="alert" tabindex="-1"></p>
         </form>
 
@@ -38,7 +39,7 @@
           <a id="gyotaku-link" target="_blank" rel="noopener" aria-disabled="true">魚拓を取得する場合はこちら</a>
           <label for="archive-url">取得後の魚拓URL</label>
           <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/..." disabled aria-describedby="archive-status">
-          <p id="archive-status" class="hint">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
+          <p id="archive-status" class="hint" role="status" aria-live="polite">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
         </section>
 
         <section class="output" aria-labelledby="output-title">

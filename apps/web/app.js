@@ -25,6 +25,8 @@ const ERROR_MESSAGES = new Map([
 ]);
 const GENERIC_FETCH_ERROR_MESSAGE = "取得に失敗しました。時間を置いて再試行してください。";
 const LOADING_SUBMIT_LABEL = "取得中…";
+const POST_URL_PASTE_EXTRA_TEXT_MESSAGE = "XポストURLに余分な文字が含まれています。URLだけを貼り付けてください。";
+const ARCHIVE_URL_PASTE_EXTRA_TEXT_MESSAGE = "魚拓URLに余分な文字が含まれています。URLだけを貼り付けてください。";
 const WARNING_MESSAGES = new Map([
   ["最新取得に失敗したため期限切れキャッシュを返しました。", "最新情報を取得できなかったため、古い可能性があるキャッシュを表示しています。"],
   ["公式API未使用のため画像URLを取得できない場合があります。", "画像URLを取得できない場合があります。"],
@@ -45,9 +47,14 @@ export function validatePostUrl(input) {
     return { valid: false, code: "invalid_input" };
   }
 
+  const trimmedInput = input.trim();
+  if (/\s/.test(trimmedInput)) {
+    return { valid: false, code: "invalid_url" };
+  }
+
   let url;
   try {
-    url = new URL(input.trim());
+    url = new URL(trimmedInput);
   } catch {
     return { valid: false, code: "invalid_url" };
   }
@@ -108,6 +115,18 @@ export function isValidArchiveUrl(value) {
 
 export function hasArchiveUrlPasteNoise(value) {
   return /\s/.test(String(value || ""));
+}
+
+// 貼り付け時だけ前後の空白・改行を許容し、URL内部の空白は本文混入として扱う。
+function normalizePastedUrlText(value) {
+  const rawText = String(value || "");
+  const trimmedText = rawText.trim();
+
+  return {
+    value: trimmedText,
+    changed: trimmedText !== rawText,
+    hasExtraText: /\s/.test(trimmedText)
+  };
 }
 
 function formatMediaUrls(mediaUrls) {
@@ -247,6 +266,7 @@ function setupApp() {
   const urlInput = document.querySelector("#post-url");
   const submitButton = document.querySelector("#submit-button");
   const errorMessage = document.querySelector("#error-message");
+  const postUrlPasteMessage = document.querySelector("#post-url-paste-message");
   const archiveSection = document.querySelector("#archive-section");
   const gyotakuLink = document.querySelector("#gyotaku-link");
   const archiveInput = document.querySelector("#archive-url");
@@ -263,6 +283,7 @@ function setupApp() {
   let currentPost = null;
   // 取得済みポストのキー（postUrl）。同じポストの再取得では魚拓URLを保持し、別ポストではリセットする。
   let currentPostKey = "";
+  let postInputHasInvalidPaste = false;
   let archiveInputHasInvalidPaste = false;
   const ARCHIVE_STATUS_IDLE = "先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。";
   const ARCHIVE_STATUS_ACTIVE = "別のXポストを取得すると、入力した魚拓URLはリセットされます。";
@@ -293,6 +314,30 @@ function setupApp() {
       format: formatMarkdown.checked ? "markdown" : "plain",
       dateFormat: dateJapanese.checked ? "japanese" : "iso"
     };
+  }
+
+  function setPostUrlPasteMessage(message) {
+    if (!postUrlPasteMessage) {
+      return;
+    }
+
+    setText(postUrlPasteMessage, message);
+    postUrlPasteMessage.hidden = !message;
+  }
+
+  function setArchiveStatus(message, isError = false) {
+    if (!archiveStatus) {
+      return;
+    }
+
+    setText(archiveStatus, message);
+    if (archiveStatus.classList) {
+      archiveStatus.classList.toggle("error", isError === true);
+    }
+  }
+
+  function getDefaultArchiveStatus() {
+    return currentPost ? ARCHIVE_STATUS_ACTIVE : ARCHIVE_STATUS_IDLE;
   }
 
   function refreshCopyText() {
@@ -339,18 +384,14 @@ function setupApp() {
       gyotakuLink.href = buildGyotakuUrl(currentPost.postUrl || currentPost.canonicalUrl);
       gyotakuLink.removeAttribute("aria-disabled");
       archiveInput.disabled = false;
-      if (archiveStatus) {
-        setText(archiveStatus, ARCHIVE_STATUS_ACTIVE);
-      }
+      setArchiveStatus(ARCHIVE_STATUS_ACTIVE);
       return;
     }
 
     gyotakuLink.removeAttribute("href");
     gyotakuLink.setAttribute("aria-disabled", "true");
     archiveInput.disabled = true;
-    if (archiveStatus) {
-      setText(archiveStatus, ARCHIVE_STATUS_IDLE);
-    }
+    setArchiveStatus(ARCHIVE_STATUS_IDLE);
   }
 
   function showError(message) {
@@ -366,7 +407,13 @@ function setupApp() {
     setText(errorMessage, "");
     setCopyFeedback("", false);
 
-    const validation = validatePostUrl(urlInput.value);
+    if (postInputHasInvalidPaste) {
+      showError(getUserErrorMessage({ code: "invalid_url" }));
+      return;
+    }
+
+    const submittedUrl = urlInput.value.trim();
+    const validation = validatePostUrl(submittedUrl);
     if (!validation.valid) {
       showError(getUserErrorMessage({ code: validation.code }));
       return;
@@ -378,7 +425,7 @@ function setupApp() {
       const response = await fetch("/api/extract", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: urlInput.value })
+        body: JSON.stringify({ url: submittedUrl })
       });
       const payload = await response.json();
 
@@ -403,20 +450,47 @@ function setupApp() {
     }
   });
 
-  archiveInput.addEventListener("paste", (event) => {
+  urlInput.addEventListener("paste", (event) => {
     const pastedText = event.clipboardData?.getData("text") || "";
-    if (!hasArchiveUrlPasteNoise(pastedText)) {
+    const normalized = normalizePastedUrlText(pastedText);
+    if (!normalized.changed && !normalized.hasExtraText) {
+      postInputHasInvalidPaste = false;
+      setPostUrlPasteMessage("");
       return;
     }
 
     event.preventDefault();
-    archiveInput.value = pastedText.trim();
-    archiveInputHasInvalidPaste = true;
+    urlInput.value = normalized.value;
+    postInputHasInvalidPaste = normalized.hasExtraText;
+    setPostUrlPasteMessage(normalized.hasExtraText ? POST_URL_PASTE_EXTRA_TEXT_MESSAGE : "");
+  });
+
+  urlInput.addEventListener("input", () => {
+    postInputHasInvalidPaste = false;
+    setPostUrlPasteMessage("");
+  });
+
+  archiveInput.addEventListener("paste", (event) => {
+    const pastedText = event.clipboardData?.getData("text") || "";
+    const normalized = normalizePastedUrlText(pastedText);
+    if (!normalized.changed && !normalized.hasExtraText) {
+      setArchiveStatus(getDefaultArchiveStatus());
+      return;
+    }
+
+    event.preventDefault();
+    archiveInput.value = normalized.value;
+    archiveInputHasInvalidPaste = normalized.hasExtraText;
+    setArchiveStatus(
+      normalized.hasExtraText ? ARCHIVE_URL_PASTE_EXTRA_TEXT_MESSAGE : getDefaultArchiveStatus(),
+      normalized.hasExtraText
+    );
     refreshCopyText();
   });
 
   archiveInput.addEventListener("input", () => {
     archiveInputHasInvalidPaste = false;
+    setArchiveStatus(getDefaultArchiveStatus());
     refreshCopyText();
   });
 

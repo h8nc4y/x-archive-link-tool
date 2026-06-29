@@ -119,6 +119,7 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 
 ## ドキュメント
 
+- [Codex自律主開発ハンドオフ（運用契約）](docs/CODEX_HANDOFF.md)
 - [要件](docs/requirements.md)
 - [API案](docs/api.md)
 - [テストケース](docs/test-cases.md)

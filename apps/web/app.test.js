@@ -326,6 +326,7 @@ async function createDomAppHarness(fetchImpl) {
     "#post-url": createElement({ value: "https://x.com/example_user/status/67890" }),
     "#submit-button": createElement({ textContent: "取得" }),
     "#error-message": createElement(),
+    "#post-url-paste-message": createElement(),
     "#archive-section": createElement(),
     "#gyotaku-link": createElement(),
     "#archive-url": createElement(),
@@ -377,6 +378,19 @@ function createJsonResponse(payload, ok = true) {
   };
 }
 
+function pasteText(element, text) {
+  let prevented = false;
+  element.dispatch("paste", {
+    clipboardData: {
+      getData: () => text
+    },
+    preventDefault() {
+      prevented = true;
+    }
+  });
+  return prevented;
+}
+
 test("validatePostUrl accepts canonical and i/web/status URLs", () => {
   assert.deepEqual(validatePostUrl("https://x.com/example_user/status/67890"), { valid: true });
   assert.deepEqual(validatePostUrl("https://twitter.com/example_user/status/67890"), { valid: true });
@@ -392,6 +406,10 @@ test("validatePostUrl reports specific codes for invalid input", () => {
   assert.deepEqual(validatePostUrl("https://x.com/example_user"), { valid: false, code: "invalid_path" });
   assert.deepEqual(validatePostUrl("https://x.com/invalid-name!/status/67890"), { valid: false, code: "invalid_username" });
   assert.deepEqual(validatePostUrl("https://x.com/example_user/status/abc"), { valid: false, code: "invalid_post_id" });
+  assert.deepEqual(validatePostUrl("https://x.com/example_user/status/67890\n余分な本文"), {
+    valid: false,
+    code: "invalid_url"
+  });
 });
 
 test("submit flow shows loading state while extract is pending", async () => {
@@ -488,6 +506,57 @@ test("submit flow rejects invalid URLs on the client without fetching", async ()
   }
 });
 
+test("post URL paste trims surrounding whitespace before submitting", async () => {
+  let requestBody = "";
+  const harness = await createDomAppHarness((_url, options) => {
+    requestBody = options.body;
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+
+  try {
+    const prevented = pasteText(harness.elements["#post-url"], "\n https://x.com/example_user/status/67890 \r\n");
+
+    assert.equal(prevented, true);
+    assert.equal(harness.elements["#post-url"].value, "https://x.com/example_user/status/67890");
+    assert.equal(harness.elements["#post-url-paste-message"].textContent, "");
+
+    await harness.submit();
+
+    assert.equal(JSON.parse(requestBody).url, "https://x.com/example_user/status/67890");
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("post URL paste warns when extra text remains after trimming", async () => {
+  let fetchCalls = 0;
+  const harness = await createDomAppHarness(() => {
+    fetchCalls += 1;
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+
+  try {
+    const prevented = pasteText(harness.elements["#post-url"], "https://x.com/example_user/status/67890\n余分な本文");
+
+    assert.equal(prevented, true);
+    assert.equal(harness.elements["#post-url"].value, "https://x.com/example_user/status/67890\n余分な本文");
+    assert.equal(
+      harness.elements["#post-url-paste-message"].textContent,
+      "XポストURLに余分な文字が含まれています。URLだけを貼り付けてください。"
+    );
+
+    await harness.submit();
+
+    assert.equal(fetchCalls, 0);
+    assert.equal(
+      harness.elements["#error-message"].textContent,
+      "URLの形式を確認してください。例：https://x.com/username/status/1234567890"
+    );
+  } finally {
+    harness.cleanup();
+  }
+});
+
 test("submit flow moves focus to the error message when the server returns an error", async () => {
   const harness = await createDomAppHarness(() =>
     Promise.resolve(createJsonResponse({ code: "oembed_404" }, false))
@@ -523,6 +592,48 @@ test("archive link and input stay disabled until a post is extracted", async () 
       "https://gyo.tc/https://x.com/example_user/status/67890"
     );
     assert.match(harness.elements["#archive-status"].textContent, /リセット/);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("archive URL paste trims surrounding whitespace and keeps the archive URL usable", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+
+    const prevented = pasteText(
+      harness.elements["#archive-url"],
+      "\r\n https://megalodon.jp/2026-0509-0000-00/example \n"
+    );
+
+    assert.equal(prevented, true);
+    assert.equal(harness.elements["#archive-url"].value, "https://megalodon.jp/2026-0509-0000-00/example");
+    assert.match(harness.elements["#copy-text"].value, /魚拓URL：\nhttps:\/\/megalodon\.jp\/2026-0509-0000-00\/example/);
+    assert.match(harness.elements["#archive-status"].textContent, /リセット/);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("archive URL paste warns and excludes extra pasted text from copy output", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    await harness.submit();
+
+    const prevented = pasteText(
+      harness.elements["#archive-url"],
+      "https://megalodon.jp/2026-0509-0000-00/example\n余分な本文"
+    );
+
+    assert.equal(prevented, true);
+    assert.equal(
+      harness.elements["#archive-status"].textContent,
+      "魚拓URLに余分な文字が含まれています。URLだけを貼り付けてください。"
+    );
+    assert.match(harness.elements["#copy-text"].value, /魚拓URL：\n未取得/);
   } finally {
     harness.cleanup();
   }
