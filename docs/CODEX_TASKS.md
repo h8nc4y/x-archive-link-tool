@@ -689,3 +689,11 @@ Completed by PR #31 and subsequent review-management doc updates.
 - Markdown local link and anchor guard follow-up: `node --test` and `check:post-release-docs` verify repo-local Markdown file links and local Markdown heading anchors under `README.md`, `AGENTS.md`, `SECURITY.md`, and `docs/`; external URLs, `mailto:`, `tel:`, image links, and links inside fenced code blocks are skipped.
 - CL-012: Resolved by tracked governance docs; no application code change and no tracked `CLAUDE.md` required.
 - CL-013: Rejected for implementation; no local server logger injection.
+
+---
+
+## 📌 参考メモ（タスクではない）: Claude Code 独立再レビュー (2026-06-21) を配置
+
+Claude Code (Opus 4.8) による 2026-06-21 時点の独立再レビュー結果を `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` に配置しました。
+着手前の参考にしてください。これは advisory（助言）であり、確定タスクではありません。従来どおり triage を経てから実装判断してください。
+ソースコード/資材は変更していません（docs への本レビュー追加のみ）。横断索引はローカル管理資料のため、この公開向けタスク台帳には絶対パスを記載しません。
