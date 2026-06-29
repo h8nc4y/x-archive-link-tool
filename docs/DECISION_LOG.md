@@ -326,11 +326,21 @@ Use this template for future decisions:
   - Keep the original ChatGPT-triage / Codex-implements-only-approved / Claude-review-only model (Decisions 001-004).
   - Re-delegate primary implementation to Codex as an autonomous primary developer with human-approved gates.
 - Rationale: Autonomous Codex implementation up to PR creation maximizes throughput while keeping production deploy, billing/paid API, secret/real-data egress, and product-requirement changes under human approval. Visual-design creation stays human-mediated so Codex implements a returned design rather than inventing one.
-- Consequences: This supersedes the implementation-authority parts of Decisions 001, 002, 003, and 004 (ChatGPT per-task approval, Claude review-only, Codex implements only ChatGPT-approved tasks). Reviews default to Codex self-review (`check:all` green plus adversarial self-review); ChatGPT or Claude review is requested only when needed. The four human-approval gates are: (1) deploy/Actions/release/tag, including merge to `master` (Cloudflare Pages production); (2) billing/paid API; (3) secret, real-asset, and real-data external transmission; (4) product-requirement changes. Codex does not merge its own PR. The security and data boundaries in `AGENTS.md` (Prohibitions, Post-release operations) and the Issue #42 human-decision status (Decision 016) remain unchanged.
-- Status: Active.
+- Consequences: This supersedes the implementation-authority parts of Decisions 001, 002, 003, and 004 (ChatGPT per-task approval, Claude review-only, Codex implements only ChatGPT-approved tasks). Reviews default to Codex self-review (`check:all` green plus adversarial self-review); ChatGPT or Claude review is requested only when needed. The original 2026-06-20 wording kept merge to `master` as a human gate because Cloudflare Pages production follows `master`; that merge-gate detail is superseded by Decision 022. The security and data boundaries in `AGENTS.md` (Prohibitions, Post-release operations) and the Issue #42 human-decision status (Decision 016) remain unchanged.
+- Status: Active for role delegation. Merge/human-gate details are superseded by Decision 022.
 - Related files: `docs/CODEX_HANDOFF.md`, `CLAUDE.md`, `AGENTS.md`, `TASKS_BACKLOG.md`, `README.md`.
 - Related review findings: none (workflow/governance decision).
 
+### Decision 022: Align Codex autonomy with 2026-06-29 global policy
+
+- Date: 2026-06-29
+- Decision: The repository-specific Codex handoff follows the current global autonomy policy. GitHub PR merge and normal GitHub Actions execution are part of Codex's autonomous workflow when checks, mergeability, and cost/security boundaries are satisfied.
+- Context: Decision 021 originally kept merge-to-`master` as a human gate because Cloudflare Pages production follows `master`. The global Codex policy was later updated to allow commits, pushes, PR work, merges, and non-cost deployments unless a stop condition applies.
+- Rationale: Keeping a stale merge prohibition in repo docs would block the current long-running autonomous development loop and contradict the global source of truth.
+- Consequences: Stop conditions are limited to paid/cost-bearing operations, secret/OAuth/real-data or real-asset external transmission, live provider or production API checks using real X data, product-requirement changes, and physical blockers. The project-specific post-release boundaries in `AGENTS.md` remain active for live X API/oEmbed, production `/api/extract`, X Developer Portal, billing/credits, and secret/token/OAuth handling.
+- Status: Active.
+- Related files: `AGENTS.md`, `docs/CODEX_HANDOFF.md`, `TASKS_BACKLOG.md`.
+- Related review findings: none (workflow/governance update).
 ## Open decisions
 
 - Which branch should be reviewed by Claude Code.

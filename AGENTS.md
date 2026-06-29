@@ -5,9 +5,9 @@
 ## Implementation role
 
 - このリポジトリの主実装は Codex（自律的な主開発者）が担当する（2026-06-20 再委譲。`docs/DECISION_LOG.md` Decision 021）。Codex の運用契約は `docs/CODEX_HANDOFF.md` を正とする。
-- Codex はタスク選定→実装→自己検証→日本語コミット→PR 作成までを承認待ちなしで自走する。レビューは原則 Codex のセルフレビュー（`check:all` 緑＋敵対的自己レビュー）で、必要時のみ ChatGPT/Claude へ依頼する。
-- 次の4ゲートは人間承認を維持する: ①デプロイ/Actions/release・tag（master への merge ＝ Cloudflare Pages 本番反映を含む）②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。Codex は自分の PR を merge しない。
-- Claude Code は司令塔（orchestrator）＋レビュー担当。フロントのビジュアルデザインの「創出」が必要なときは、Codex は `docs/CODEX_HANDOFF.md` §12 のブリーフを書いて停止し、人間が Claude の frontend-design skill に渡す。
+- Codex はタスク選定→実装→自己検証→日本語コミット→PR 作成/更新/mergeまでを承認待ちなしで自走する。レビューは原則 Codex のセルフレビュー（`check:all` 緑＋敵対的自己レビュー）で、必要時のみ ChatGPT/Claude へ依頼する。
+- 人間承認が必要なのは、課金・有料API、secret/OAuth/実データ・実素材の外部送信、実X投稿URLや本番APIを使うlive provider確認、製品要件変更、または権限/OAuth/usage-limit等で物理的に継続できない場合に限る。GitHub PR mergeやGitHub Actionsの通常実行は、それ自体を停止条件にしない。
+- Claude Code は司令塔（orchestrator）＋レビュー担当。フロントのビジュアルデザイン創出や判断が materially useful なときだけ、Codex は `docs/CODEX_HANDOFF.md` §12 のブリーフまたは agmsg 相談を使う。明確な実装作業は停止せずに続ける。
 - 本セクションは実装体制の定義であり、下記「Prohibitions」「Post-release operations」のセキュリティ・データ境界は上書きしない。
 
 ## Project scope
@@ -35,7 +35,7 @@
 
 - v0.1.0後の外部・法務・課金確認は、人間確認結果を `docs/post-release-human-verification-template.md` の形で受け取ってから扱う。
 - Codexが自走してよいのは、repo内docs、Issue、template、外部通信しないdry-run/testの整備まで。
-- 本番 `/api/extract`、本番429確認、X API/oEmbed live通信、実X投稿URL送信、X Developer Portal、billing/credits確認、secret/token/OAuth/実データ読み取り、Cloudflare write操作は停止条件とする。
+- 本番 `/api/extract`、本番429確認、X API/oEmbed live通信、実X投稿URL送信、X Developer Portal、billing/credits確認、secret/token/OAuth/実データ読み取りは停止条件とする。Cloudflare write/deploy/configは、このリポジトリのpost-release運用確認では明示タスクと無料・secret安全確認なしに実行しない。GitHub PR mergeに伴うPages自動デプロイは通常のGitHub workflowとして扱う。
 - Cloudflareは今回のpost-release整備ではwrite操作を行わない。既存認証でread-only確認を行う場合も、広いWrangler OAuth権限を前提に最小コマンドへ限定する。
 - 上記の停止条件は、v0.1.0後の外部・法務・課金・本番live確認に関するプロジェクト固有制限である。通常のrepo内docs/test/GitHub/Browser確認や、実URL・secret・課金を伴わないWeb UI作業は、グローバルの自走方針に従う。
 
@@ -61,7 +61,7 @@
 
 - sandbox内の `gh auth status` が `token invalid` を返す、またはsandbox内のGit HTTPS操作が `SEC_E_NO_CREDENTIALS` を返すだけでは、GitHub認証破損とは判断しない。
 - `gh auth login` や認証待ちを求める前に、sandbox外で既存Windows keyring認証を確認する。確認候補は `gh auth status -h github.com --json hosts` の `tokenSource=keyring` / `state=success`、`gh api user --jq .login`、`GIT_TERMINAL_PROMPT=0 git -C <repo> ls-remote origin HEAD`。`gh api user` が実行ポリシーで拒否された場合は未確認として扱い、他の証跡だけでログイン要求を断定しない。
-- GitHubのIssue、PR、merge確認は、利用可能なGitHub connectorを優先し、connectorでできない場合はlocal commitと実際に通る `git push` までに留める。
+- GitHubのIssue、PR、merge確認は、利用可能なGitHub connector、`gh`、またはkeyring-capableなgit経路で実施する。PR作成・更新・mergeは、検証と状態確認ができており停止条件に当たらない限り自走範囲とする。
 - PR URL、CI結果、merge結果は、GitHub connector、git remote状態、または別の確認済み証跡で確認できた場合だけ報告する。確認できない場合は未確認と書き、捏造しない。
 
 ## Reporting
