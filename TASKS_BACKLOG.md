@@ -6,9 +6,10 @@
 
 ## 状態サマリ
 
-- 2026-06-13: Claude Codeが主実装を引き継ぎ。次の目標はWeb UIの機能・UX改善（検証済み12候補をテーマ別5PRで段階実装し、PRごとに本番反映）。
+- 2026-06-29: Codex自律主開発の運用を最新グローバル方針へ更新。PR merge/GitHub Actions通常実行は停止条件ではなく、停止はcost/secret/OAuth/実データ外部送信/live provider/製品要件変更/物理ブロッカーに限定する。運用契約は `docs/CODEX_HANDOFF.md`。
+- 2026-06-20: 主実装をCodex（自律主開発）へ再委譲。2026-06-13のClaude Code主実装期間は履歴として扱う。
 - 改善候補の詳細と不採用理由は `docs/ux-improvement-candidates.md` を参照。
-- post-release operationsはIssue #42に集約済みで、人間/ChatGPT判断待ち。Claude Codeは判断材料整理（CC-007）のみ支援する。
+- post-release operationsはIssue #42に集約済みで、privacy/legal/support/billing/log retention/429 policyなどの製品・運用判断は未決。Codexは判断材料整理（CC-007）とrepo内docs整備まで支援する。
 - 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、Cloudflare write操作は引き続き停止条件のまま。
 
 ## Backlog
@@ -36,6 +37,6 @@
 ## Notes
 
 - `docs/CODEX_TASKS.md` の `Current backlog inventory` はBT-001からBT-003のCodex作業記録です。
-- `HUM-001` はClaude Codeが自走実装するタスクではありません。人間確認結果は `docs/post-release-human-verification-template.md` の形式で受け取ってから扱ってください。
+- `HUM-001` はCodex/Claudeが勝手に決めるタスクではありません。人間確認結果は `docs/post-release-human-verification-template.md` の形式で受け取ってから扱ってください。
 - `npm.cmd run lint` と `npm.cmd run typecheck` は2026-06-13時点でもpackage scriptが存在しないため失敗します（CC-008で導入可否を検討）。
 - 実装PRはテーマ単位で小さく保ち、mergeごとに本番静的URLの表示確認を行います（本番 `/api/extract` は呼ばない）。
