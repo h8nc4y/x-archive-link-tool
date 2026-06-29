@@ -695,5 +695,5 @@ Completed by PR #31 and subsequent review-management doc updates.
 ## 📌 参考メモ（タスクではない）: Claude Code 独立再レビュー (2026-06-21) を配置
 
 Claude Code (Opus 4.8) による 2026-06-21 時点の独立再レビュー結果を `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` に配置しました。
-着手前の参考にしてください。これは advisory（助言）であり、確定タスクではありません。従来どおり triage を経てから実装判断してください。
+着手前の参考にしてください。これは advisory（助言）であり、確定タスクではありません。従来どおり ChatGPT triage を経てから実装判断してください。
 ソースコード/資材は変更していません（docs への本レビュー追加のみ）。横断索引はローカル管理資料のため、この公開向けタスク台帳には絶対パスを記載しません。
