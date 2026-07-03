@@ -32,7 +32,7 @@
 
         <section>
           <h2>キャッシュ</h2>
-          <p>API利用量を抑えるため、正規化済み投稿情報をpostId単位でキャッシュする場合があります。Cloudflare ProductionではKV bindingを使い、TTLは30日です。</p>
+          <p>API利用量を抑えるため、正規化済み投稿情報をpostId単位でキャッシュする場合があります。Cloudflare ProductionではKV bindingを使い、TTLは30日です。X APIの一時的な失敗時に代替手段（oEmbed）で取得した結果に限り、TTLは約1時間に短縮されます。</p>
         </section>
 
         <section>
