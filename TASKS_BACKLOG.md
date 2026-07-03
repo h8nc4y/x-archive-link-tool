@@ -1,6 +1,6 @@
 # TASKS_BACKLOG
 
-最終更新: 2026/07/01 10:28 JST
+最終更新: 2026/07/03 JST
 
 このファイルは現在タスク一覧です。詳細な過去のCodex承認タスク履歴は `docs/CODEX_TASKS.md`、自律開発の現在ルールは `docs/CODEX_HANDOFF.md` を正として参照してください。
 
@@ -21,9 +21,11 @@
 | CC-004 | PR3 コピー体験改善（C-10, C-11） | `docs/ux-improvement-candidates.md` | 中 | M | done: PR #53 |
 | CC-005 | PR4 出力形式拡張（C-07, C-12） | `docs/ux-improvement-candidates.md` | 高 | M | done: PR #55 |
 | CC-006 | PR5 入力寛容化・高コントラスト（C-09, C-08） | `docs/ux-improvement-candidates.md` | 中 | M | done: PR #57 / #58 |
-| CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | blocked: human/ChatGPT decision待ち。repo内docs整備のみ可 |
+| CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | done: `docs/issue-42-mode-decision-packet.md`（公開範囲別3モード縮退案）を2026-07-03起草。決定はHUM-001 |
 | CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | todo: 必要なら別タスクで検討 |
-| HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42: privacy, support, billing, log retention, 429 policy | 高 | L | human/ChatGPT decision required |
+| CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merge待ち） |
+| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: `docs/fable5-requirements-review-2026-07-03.md`。オーナー回答待ち（特にQ1公開範囲） |
+| HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42: privacy, support, billing, log retention, 429 policy | 高 | L | human decision required。`docs/issue-42-mode-decision-packet.md` の決定票記入で決着可能 |
 
 ## 完了・skip済み（履歴）
 
