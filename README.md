@@ -1,6 +1,6 @@
 # X Post Paste Text MVP
 
-Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです。
+Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです。Xポストの記録・引用を補助するツールであり、法的な証拠保全にはスクリーンショットやPDF保存の併用を推奨します（記録補助ツールとしての位置づけは `docs/fable5-requirements-review-2026-07-03.md` を参照）。
 
 Web UI と `POST /api/extract` は実装済みです。Cloudflare Pages無料URLで初回デプロイ済みです。iOSアプリ、DB、独自ドメイン設定は未実装です。
 
