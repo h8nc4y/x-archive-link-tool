@@ -33,21 +33,32 @@ PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cm
 
 ## 魚拓リンク例
 
-`canonicalXPostUrl` が `https://x.com/example/status/1234567890` の場合:
+`canonicalXPostUrl` が `https://x.com/example/status/1234567890` の場合、4サービスを併記する（すべて外部リンク、ポスト取得前は `aria-disabled="true"`）:
 
-```html
-<a href="https://gyo.tc/https://x.com/example/status/1234567890" target="_blank" rel="noopener">魚拓を取得する場合はこちら</a>
-```
+| サービス | 型 | href |
+| --- | --- | --- |
+| ウェブ魚拓（gyo.tc） | prefix | `https://gyo.tc/https://x.com/example/status/1234567890` |
+| Wayback Machine | prefix | `https://web.archive.org/save/https://x.com/example/status/1234567890` |
+| archive.today | prefix | `https://archive.ph/newest/https://x.com/example/status/1234567890` |
+| Twitter魚拓（twtr.satoru.net） | form | `https://twtr.satoru.net/`（サイトトップ固定） |
 
-`noreferrer` は付けない。
+各リンク共通で `target="_blank" rel="noopener"`、`noreferrer` は付けない。
 
 ## 魚拓URL入力例
+
+貼り付け欄は、併記した各サービスの結果URLホストを許可する。
 
 | input | result |
 | --- | --- |
 | `https://megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
 | `https://s1.megalodon.jp/2026-0509-0000-00/example` | コピー用テキストにそのURLを使う |
-| `https://example.com/archive` | `未取得` |
+| `https://gyo.tc/abcdef` | コピー用テキストにそのURLを使う |
+| `https://web.archive.org/web/20260504/https://x.com/a/status/1` | コピー用テキストにそのURLを使う |
+| `https://archive.ph/newest/https://x.com/a/status/1` | コピー用テキストにそのURLを使う |
+| `https://archive.today/abcd1` | コピー用テキストにそのURLを使う |
+| `https://example.com/archive` | `未取得`（許可外ホスト） |
+| `http://megalodon.jp/2026-0509-0000-00/example` | `未取得`（非https） |
+| `https://megalodon.jp` | `未取得`（パスなし） |
 | ` https://megalodon.jp/2026-0509-0000-00/example ` | `未取得` |
 | `https://megalodon.jp/2026-0509-0000-00/example extra` | `未取得` |
 | `https://megalodon.jp/2026-0509-0000-00/example` と `extra` が改行で続く貼り付け | `未取得` |

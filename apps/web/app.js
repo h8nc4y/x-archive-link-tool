@@ -1,4 +1,10 @@
-const ARCHIVE_URL_PATTERN = /^https:\/\/(?:megalodon\.jp|s[0-9]+\.megalodon\.jp)\/\S+$/;
+// 貼り付け欄は、下の魚拓リンクで提示する各サービスの結果URLだけを許可する。
+// 追加サービス（Wayback / archive.today / gyo.tc / twtr）をリンクした以上、
+// それらの結果URLを弾かないようホスト許可リストをそろえる。
+// archive.today は保存後に複数TLDのミラー（.today/.ph/.is/.md/.vn/.li/.fo）へ
+// リダイレクトするため、結果URLを弾かないようミラーTLD群をまとめて許可する。
+const ARCHIVE_URL_PATTERN =
+  /^https:\/\/(?:(?:s[0-9]+\.)?megalodon\.jp|gyo\.tc|web\.archive\.org|archive\.(?:today|ph|is|md|vn|li|fo)|twtr\.satoru\.net)\/\S+$/;
 const POST_URL_ALLOWED_HOSTS = new Set(["x.com", "twitter.com", "mobile.twitter.com"]);
 const POST_URL_USERNAME_PATTERN = /^[A-Za-z0-9_]{1,15}$/;
 const POST_URL_POST_ID_PATTERN = /^[0-9]{1,19}$/;
@@ -38,6 +44,20 @@ const WARNING_MESSAGES = new Map([
 
 export function buildGyotakuUrl(postUrl) {
   return `https://gyo.tc/${postUrl}`;
+}
+
+// 魚拓サービスの一覧。どれかが落ちても代替が残るよう複数を併記する。
+// gyo.tc / Wayback / archive.today は canonical URL を末尾に付けるprefix型。
+// twtr.satoru.net はフォーム型のため、開いた先で手動貼り付けする（hrefはサイトトップ固定）。
+// サーバーからは取得せず、外部リンクとして開くだけ。
+export function buildArchiveServiceLinks(postUrl) {
+  const target = String(postUrl || "");
+  return [
+    { id: "gyotaku-link", label: "ウェブ魚拓（gyo.tc）で魚拓を取る", href: buildGyotakuUrl(target) },
+    { id: "wayback-link", label: "Wayback Machine（archive.org）で保存する", href: `https://web.archive.org/save/${target}` },
+    { id: "archivetoday-link", label: "archive.today で保存・確認する", href: `https://archive.ph/newest/${target}` },
+    { id: "twtr-link", label: "Twitter魚拓（twtr.satoru.net）を開く", href: "https://twtr.satoru.net/" }
+  ];
 }
 
 // server/urlValidator.js の parseXPostUrl と同じ判定を、例外ではなくコードで返す。
@@ -269,6 +289,14 @@ function setupApp() {
   const postUrlPasteMessage = document.querySelector("#post-url-paste-message");
   const archiveSection = document.querySelector("#archive-section");
   const gyotakuLink = document.querySelector("#gyotaku-link");
+  // 魚拓リンクはgyo.tcに加えWayback/archive.today/twtrを併記する。
+  // 追加リンクはnull安全に扱い、要素が無いDOMでも既存挙動を壊さない。
+  const archiveLinkElements = {
+    "gyotaku-link": gyotakuLink,
+    "wayback-link": document.querySelector("#wayback-link"),
+    "archivetoday-link": document.querySelector("#archivetoday-link"),
+    "twtr-link": document.querySelector("#twtr-link")
+  };
   const archiveInput = document.querySelector("#archive-url");
   const archiveStatus = document.querySelector("#archive-status");
   const formatPlain = document.querySelector("#format-plain");
@@ -381,15 +409,30 @@ function setupApp() {
   // currentPostKey は保持したまま無効化するので、同じポストの再取得後に魚拓URLを残せる。
   function refreshArchiveState() {
     if (currentPost) {
-      gyotakuLink.href = buildGyotakuUrl(currentPost.postUrl || currentPost.canonicalUrl);
-      gyotakuLink.removeAttribute("aria-disabled");
+      const postUrl = currentPost.postUrl || currentPost.canonicalUrl;
+      for (const link of buildArchiveServiceLinks(postUrl)) {
+        const element = archiveLinkElements[link.id];
+        if (!element) {
+          continue;
+        }
+        element.href = link.href;
+        element.removeAttribute("aria-disabled");
+      }
       archiveInput.disabled = false;
       setArchiveStatus(ARCHIVE_STATUS_ACTIVE);
       return;
     }
 
-    gyotakuLink.removeAttribute("href");
-    gyotakuLink.setAttribute("aria-disabled", "true");
+    // twtr.satoru.net はpost非依存（サイトトップ固定）だが、「先にポストを取得してから
+    // 魚拓へ進む」UXの一貫性を優先し、他リンクと同じく取得前は無効化する。
+    for (const link of buildArchiveServiceLinks("")) {
+      const element = archiveLinkElements[link.id];
+      if (!element) {
+        continue;
+      }
+      element.removeAttribute("href");
+      element.setAttribute("aria-disabled", "true");
+    }
     archiveInput.disabled = true;
     setArchiveStatus(ARCHIVE_STATUS_IDLE);
   }

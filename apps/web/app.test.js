@@ -4,11 +4,13 @@ import {
   buildMarkdownCopyText,
   buildCopyText,
   buildGyotakuUrl,
+  buildArchiveServiceLinks,
   buildSourceMessage,
   formatCreatedAt,
   getUserErrorMessage,
   getUserFacingErrorMessage,
   hasArchiveUrlPasteNoise,
+  isValidArchiveUrl,
   validatePostUrl
 } from "./app.js";
 
@@ -121,6 +123,38 @@ test("hasArchiveUrlPasteNoise detects whitespace in pasted archive URL text", ()
 
 test("buildGyotakuUrl uses gyo.tc prefix", () => {
   assert.equal(buildGyotakuUrl(basePost.postUrl), "https://gyo.tc/https://x.com/example_user/status/67890");
+});
+
+test("buildArchiveServiceLinks returns the four archive services with correct hrefs", () => {
+  const links = buildArchiveServiceLinks(basePost.postUrl);
+  assert.deepEqual(
+    links.map((link) => link.id),
+    ["gyotaku-link", "wayback-link", "archivetoday-link", "twtr-link"]
+  );
+  const byId = Object.fromEntries(links.map((link) => [link.id, link.href]));
+  assert.equal(byId["gyotaku-link"], "https://gyo.tc/https://x.com/example_user/status/67890");
+  assert.equal(byId["wayback-link"], "https://web.archive.org/save/https://x.com/example_user/status/67890");
+  assert.equal(byId["archivetoday-link"], "https://archive.ph/newest/https://x.com/example_user/status/67890");
+  // twtr.satoru.net はフォーム型のため postUrl を付けずサイトトップ固定。
+  assert.equal(byId["twtr-link"], "https://twtr.satoru.net/");
+  for (const link of links) {
+    assert.equal(typeof link.label, "string");
+    assert.ok(link.label.length > 0);
+  }
+});
+
+test("isValidArchiveUrl accepts each linked service host and rejects others", () => {
+  assert.equal(isValidArchiveUrl("https://megalodon.jp/2026-0509-0000-00/example"), true);
+  assert.equal(isValidArchiveUrl("https://s1.megalodon.jp/2026-0509-0000-00/example"), true);
+  assert.equal(isValidArchiveUrl("https://gyo.tc/abcdef"), true);
+  assert.equal(isValidArchiveUrl("https://web.archive.org/web/20260504/https://x.com/a/status/1"), true);
+  assert.equal(isValidArchiveUrl("https://archive.ph/newest/https://x.com/a/status/1"), true);
+  assert.equal(isValidArchiveUrl("https://archive.today/abcd1"), true);
+  // 許可外ホスト・非httpsは拒否する。
+  assert.equal(isValidArchiveUrl("https://evil.example/2026/example"), false);
+  assert.equal(isValidArchiveUrl("http://megalodon.jp/2026-0509-0000-00/example"), false);
+  assert.equal(isValidArchiveUrl("https://megalodon.jp"), false);
+  assert.equal(isValidArchiveUrl("https://megalodon.jp/with space"), false);
 });
 
 test("buildCopyText does not add HTML markup around API fields", () => {
@@ -247,7 +281,16 @@ function createElement(overrides = {}) {
     value: "",
     disabled: false,
     hidden: false,
-    href: "",
+    // 実DOMの <a>.href は href属性を反映する。mockでもプロパティ代入と
+    // setAttribute/removeAttribute が同じ attributes マップを共有させ、
+    // 「有効化=プロパティ代入 / 無効化=removeAttribute」を実DOMと同じ観測にする。
+    // これにより無効化ループの removeAttribute("href") 欠落を回帰として検出できる。
+    get href() {
+      return attributes.has("href") ? attributes.get("href") : "";
+    },
+    set href(value) {
+      attributes.set("href", String(value));
+    },
     focusCount: 0,
     classList: {
       add(name) {
@@ -329,6 +372,9 @@ async function createDomAppHarness(fetchImpl) {
     "#post-url-paste-message": createElement(),
     "#archive-section": createElement(),
     "#gyotaku-link": createElement(),
+    "#wayback-link": createElement(),
+    "#archivetoday-link": createElement(),
+    "#twtr-link": createElement(),
     "#archive-url": createElement(),
     "#archive-status": createElement(),
     "#format-plain": createElement({ checked: true }),
@@ -579,17 +625,29 @@ test("archive link and input stay disabled until a post is extracted", async () 
   const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
 
   try {
-    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), "true");
+    for (const id of ["#gyotaku-link", "#wayback-link", "#archivetoday-link", "#twtr-link"]) {
+      assert.equal(harness.elements[id].getAttribute("aria-disabled"), "true");
+    }
     assert.equal(harness.elements["#archive-url"].disabled, true);
     assert.match(harness.elements["#archive-status"].textContent, /取得すると/);
 
     await harness.submit();
 
-    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), null);
+    for (const id of ["#gyotaku-link", "#wayback-link", "#archivetoday-link", "#twtr-link"]) {
+      assert.equal(harness.elements[id].getAttribute("aria-disabled"), null);
+    }
     assert.equal(harness.elements["#archive-url"].disabled, false);
     assert.equal(
       harness.elements["#gyotaku-link"].href,
       "https://gyo.tc/https://x.com/example_user/status/67890"
+    );
+    assert.equal(
+      harness.elements["#wayback-link"].href,
+      "https://web.archive.org/save/https://x.com/example_user/status/67890"
+    );
+    assert.equal(
+      harness.elements["#archivetoday-link"].href,
+      "https://archive.ph/newest/https://x.com/example_user/status/67890"
     );
     assert.match(harness.elements["#archive-status"].textContent, /リセット/);
   } finally {
@@ -653,7 +711,12 @@ test("archive link returns to disabled state after an error", async () => {
     assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), null);
 
     await harness.submit();
-    assert.equal(harness.elements["#gyotaku-link"].getAttribute("aria-disabled"), "true");
+    for (const id of ["#gyotaku-link", "#wayback-link", "#archivetoday-link", "#twtr-link"]) {
+      assert.equal(harness.elements[id].getAttribute("aria-disabled"), "true");
+      // 無効化ではhref属性を実際に除去して非ナビゲート状態にする（有効化はプロパティ代入）。
+      // 属性を検証することで、無効化ループのremoveAttribute("href")欠落を回帰として捕捉する。
+      assert.equal(harness.elements[id].getAttribute("href"), null);
+    }
     assert.equal(harness.elements["#archive-url"].disabled, true);
   } finally {
     harness.cleanup();

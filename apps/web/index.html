@@ -31,15 +31,21 @@
 
         <section id="archive-section" class="archive" aria-labelledby="archive-title">
           <h2 id="archive-title">魚拓URL（任意）</h2>
-          <p class="hint archive-help">ポストが削除・非公開になっても内容を後から参照できるよう、外部サイトで魚拓（保存用スナップショット）を残せます。必須ではありません。</p>
+          <p class="hint archive-help">ポストが削除・非公開になっても内容を後から参照できるよう、外部サイトで魚拓（保存用スナップショット）を残せます。必須ではありません。どれか1つのサービスで残せれば十分です。</p>
           <ol class="archive-steps">
-            <li>「魚拓を取得する場合はこちら」を開きます（別タブで開きます）。</li>
+            <li>下のいずれかの魚拓サービスを開きます（別タブで開きます）。</li>
             <li>開いた外部サイトで魚拓を作成し、できたページのURLをコピーします。</li>
             <li>このページに戻り、コピーしたURLを下の欄に貼り付けます。</li>
           </ol>
-          <a id="gyotaku-link" target="_blank" rel="noopener" aria-disabled="true">魚拓を取得する場合はこちら</a>
+          <ul class="archive-links" aria-label="魚拓サービス">
+            <li><a id="gyotaku-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">ウェブ魚拓（gyo.tc）で魚拓を取る</a></li>
+            <li><a id="wayback-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Wayback Machine（archive.org）で保存する</a></li>
+            <li><a id="archivetoday-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">archive.today で保存・確認する</a></li>
+            <li><a id="twtr-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Twitter魚拓（twtr.satoru.net）を開く</a></li>
+          </ul>
+          <p class="hint archive-note">Wayback Machine・archive.today は、Xのログイン制限により保存できないことがあります。Twitter魚拓は開いた先でポストURLを貼り付けて使います。</p>
           <label for="archive-url">取得後の魚拓URL</label>
-          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/..." disabled aria-describedby="archive-status">
+          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/... や https://archive.ph/..." disabled aria-describedby="archive-status">
           <p id="archive-status" class="hint" role="status" aria-live="polite">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
         </section>
 
