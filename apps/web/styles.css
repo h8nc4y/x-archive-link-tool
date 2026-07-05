@@ -1,13 +1,18 @@
 :root {
   color-scheme: light;
-  --bg: #f5f6f1;
+  --bg: #eef2ec;
   --panel: #ffffff;
-  --text: #20252b;
-  --muted: #66707a;
-  --line: #d6dde2;
+  --panel-tint: #eff4f1;
+  --text: #1b232c;
+  --muted: #566570;
+  --line: #d8dfdb;
   --accent: #0f766e;
   --accent-dark: #115e59;
+  --accent-soft: #d6e8e3;
   --danger: #b42318;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 16px 36px -20px rgba(16, 24, 32, 0.24);
 }
 
 * {
@@ -31,21 +36,48 @@ body {
   display: grid;
   min-height: 100vh;
   place-items: center;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
+/* パネルは上辺のティール keyline とやわらかい影で「記録の道具」らしい落ち着いた存在感を出す。 */
 .panel {
-  width: min(100%, 820px);
-  padding: 28px;
+  width: min(100%, 760px);
+  padding: 34px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius);
   background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
-.header,
-.form,
-.archive {
-  margin-bottom: 24px;
+.header {
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.form {
+  margin-bottom: 26px;
+}
+
+/* ブランドマーク（しおり型のSVG）＋小さなワードマーク。CSP上インラインSVGのみ使用。 */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  color: var(--accent);
+}
+
+.brand svg {
+  display: block;
+  flex: none;
+}
+
+.brand-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .eyebrow {
@@ -62,17 +94,24 @@ p {
 }
 
 h1 {
-  margin-bottom: 10px;
-  font-size: 2rem;
-  line-height: 1.25;
+  margin-bottom: 12px;
+  font-size: 2.15rem;
+  line-height: 1.22;
+  letter-spacing: 0.01em;
 }
 
 h2 {
   margin-bottom: 10px;
-  font-size: 1rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
 }
 
-.lead,
+.lead {
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 1.02rem;
+}
+
 .message,
 .hint {
   color: var(--muted);
@@ -83,10 +122,20 @@ h2 {
   font-size: 0.85rem;
 }
 
-.form,
-.archive {
+.form {
   display: grid;
   gap: 10px;
+}
+
+/* 魚拓・出力設定は淡いティールのサブカードにまとめ、視覚的なリズムと階層をつくる。 */
+.archive {
+  margin-bottom: 26px;
+  padding: 20px;
+  display: grid;
+  gap: 10px;
+  background: var(--panel-tint);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 
 label {
@@ -103,14 +152,15 @@ input,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--panel);
   color: var(--text);
   font: inherit;
 }
 
 input {
   min-height: 44px;
-  padding: 9px 11px;
+  padding: 10px 12px;
 }
 
 input:disabled {
@@ -134,19 +184,21 @@ textarea {
 }
 
 textarea[readonly] {
-  background: var(--bg);
+  background: var(--panel-tint);
 }
 
 button {
   min-height: 44px;
-  padding: 0 18px;
+  padding: 0 20px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #ffffff;
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background-color 120ms ease;
 }
 
 button:hover:not(:disabled) {
@@ -189,19 +241,34 @@ a[aria-disabled="true"] {
 
 /* 魚拓サービスの一覧。箇条書き記号を消し、各リンクをタップしやすい行にする。 */
 .archive-links {
-  margin: 0;
+  margin: 4px 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
-/* display:block で行全体をタップ領域にし、横方向のヒット領域も確保する。 */
+/* 各リンクは白いピル状の行にして、有効時のタップ領域と押せる感触を明確にする。 */
 .archive-link {
   display: block;
   min-height: 44px;
-  padding: 11px 0;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  border: 1px solid var(--line);
   line-height: 1.4;
+  text-decoration: none;
+}
+
+.archive-link:hover:not([aria-disabled="true"]) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* 取得前の無効リンクはサブカード地になじませ、押せないことを彩度で示す。 */
+.archive-link[aria-disabled="true"] {
+  background: transparent;
+  border-color: transparent;
 }
 
 .archive-note {
@@ -236,9 +303,10 @@ a[aria-disabled="true"] {
   display: grid;
   gap: 10px;
   margin: 12px 0;
-  padding: 12px;
+  padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-tint);
 }
 
 .output-options legend,
@@ -277,7 +345,7 @@ a[aria-disabled="true"] {
 }
 
 .footer {
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line);
   font-size: 0.92rem;
@@ -309,22 +377,34 @@ a[aria-disabled="true"] {
   color: var(--danger);
 }
 
+/* 動きを減らす設定では色遷移も無効化する。 */
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
+
 /* OS/ブラウザで高コントラストを求めるユーザー向けに、既存tokenだけを強い値へ差し替える。 */
 @media (prefers-contrast: more) {
   :root {
     --bg: #ffffff;
     --panel: #ffffff;
+    --panel-tint: #ffffff;
     --text: #111111;
     --muted: #374151;
     --line: #111827;
     --accent: #005a52;
     --accent-dark: #003f3a;
+    --accent-soft: #ffffff;
     --danger: #8a120b;
   }
 
   .panel,
   input,
-  textarea {
+  textarea,
+  .archive,
+  .archive-link,
+  .output-options {
     border-color: var(--line);
   }
 
@@ -347,6 +427,11 @@ a[aria-disabled="true"] {
     text-decoration: none;
   }
 
+  /* 高コントラストでは無効リンクも枠線を残し、境界を明確にする。 */
+  .archive-link[aria-disabled="true"] {
+    border-color: var(--muted);
+  }
+
   :focus-visible {
     outline: 3px solid var(--accent-dark);
   }
@@ -365,11 +450,13 @@ a[aria-disabled="true"] {
   :root {
     --bg: Canvas;
     --panel: Canvas;
+    --panel-tint: Canvas;
     --text: CanvasText;
     --muted: GrayText;
     --line: CanvasText;
     --accent: Highlight;
     --accent-dark: LinkText;
+    --accent-soft: Canvas;
     --danger: CanvasText;
   }
 
@@ -394,7 +481,11 @@ a[aria-disabled="true"] {
   }
 
   .panel {
-    padding: 18px;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.85rem;
   }
 
   .input-row,
