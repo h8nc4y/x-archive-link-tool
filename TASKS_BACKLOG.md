@@ -1,14 +1,15 @@
 # TASKS_BACKLOG
 
-最終更新: 2026/07/04 JST
+最終更新: 2026/07/05 JST
 
 このファイルは現在タスク一覧です。詳細な過去のCodex承認タスク履歴は `docs/CODEX_TASKS.md`、自律開発の現在ルールは `docs/CODEX_HANDOFF.md` を正として参照してください。
 
 ## 状態サマリ
 
-- Codex が最新グローバル方針に従い主実装者として自走します。
-- CC-001〜CC-006 は完了済みです。UX改善PR群は `origin/master` に統合済みです。
-- Issue #42 の post-release operations は人間/ChatGPT判断待ちです。Codex は判断材料整理とrepo内docs整備まで支援します。
+- 2026-07-04〜05 は Claude Code Fable5/Opus4.8 が要件再検討〜実装を担当（`docs/CLAUDECODE_FABLE5_PROMPT.md`）。
+- CC-001〜CC-013 は完了・masterへ統合済み。2026-07-04 オーナー決定で公開範囲=**M3一般公開**、位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
+- 次の主タスクは CC-014（M3向けUI視覚再設計）。
+- Issue #42 の post-release operations は一部決着（M3決定）。残りは人間判断待ち（`docs/issue-42-mode-decision-packet.md` §決定記録の残項目）。
 - 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、Cloudflare write操作は引き続き停止条件です。
 
 ## Backlog
@@ -23,12 +24,12 @@
 | CC-006 | PR5 入力寛容化・高コントラスト（C-09, C-08） | `docs/ux-improvement-candidates.md` | 中 | M | done: PR #57 / #58 |
 | CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | done: `docs/issue-42-mode-decision-packet.md`（公開範囲別3モード縮退案）を2026-07-03起草。決定はHUM-001 |
 | CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | todo: 必要なら別タスクで検討 |
-| CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merge待ち） |
-| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: `docs/fable5-requirements-review-2026-07-03.md`。オーナー回答待ち（特にQ1公開範囲） |
-| CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | todo: 実装委譲予定 |
-| CC-012 | 魚拓導線の複数サービス併記化（gyo.tc/megalodon/twtr.satoru/Wayback等） | 2026-07-04 オーナー決定（Q6） | 高 | M | todo: URL形式調査中→実装委譲予定 |
-| CC-013 | 無料メディアURL取得手段の調査（syndication/fxtwitter等、禁止事項との整合評価） | 2026-07-04 オーナー指示（Q4） | 高 | M | doing: 調査中。採用はゲート④で別途承認 |
-| CC-014 | 一般公開(M3)向けUI視覚再設計（frontend-design→wireframe→実装） | 2026-07-04 オーナー決定（Q1=M3） | 中 | L | todo: CC-011/012の後 |
+| CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merged） |
+| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
+| CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | done: PR #66（merged） |
+| CC-012 | 魚拓導線の複数サービス併記化（gyo.tc/Wayback/archive.today/twtr.satoru） | 2026-07-04 オーナー決定（Q6） | 高 | M | done: PR #67（merged）。敵対的レビュー（Ultracode）済み |
+| CC-013 | 無料メディアURL取得手段の調査（syndication/fxtwitter等、禁止事項との整合評価） | 2026-07-04 オーナー指示（Q4） | 高 | M | done: PR #67（merged）`docs/media-url-and-archive-research-2026-07-04.md`。規約適合の無料手段なし→oEmbed-first維持。採用はゲート④ |
+| CC-014 | 一般公開(M3)向けUI視覚再設計（frontend-design→wireframe→実装） | 2026-07-04 オーナー決定（Q1=M3） | 中 | L | todo（次の主タスク）: Opus4.8 + frontend-design skill。CC-011/012 merged済みで着手可 |
 | HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | 一部決着: 2026-07-04 M3一般公開を決定（`docs/issue-42-mode-decision-packet.md` 決定記録）。残: privacy法務レビュー、公開窓口選択、logs数値、smoke要否 |
 
 ## 完了・skip済み（履歴）
