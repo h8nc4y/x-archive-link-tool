@@ -7,9 +7,9 @@
 ## 状態サマリ
 
 - 2026-07-04〜05 は Claude Code Fable5/Opus4.8 が要件再検討〜実装を担当（`docs/CLAUDECODE_FABLE5_PROMPT.md`）。
-- CC-001〜CC-013 は完了・masterへ統合済み。2026-07-04 オーナー決定で公開範囲=**M3一般公開**、位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
-- 次の主タスクは CC-014（M3向けUI視覚再設計）。
-- Issue #42 の post-release operations は一部決着（M3決定）。残りは人間判断待ち（`docs/issue-42-mode-decision-packet.md` §決定記録の残項目）。
+- CC-001〜CC-014 は完了・masterへ統合済み。2026-07-04 オーナー決定で公開範囲=**M3一般公開**、位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
+- Web UI 実装・視覚再設計は一巡。残る公開ブロッカーは Issue #42 の人間判断（下記）。
+- Issue #42 の post-release operations は一部決着（M3決定）。残りは人間判断待ち＝privacy法務レビュー / 公開窓口 / logs保持数値 / smoke要否（`docs/issue-42-mode-decision-packet.md` §決定記録）。
 - 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、Cloudflare write操作は引き続き停止条件です。
 
 ## Backlog
@@ -29,7 +29,7 @@
 | CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | done: PR #66（merged） |
 | CC-012 | 魚拓導線の複数サービス併記化（gyo.tc/Wayback/archive.today/twtr.satoru） | 2026-07-04 オーナー決定（Q6） | 高 | M | done: PR #67（merged）。敵対的レビュー（Ultracode）済み |
 | CC-013 | 無料メディアURL取得手段の調査（syndication/fxtwitter等、禁止事項との整合評価） | 2026-07-04 オーナー指示（Q4） | 高 | M | done: PR #67（merged）`docs/media-url-and-archive-research-2026-07-04.md`。規約適合の無料手段なし→oEmbed-first維持。採用はゲート④ |
-| CC-014 | 一般公開(M3)向けUI視覚再設計（frontend-design→wireframe→実装） | 2026-07-04 オーナー決定（Q1=M3） | 中 | L | todo（次の主タスク）: Opus4.8 + frontend-design skill。CC-011/012 merged済みで着手可 |
+| CC-014 | 一般公開(M3)向けUI視覚再設計 | 2026-07-04 オーナー決定（Q1=M3） | 中 | L | done: PR #69（merged・本番反映）。「落ち着いた記録の道具」方針。keyline/影/サブカード/ブランドマーク。171 tests緑・a11y維持 |
 | HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | 一部決着: 2026-07-04 M3一般公開を決定（`docs/issue-42-mode-decision-packet.md` 決定記録）。残: privacy法務レビュー、公開窓口選択、logs数値、smoke要否 |
 
 ## 完了・skip済み（履歴）
