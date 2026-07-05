@@ -83,12 +83,16 @@
 
 ## 魚拓リンク仕様
 
-- 表示文言: `魚拓を取得する場合はこちら`
-- `href = https://gyo.tc/{canonicalXPostUrl}`
-- `target="_blank"`
-- `rel="noopener"`
-- `noreferrer` は付けない
-- サーバーから魚拓を取得しない
+2026-07-04 オーナー決定（Issue #42 M3、Q6）により、単一の gyo.tc リンクから複数サービス併記へ変更した。どれかのサービスが落ちても代替が残る構成にする。
+
+- 併記する魚拓サービス（すべて外部リンク、サーバーからは取得しない）:
+  - ウェブ魚拓（gyo.tc）: `href = https://gyo.tc/{canonicalXPostUrl}`（prefix型）
+  - Wayback Machine（archive.org）: `href = https://web.archive.org/save/{canonicalXPostUrl}`（prefix型）
+  - archive.today: `href = https://archive.ph/newest/{canonicalXPostUrl}`（prefix型）
+  - Twitter魚拓（twtr.satoru.net）: `href = https://twtr.satoru.net/`（フォーム型のためサイトトップ固定。開いた先で手動貼り付け）
+- 各リンク共通: `target="_blank"`、`rel="noopener"`、`noreferrer` は付けない。ポスト取得前は `aria-disabled="true"` で無効化する。
+- 「取得後の魚拓URL」貼り付け欄は、上記サービスの結果URL（megalodon.jp / gyo.tc / web.archive.org / archive.today系 / twtr.satoru.net）のみ許可する。
+- サーバーから魚拓を取得しない。出力（コピー用テキスト）の魚拓URL項目は1件のまま変更しない。
 
 ## 今後の実装順序
 

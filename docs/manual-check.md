@@ -48,11 +48,12 @@ node server/extractServer.js
 - `http://127.0.0.1:3000/` が開く。
 - `http://127.0.0.1:3000/healthz` が `{"ok":true}` を返す。
 - Xポスト共有URLを入力して取得できる。
-- 不正URLを入力するとエラーになり、魚拓セクションは非表示、コピー用テキストは無効になる。
+- 不正URLを入力するとエラーになり、魚拓リンクとコピー用テキストは無効になる（魚拓セクション自体は常時表示）。
 - コピー用テキストが `textarea` に表示される。
-- 魚拓リンク「魚拓を取得する場合はこちら」が別タブで開く。
-- 魚拓は自動取得されない。
-- 魚拓URL欄は `https://megalodon.jp/...` または `https://s{digits}.megalodon.jp/...` のみ有効になる。
+- 魚拓リンクは4サービス併記（ウェブ魚拓(gyo.tc) / Wayback Machine / archive.today / Twitter魚拓(twtr.satoru.net)）で、それぞれ別タブで開く。
+- ポスト取得前は4リンクとも無効（`aria-disabled="true"`）で、取得後に有効になる。
+- 魚拓は自動取得されない（サーバーからは取得せず、外部リンクを開くだけ）。
+- 魚拓URL欄は、併記した各サービスの結果URL（`megalodon.jp` 系 / `gyo.tc` / `web.archive.org` / `archive.today` 系ミラー / `twtr.satoru.net`）のみ有効になる。非httpsや許可外ホストは `未取得` になる。
 - 魚拓URL欄に改行や空白を含む文字列を貼り付けた場合、コピー用テキストの魚拓URLは `未取得` になる。
 
 ## 4. 停止とポート競合
