@@ -12,7 +12,8 @@
         <header class="header">
           <p class="eyebrow">Web MVP</p>
           <h1 id="app-title">Xポスト貼り付けテキスト生成</h1>
-          <p class="lead">Xポスト共有URLを入力して、コピー用テキストを生成します。</p>
+          <p class="lead">Xポスト共有URLを入力して、記録・引用に使えるコピー用テキストを生成します。</p>
+          <p class="hint">このツールはXポストの記録を補助するツールです。法的な証拠として残したい場合は、スクリーンショットやPDF保存の併用をおすすめします。</p>
         </header>
 
         <form id="extract-form" class="form" novalidate>
@@ -47,7 +48,7 @@
             <h2 id="output-title">コピー用テキスト</h2>
             <button id="copy-button" type="button" disabled aria-describedby="copy-hint">コピー</button>
           </div>
-          <p class="hint output-help">記事・チャット・ドキュメントへの貼り付けや、リンク切れ・削除に備えた保存用として使えます。</p>
+          <p class="hint output-help">記事・チャット・ドキュメントへの貼り付けや、リンク切れ・削除に備えた保存用として使えます。証拠保全が目的の場合は、このテキストは補助として扱い、スクリーンショットやPDF保存を併用してください。</p>
           <fieldset class="output-options" aria-describedby="output-format-hint">
             <legend>出力設定</legend>
             <div class="option-row">
