@@ -110,7 +110,10 @@ export async function fetchXPost(parsedUrl, { fetchFn = globalThis.fetch } = {})
       method: "GET",
       redirect: "error",
       headers: {
-        accept: "application/json"
+        accept: "application/json",
+        // Cloudflare Workers からの UA なし fetch は X 側の bot 対策で遮断される報告があるため、
+        // ツールを正直に名乗る UA を付与する（2026-07-06 本番smoke oembed_unreachable 対応）。
+        "user-agent": "x-archive-link-tool/0.1 (+https://x-archive-link-tool.pages.dev)"
       }
     });
   } catch {
