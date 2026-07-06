@@ -111,6 +111,32 @@ BYOT(X API)を設定するか: 当面しない（oEmbed-first維持）。
 | OPS-429 / OPS-SMOKE | 本番429確認・smoke実施の要否と回数（runbook の承認文言で） |
 | OPS-KV / OPS-DATA | インシデントオーナー=オーナー本人でよいかの確認 |
 
+## 決定記録 追記（2026-07-06 オーナー回答）
+
+AskUserQuestion 経由で残項目のうち3件を決定した。
+
+```
+決定日: 2026-07-06
+OPS-SUPPORT: リポジトリを public 化し、GitHub Issues を公開窓口とする。
+  メール窓口（privacy.html 記載）も併記。対応はベストエフォートと明記。
+OPS-LOGS: サーバーログは原則として永続保存しない。障害調査時のみ
+  投稿内容を含まない最小項目を一時確認し、保存する場合も最大30日で削除。
+  privacy.html のログ節を確定文言へ更新済み。
+OPS-SMOKE: 実施する。初回1回＋cache確認1回の最大2回。
+  docs/production-smoke-runbook.md の承認手順・記録制限に従う。
+  実行時はオーナーがテスト対象の公開X投稿URLを tmp/ に別途指定する。
+  本番429確認（OPS-429）は含まない＝実施しない。
+OPS-KV / OPS-DATA: インシデントオーナー=オーナー本人、
+  運用記録は既存 redaction ルール（抽象値のみ）を適用（M3既定値どおり）。
+```
+
+### 残る未決項目
+
+| 項目 | 状態 |
+| --- | --- |
+| OPS-PRIVACY | privacy.html 最終文言の法務観点レビュー承認（人間/ChatGPT）のみ残 |
+| OPS-BILLING | BYOT未設定の間は N/A のまま |
+
 ## 5. この資料が触れていないこと
 
 - 実際の決定（オーナー専権）

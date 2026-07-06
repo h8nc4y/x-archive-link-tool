@@ -3,7 +3,7 @@
 本書は **2026-07-08 以降、または Fable5 の利用上限到達後**に有効な引き継ぎ文書。
 旧 `docs/CLAUDECODE_FABLE5_HANDOFF.md` / `docs/CLAUDECODE_FABLE5_PROMPT.md` は
 削除せず履歴として保持する。読み替え: 「Fable5」→「司令塔モデル」。
-テンプレ正本は `D:\Agent\Codex\Projects\000_codex-global-context\templates\agent-handoff-prompt.md`。
+テンプレ正本はローカルの codex-global-context リポジトリ内 `templates/agent-handoff-prompt.md`。
 
 作成日時: 2026/07/06 JST
 
