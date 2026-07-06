@@ -6,6 +6,8 @@ import {
   buildGyotakuUrl,
   buildArchiveServiceLinks,
   buildSourceMessage,
+  extractPostDate,
+  extractPostText,
   formatCreatedAt,
   getUserErrorMessage,
   getUserFacingErrorMessage,
@@ -417,9 +419,10 @@ async function createDomAppHarness(fetchImpl) {
   };
 }
 
-function createJsonResponse(payload, ok = true) {
+function createJsonResponse(payload, ok = true, status = ok ? 200 : 404) {
   return {
     ok,
+    status,
     json: async () => payload
   };
 }
@@ -438,10 +441,48 @@ function pasteText(element, text) {
 }
 
 test("validatePostUrl accepts canonical and i/web/status URLs", () => {
-  assert.deepEqual(validatePostUrl("https://x.com/example_user/status/67890"), { valid: true });
-  assert.deepEqual(validatePostUrl("https://twitter.com/example_user/status/67890"), { valid: true });
-  assert.deepEqual(validatePostUrl("https://x.com/i/web/status/67890"), { valid: true });
-  assert.deepEqual(validatePostUrl(" https://x.com/example_user/status/67890 "), { valid: true });
+  assert.deepEqual(validatePostUrl("https://x.com/example_user/status/67890"), {
+    valid: true,
+    username: "example_user",
+    postId: "67890",
+    canonicalUrl: "https://x.com/example_user/status/67890"
+  });
+  assert.deepEqual(validatePostUrl("https://twitter.com/example_user/status/67890"), {
+    valid: true,
+    username: "example_user",
+    postId: "67890",
+    canonicalUrl: "https://x.com/example_user/status/67890"
+  });
+  assert.deepEqual(validatePostUrl("https://x.com/i/web/status/67890"), {
+    valid: true,
+    username: null,
+    postId: "67890",
+    canonicalUrl: "https://x.com/i/web/status/67890"
+  });
+  assert.deepEqual(validatePostUrl(" https://x.com/example_user/status/67890 "), {
+    valid: true,
+    username: "example_user",
+    postId: "67890",
+    canonicalUrl: "https://x.com/example_user/status/67890"
+  });
+});
+
+test("extractPostText pulls the first <p> element and decodes entities", () => {
+  assert.equal(
+    extractPostText("<blockquote><p>hello &amp; world &#39;test&#39;</p></blockquote>"),
+    "hello & world 'test'"
+  );
+  assert.equal(extractPostText(""), "未取得");
+  assert.equal(extractPostText("<blockquote>no paragraph here</blockquote>"), "未取得");
+});
+
+test("extractPostDate finds the anchor linking to the post status and decodes its text", () => {
+  const html =
+    '<blockquote><p>dummy text</p>&mdash; Example User (@example_user) ' +
+    '<a href="https://twitter.com/example_user/status/67890">May 9, 2026</a></blockquote>';
+  assert.equal(extractPostDate(html, "67890"), "May 9, 2026");
+  assert.equal(extractPostDate(html, "99999"), "未取得");
+  assert.equal(extractPostDate("", "67890"), "未取得");
 });
 
 test("validatePostUrl reports specific codes for invalid input", () => {
@@ -616,6 +657,63 @@ test("submit flow moves focus to the error message when the server returns an er
       "対象のポストを取得できませんでした。削除済み、非公開、または埋め込み不可の可能性があります。"
     );
     assert.ok(harness.elements["#error-message"].focusCount >= 1);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("oembed_unreachable triggers a browser-direct oEmbed fallback that succeeds", async () => {
+  const requestedUrls = [];
+  const harness = await createDomAppHarness((url) => {
+    requestedUrls.push(String(url));
+    if (requestedUrls.length === 1) {
+      // 1回目: /api/extract がWorkers遮断でoembed_unreachableを返す想定。
+      return Promise.resolve(createJsonResponse({ code: "oembed_unreachable" }, false));
+    }
+
+    // 2回目: ブラウザから publish.x.com へ直接アクセスした想定のダミーoEmbed応答。
+    return Promise.resolve(
+      createJsonResponse({
+        author_name: "Example Dummy",
+        html: '<blockquote><p>direct fallback text</p>&mdash; Example Dummy (@example_user) ' +
+          '<a href="https://twitter.com/example_user/status/67890">May 9, 2026</a></blockquote>'
+      })
+    );
+  });
+
+  try {
+    await harness.submit();
+
+    assert.equal(requestedUrls.length, 2);
+    assert.equal(requestedUrls[0], "/api/extract");
+    assert.match(requestedUrls[1], /^https:\/\/publish\.x\.com\/oembed\?/);
+    assert.match(harness.elements["#copy-text"].value, /direct fallback text/);
+    assert.match(harness.elements["#copy-text"].value, /アカウント名：Example Dummy/);
+    assert.match(harness.elements["#source-message"].textContent, /直接アクセス/);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("oembed_unreachable fallback surfaces the oembed_404 message when the direct fetch also fails", async () => {
+  let call = 0;
+  const harness = await createDomAppHarness(() => {
+    call += 1;
+    if (call === 1) {
+      return Promise.resolve(createJsonResponse({ code: "oembed_unreachable" }, false));
+    }
+
+    return Promise.resolve(createJsonResponse({}, false));
+  });
+
+  try {
+    await harness.submit();
+
+    assert.equal(call, 2);
+    assert.equal(
+      harness.elements["#error-message"].textContent,
+      "対象のポストを取得できませんでした。削除済み、非公開、または埋め込み不可の可能性があります。"
+    );
   } finally {
     harness.cleanup();
   }
