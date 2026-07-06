@@ -32,8 +32,8 @@
 | CC-014 | 一般公開(M3)向けUI視覚再設計 | 2026-07-04 オーナー決定（Q1=M3） | 中 | L | done: PR #69（merged・本番反映）。「落ち着いた記録の道具」方針。keyline/影/サブカード/ブランドマーク。171 tests緑・a11y維持 |
 | CC-015 | M3運用決定の反映（窓口=public化+Issues／logs確定文言／smoke方針記録） | 2026-07-06 オーナー決定 | 高 | S | done: PR #72（merged）。repo public化済み |
 | CC-016 | provider fetch例外の型付け（本番smoke 500の再発防止） | 2026-07-06 本番smoke結果 | 高 | S | done: PR #73（merged）。oembed/x_api の unreachable/invalid_response コード追加 |
-| CC-017 | oEmbedブラウザ直接フォールバック（Workers IP遮断対策） | 2026-07-07 オーナー承認（設計A） | 高 | M | doing: 本PR |
-| HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | 決着: M3決定＋窓口/logs/smoke/KV＋privacy法務レビュー承認（2026-07-06）。残作業=修正デプロイ後の再smoke（残り1回、要承認）のみ |
+| CC-017 | oEmbedブラウザ直接フォールバック（Workers IP遮断対策） | 2026-07-07 オーナー承認（設計A） | 高 | M | done: PR #75（merged・本番反映）。本番E2Eで成功パス実証済み |
+| HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | done: 全項目決着＋本番検証完了（2026-07-07）。Issue #42 クローズ |
 
 ## 完了・skip済み（履歴）
 
