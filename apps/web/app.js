@@ -97,7 +97,14 @@ export function validatePostUrl(input) {
       return { valid: false, code: "invalid_post_id" };
     }
 
-    return { valid: true };
+    // /i/web/status/ 形式にはusernameが含まれないため、canonicalUrlも同形式で組み立てる。
+    // ブラウザ直接oEmbedフォールバック（fetchOEmbedDirect）はこのcanonicalUrlをそのまま使う。
+    return {
+      valid: true,
+      username: null,
+      postId: parts[4],
+      canonicalUrl: `https://x.com/i/web/status/${parts[4]}`
+    };
   }
 
   if (parts.length !== 4 || parts[0] !== "" || parts[2] !== "status") {
@@ -112,7 +119,121 @@ export function validatePostUrl(input) {
     return { valid: false, code: "invalid_post_id" };
   }
 
-  return { valid: true };
+  return {
+    valid: true,
+    username: parts[1],
+    postId: parts[3],
+    canonicalUrl: `https://x.com/${parts[1]}/status/${parts[3]}`
+  };
+}
+
+// 以下3関数は server/oEmbedClient.js の同名ロジックの意図的な複製。
+// ブラウザは server 配下のモジュールを import できない（Cloudflare Pages Functions と
+// 静的アセットが別ランタイムで、クライアントバンドルに server コードを混在させたくない）ため、
+// oembed_unreachable 時のブラウザ直接フォールバック用にロジックだけをここへ複製する。
+// server側のextractPostText/extractPostDate/htmlToPlainTextを変更した場合はこちらも同期すること。
+export function extractPostText(html) {
+  const match = String(html || "").match(/<p\b[^>]*>([\s\S]*?)<\/p>/i);
+  if (!match) {
+    return "未取得";
+  }
+
+  return htmlToPlainText(match[1]);
+}
+
+export function extractPostDate(html, postId) {
+  const anchorPattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  let match;
+
+  while ((match = anchorPattern.exec(String(html || ""))) !== null) {
+    if (match[1].includes(`/status/${postId}`)) {
+      return htmlToPlainText(match[2]);
+    }
+  }
+
+  return "未取得";
+}
+
+export function htmlToPlainText(html) {
+  const text = String(html || "")
+    .replace(/<script\b[\s\S]*?<\/script>/gi, "")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#([0-9]+);/g, (_match, codePoint) => {
+      const value = Number(codePoint);
+      return Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "";
+    })
+    .replace(/&#x([0-9a-f]+);/gi, (_match, codePoint) => {
+      const value = Number.parseInt(codePoint, 16);
+      return Number.isInteger(value) && value >= 0 && value <= 0x10ffff ? String.fromCodePoint(value) : "";
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text || "未取得";
+}
+
+function mapOEmbedDirectError(status) {
+  if (status === 404) {
+    return "oembed_404";
+  }
+
+  if (status === 429) {
+    return "oembed_429";
+  }
+
+  return "oembed_error";
+}
+
+// server の /api/extract が oembed_unreachable（Cloudflare Workers からの fetch が
+// X側のIP遮断で失敗するケース）を返したときだけ、ブラウザから直接 publish.x.com の
+// 公式oEmbed endpointを叩くフォールバック。2026-07-07 オーナー承認（ゲート④・設計A）。
+// カスタムヘッダを付けない単純リクエスト（simple request）にしてCORS preflightを避ける。
+// publish.x.comはOrigin付きGETへaccess-control-allow-originをエコーすることを確認済み。
+export async function fetchOEmbedDirect(validated) {
+  const oembedUrl = new URL("https://publish.x.com/oembed");
+  oembedUrl.searchParams.set("url", validated.canonicalUrl);
+  oembedUrl.searchParams.set("omit_script", "1");
+  oembedUrl.searchParams.set("dnt", "true");
+
+  let response;
+  try {
+    response = await fetch(oembedUrl.toString(), { method: "GET" });
+  } catch {
+    throw createUserFacingError(getUserErrorMessage({ code: "oembed_unreachable" }));
+  }
+
+  if (!response.ok) {
+    throw createUserFacingError(getUserErrorMessage({ code: mapOEmbedDirectError(response.status) }));
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw createUserFacingError(getUserErrorMessage({ code: "oembed_invalid_response" }));
+  }
+
+  const html = typeof payload?.html === "string" ? payload.html : "";
+
+  return {
+    accountName: typeof payload?.author_name === "string" ? payload.author_name : "未取得",
+    username: validated.username || "未取得",
+    userNumericId: "未取得",
+    postId: validated.postId,
+    postUrl: validated.canonicalUrl,
+    createdAt: extractPostDate(html, validated.postId),
+    text: extractPostText(html),
+    mediaUrls: [],
+    source: "oembed-direct",
+    cached: false
+  };
 }
 
 export function getUserErrorMessage(payload) {
@@ -265,6 +386,12 @@ export function buildSourceMessage(post) {
     if (!post.userNumericId || post.userNumericId === "未取得") {
       messages.push("ユーザー数値IDはX API使用時のみ取得できます。");
     }
+  }
+
+  if (post.source === "oembed-direct") {
+    messages.push(
+      "サーバー経由で取得できなかったため、ブラウザから公式oEmbed（publish.x.com）へ直接アクセスして取得しました。画像・動画の直接URLとユーザー数値IDは取得できません。"
+    );
   }
 
   for (const warning of Array.isArray(post.warnings) ? post.warnings : []) {
@@ -469,12 +596,21 @@ function setupApp() {
     setLoadingState(true);
 
     try {
-      const response = await fetch("/api/extract", {
+      let response = await fetch("/api/extract", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: submittedUrl })
       });
-      const payload = await response.json();
+      let payload = await response.json();
+
+      if (!response.ok && payload?.code === "oembed_unreachable") {
+        // Cloudflare Workers からの fetch がX側のIP遮断で失敗するケースだけ、
+        // ブラウザから公式oEmbedへ直接アクセスするフォールバックを試す（2026-07-07 ゲート④承認）。
+        payload = await fetchOEmbedDirect(validation);
+        // fetchOEmbedDirect は成功時は通常オブジェクトを返し、失敗時はuserMessage付きErrorをthrowするため、
+        // ここに到達した時点で response は成功扱いとして良い（後続のresponse.okチェックを通す）。
+        response = { ok: true };
+      }
 
       if (!response.ok) {
         throw createUserFacingError(getUserErrorMessage(payload));

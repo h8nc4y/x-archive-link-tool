@@ -32,7 +32,7 @@ async function withServer(run, options = {}) {
 function assertSecurityHeaders(headers) {
   assert.equal(
     headers["content-security-policy"],
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://publish.x.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
   );
   assert.equal(headers["x-frame-options"], "DENY");
   assert.equal(headers["x-content-type-options"], "nosniff");
