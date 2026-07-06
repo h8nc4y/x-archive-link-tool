@@ -112,3 +112,21 @@ for (const [status, code] of [
     );
   });
 }
+
+// fetch自体の例外（ネットワーク障害・redirect:"error"遮断）は型付きの到達不能エラーになる。
+// 素の500(internal_error)へ抜けない回帰ガード（2026-07-06 本番smoke 500対応）。
+test("fetchXPost wraps fetch failures as oembed_unreachable", async () => {
+  await assert.rejects(
+    () => fetchXPost(parsedUrl, { fetchFn: async () => { throw new TypeError("fetch failed"); } }),
+    (error) => error instanceof OEmbedClientError && error.code === "oembed_unreachable" && error.statusCode === 502
+  );
+});
+
+// JSONでない応答（HTMLエラーページ等）も型付きエラーへ。
+test("fetchXPost wraps invalid JSON responses as oembed_invalid_response", async () => {
+  const fetchFn = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("bad json"); } });
+  await assert.rejects(
+    () => fetchXPost(parsedUrl, { fetchFn }),
+    (error) => error instanceof OEmbedClientError && error.code === "oembed_invalid_response" && error.statusCode === 502
+  );
+});

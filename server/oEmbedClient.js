@@ -101,17 +101,33 @@ export async function fetchXPost(parsedUrl, { fetchFn = globalThis.fetch } = {})
     throw new OEmbedClientError("Fetch function is not available.", "missing_fetch", 500);
   }
 
-  const response = await fetchFn(buildOEmbedUrl(parsedUrl.canonicalUrl), {
-    method: "GET",
-    redirect: "error",
-    headers: {
-      accept: "application/json"
-    }
-  });
+  // fetch自体の例外（ネットワーク障害、redirect:"error"によるリダイレクト遮断、abort等）は
+  // 型なしTypeErrorのまま上へ抜けるとhandlerのcatch-allで素の500になるため、
+  // OEmbedClientErrorへ型付けして到達不能(502)として返す（2026-07-06 本番smoke 500の再発防止）。
+  let response;
+  try {
+    response = await fetchFn(buildOEmbedUrl(parsedUrl.canonicalUrl), {
+      method: "GET",
+      redirect: "error",
+      headers: {
+        accept: "application/json"
+      }
+    });
+  } catch {
+    throw new OEmbedClientError("oEmbed request could not be completed.", "oembed_unreachable", 502);
+  }
 
   if (!response.ok) {
     throw mapOEmbedError(response.status);
   }
 
-  return normalizeOEmbedResponse(await response.json(), parsedUrl);
+  // JSONでない応答（HTMLエラーページ等）も同様に型付けし、素の500を防ぐ。
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new OEmbedClientError("oEmbed response was not valid JSON.", "oembed_invalid_response", 502);
+  }
+
+  return normalizeOEmbedResponse(payload, parsedUrl);
 }

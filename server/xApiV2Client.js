@@ -203,18 +203,32 @@ export async function fetchXPostFromApi(parsedUrl, { bearerToken, fetchFn = glob
     throw new XApiV2ClientError("Fetch function is not available.", "missing_fetch", 500);
   }
 
-  const response = await fetchFn(buildTweetUrl(parsedUrl.postId), {
-    method: "GET",
-    redirect: "error",
-    headers: {
-      accept: "application/json",
-      authorization: `Bearer ${bearerToken}`
-    }
-  });
+  // oEmbedClient.fetchXPost と同じ理由で、fetch例外とJSON解析失敗を型付けして素の500を防ぐ。
+  // 型付きエラーにすることで、extractService の oEmbed fallback / stale-cache 経路にも正しく乗る。
+  let response;
+  try {
+    response = await fetchFn(buildTweetUrl(parsedUrl.postId), {
+      method: "GET",
+      redirect: "error",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${bearerToken}`
+      }
+    });
+  } catch {
+    throw new XApiV2ClientError("X API request could not be completed.", "x_api_unreachable", 502);
+  }
 
   if (!response.ok) {
     throw mapXApiError(response);
   }
 
-  return normalizeXApiV2Response(await response.json(), parsedUrl);
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new XApiV2ClientError("X API response was not valid JSON.", "x_api_invalid_response", 502);
+  }
+
+  return normalizeXApiV2Response(payload, parsedUrl);
 }

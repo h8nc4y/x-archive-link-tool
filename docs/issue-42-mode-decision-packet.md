@@ -134,8 +134,29 @@ OPS-KV / OPS-DATA: インシデントオーナー=オーナー本人、
 
 | 項目 | 状態 |
 | --- | --- |
-| OPS-PRIVACY | privacy.html 最終文言の法務観点レビュー承認（人間/ChatGPT）のみ残 |
+| OPS-PRIVACY | **決着（2026-07-06）**: オーナーが privacy.html 最終文言を確認し「問題ありません」と承認 |
 | OPS-BILLING | BYOT未設定の間は N/A のまま |
+
+## 本番smoke 実行記録（2026-07-06）
+
+オーナー指定のテスト用公開X投稿URL（記録しない）で runbook 準拠の smoke を実行した。
+
+```
+確認時刻: 2026/07/06 12:08:56 JST
+実行回数: 1/2（承認上限2回）
+HTTP status: 500
+source: 未確認
+cached: 未確認
+mediaUrls件数: 0
+warnings件数: 0
+error code: なし（応答bodyに機械可読codeなし = handler catch-all の internal_error）
+判断: 停止条件（5xx）に該当したため追加実行なし。tmp/approved-smoke-target.txt は内容を読まずに削除済み。
+原因分析: functions/api/extract.js の catch-all 500。oEmbed/X API クライアントの
+  fetch例外・JSON解析失敗が型なしのまま伝播する経路を特定し、
+  oembed_unreachable / oembed_invalid_response 等へ型付けする修正を実施（コード側）。
+  実際のトリガー（oEmbed側のリダイレクト/ネットワーク/非JSON応答のいずれか）は
+  修正デプロイ後の再smoke（要別途承認・残り1回）で機械可読codeとして判別可能になる。
+```
 
 ## 5. この資料が触れていないこと
 
