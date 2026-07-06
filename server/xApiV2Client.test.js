@@ -259,3 +259,19 @@ test("fetchXPostFromApi maps 402 to payment required error", async () => {
       !JSON.stringify(error).includes("secret")
   );
 });
+
+// oEmbedClient と同じ回帰ガード: fetch例外とJSON解析失敗を型付きエラーへ（素の500を防ぐ）。
+test("fetchXPostFromApi wraps fetch failures as x_api_unreachable", async () => {
+  await assert.rejects(
+    () => fetchXPostFromApi(parsedUrl, { bearerToken: "token", fetchFn: async () => { throw new TypeError("fetch failed"); } }),
+    (error) => error instanceof XApiV2ClientError && error.code === "x_api_unreachable" && error.statusCode === 502
+  );
+});
+
+test("fetchXPostFromApi wraps invalid JSON responses as x_api_invalid_response", async () => {
+  const fetchFn = async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("bad json"); } });
+  await assert.rejects(
+    () => fetchXPostFromApi(parsedUrl, { bearerToken: "token", fetchFn }),
+    (error) => error instanceof XApiV2ClientError && error.code === "x_api_invalid_response" && error.statusCode === 502
+  );
+});
