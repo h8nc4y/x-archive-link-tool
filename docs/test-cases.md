@@ -40,7 +40,7 @@ PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cm
 | ウェブ魚拓（gyo.tc） | prefix | `https://gyo.tc/https://x.com/example/status/1234567890` |
 | Wayback Machine | prefix | `https://web.archive.org/save/https://x.com/example/status/1234567890` |
 | archive.today | prefix | `https://archive.ph/newest/https://x.com/example/status/1234567890` |
-| Twitter魚拓（twtr.satoru.net） | form | `https://twtr.satoru.net/`（サイトトップ固定） |
+| Twitter魚拓（twtr.satoru.net） | query | `https://twtr.satoru.net/?mode=check&url=https%3A%2F%2Fx.com%2Fexample%2Fstatus%2F1234567890` |
 
 各リンク共通で `target="_blank" rel="noopener"`、`noreferrer` は付けない。
 

@@ -89,7 +89,7 @@
   - ウェブ魚拓（gyo.tc）: `href = https://gyo.tc/{canonicalXPostUrl}`（prefix型）
   - Wayback Machine（archive.org）: `href = https://web.archive.org/save/{canonicalXPostUrl}`（prefix型）
   - archive.today: `href = https://archive.ph/newest/{canonicalXPostUrl}`（prefix型）
-  - Twitter魚拓（twtr.satoru.net）: `href = https://twtr.satoru.net/`（フォーム型のためサイトトップ固定。開いた先で手動貼り付け）
+  - Twitter魚拓（twtr.satoru.net）: `href = https://twtr.satoru.net/?mode=check&url={encodeURIComponent(canonicalXPostUrl)}`（GETフォーム相当のdeep link。URL入力済みで開く）
 - 各リンク共通: `target="_blank"`、`rel="noopener"`、`noreferrer` は付けない。ポスト取得前は `aria-disabled="true"` で無効化する。
 - 「取得後の魚拓URL」貼り付け欄は、上記サービスの結果URL（megalodon.jp / gyo.tc / web.archive.org / archive.today系 / twtr.satoru.net）のみ許可する。
 - サーバーから魚拓を取得しない。出力（コピー用テキスト）の魚拓URL項目は1件のまま変更しない。
