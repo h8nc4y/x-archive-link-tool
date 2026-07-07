@@ -52,7 +52,8 @@ export function buildGyotakuUrl(postUrl) {
 
 // 魚拓サービスの一覧。どれかが落ちても代替が残るよう複数を併記する。
 // gyo.tc / Wayback / archive.today は canonical URL を末尾に付けるprefix型。
-// twtr.satoru.net はフォーム型のため、開いた先で手動貼り付けする（hrefはサイトトップ固定）。
+// twtr.satoru.net は GET フォーム（mode=check + url）のため、同じパラメータを
+// query に付けた deep link にする（2026-07-07 実挙動確認済み: URLが自動で処理される）。
 // サーバーからは取得せず、外部リンクとして開くだけ。
 export function buildArchiveServiceLinks(postUrl) {
   const target = String(postUrl || "");
@@ -60,7 +61,7 @@ export function buildArchiveServiceLinks(postUrl) {
     { id: "gyotaku-link", label: "ウェブ魚拓（gyo.tc）で魚拓を取る", href: buildGyotakuUrl(target) },
     { id: "wayback-link", label: "Wayback Machine（archive.org）で保存する", href: `https://web.archive.org/save/${target}` },
     { id: "archivetoday-link", label: "archive.today で保存・確認する", href: `https://archive.ph/newest/${target}` },
-    { id: "twtr-link", label: "Twitter魚拓（twtr.satoru.net）を開く", href: "https://twtr.satoru.net/" }
+    { id: "twtr-link", label: "Twitter魚拓（twtr.satoru.net）で画像魚拓を取る", href: `https://twtr.satoru.net/?mode=check&url=${encodeURIComponent(target)}` }
   ];
 }
 

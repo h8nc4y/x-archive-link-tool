@@ -137,8 +137,11 @@ test("buildArchiveServiceLinks returns the four archive services with correct hr
   assert.equal(byId["gyotaku-link"], "https://gyo.tc/https://x.com/example_user/status/67890");
   assert.equal(byId["wayback-link"], "https://web.archive.org/save/https://x.com/example_user/status/67890");
   assert.equal(byId["archivetoday-link"], "https://archive.ph/newest/https://x.com/example_user/status/67890");
-  // twtr.satoru.net はフォーム型のため postUrl を付けずサイトトップ固定。
-  assert.equal(byId["twtr-link"], "https://twtr.satoru.net/");
+  // twtr.satoru.net は GET フォーム相当の deep link（mode=check + url、urlはエンコード）。
+  assert.equal(
+    byId["twtr-link"],
+    "https://twtr.satoru.net/?mode=check&url=https%3A%2F%2Fx.com%2Fexample_user%2Fstatus%2F67890"
+  );
   for (const link of links) {
     assert.equal(typeof link.label, "string");
     assert.ok(link.label.length > 0);
