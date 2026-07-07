@@ -32,7 +32,7 @@ async function withServer(run, options = {}) {
 function assertSecurityHeaders(headers) {
   assert.equal(
     headers["content-security-policy"],
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com https://api.imgur.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
   );
   assert.equal(headers["x-frame-options"], "DENY");
   assert.equal(headers["x-content-type-options"], "nosniff");
@@ -483,4 +483,121 @@ test("safe logs do not include sensitive request or X data", async () => {
   assert.equal(serialized.includes("Sensitive X body"), false);
   assert.equal(serialized.includes("secret.jpg"), false);
   assert.equal(serialized.includes("token"), false);
+});
+
+// ===== /api/upload-image（catboxサーバー中継） =====
+// 実catboxへは一切通信しない。uploadImage optionをmockして検証する。
+
+function pngMultipartBody({ size = 100, boundary = "----extractServerTestBoundary" } = {}) {
+  const header =
+    `--${boundary}\r\n` +
+    'Content-Disposition: form-data; name="image"; filename="record.png"\r\n' +
+    "Content-Type: image/png\r\n\r\n";
+  const footer = `\r\n--${boundary}--\r\n`;
+  const bytes = Buffer.alloc(size, 0);
+  return {
+    boundary,
+    body: Buffer.concat([Buffer.from(header, "utf8"), bytes, Buffer.from(footer, "utf8")])
+  };
+}
+
+test("GET /api/upload-image is rejected as method not allowed (no body read, no catbox contact)", async () => {
+  await withServer(async (port) => {
+    const response = await request(port, {
+      method: "GET",
+      path: "/api/upload-image"
+    });
+
+    assert.equal(response.statusCode, 405);
+    assert.equal(response.headers.allow, "POST");
+    assertSecurityHeaders(response.headers);
+  });
+});
+
+test("POST /api/upload-image returns the mocked catbox URL on success (uploadImage mocked, no real network)", async () => {
+  const { boundary, body } = pngMultipartBody();
+  let receivedImage = null;
+
+  await withServer(
+    async (port) => {
+      const response = await request(port, {
+        path: "/api/upload-image",
+        headers: {
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+          "content-length": String(body.length)
+        },
+        body
+      });
+
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.body, { url: "https://files.catbox.moe/abc123.png" });
+      assert.ok(receivedImage);
+      assertSecurityHeaders(response.headers);
+    },
+    {
+      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) },
+      uploadImage: async (image) => {
+        receivedImage = image;
+        return { url: "https://files.catbox.moe/abc123.png" };
+      }
+    }
+  );
+});
+
+test("POST /api/upload-image returns 429 with retry-after when the upload rate limiter rejects", async () => {
+  const { boundary, body } = pngMultipartBody();
+
+  await withServer(
+    async (port) => {
+      const response = await request(port, {
+        path: "/api/upload-image",
+        headers: {
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+          "content-length": String(body.length)
+        },
+        body
+      });
+
+      assert.equal(response.statusCode, 429);
+      assert.equal(response.headers["retry-after"], "17");
+      assert.equal(response.body.code, "rate_limit_exceeded");
+      assertSecurityHeaders(response.headers);
+    },
+    {
+      uploadRateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 17 }) },
+      uploadImage: async () => {
+        throw new Error("uploadImage should not run when upload rate limited");
+      }
+    }
+  );
+});
+
+test("POST /api/upload-image propagates a typed upload error (e.g. too large) without contacting catbox", async () => {
+  const { boundary, body } = pngMultipartBody();
+
+  await withServer(
+    async (port) => {
+      const response = await request(port, {
+        path: "/api/upload-image",
+        headers: {
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+          "content-length": String(body.length)
+        },
+        body
+      });
+
+      assert.equal(response.statusCode, 413);
+      assert.equal(response.body.code, "upload_too_large");
+      assertSecurityHeaders(response.headers);
+    },
+    {
+      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) },
+      uploadImage: async () => {
+        const error = new Error("画像サイズが大きすぎます。");
+        error.code = "upload_too_large";
+        error.statusCode = 413;
+        throw error;
+      }
+    }
+  );
 });

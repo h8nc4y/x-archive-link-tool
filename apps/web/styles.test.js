@@ -136,7 +136,7 @@ test("Cloudflare Pages static headers mirror server security headers", async () 
   assert.match(headers, /\/\*/);
   assert.match(
     headers,
-    /Content-Security-Policy:\s*default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https:\/\/publish\.x\.com https:\/\/api\.imgur\.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests/
+    /Content-Security-Policy:\s*default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https:\/\/publish\.x\.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests/
   );
   assert.match(headers, /X-Frame-Options:\s*DENY/);
   assert.match(headers, /X-Content-Type-Options:\s*nosniff/);

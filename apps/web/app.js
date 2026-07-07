@@ -54,10 +54,6 @@ export function buildGyotakuUrl(postUrl) {
 // 2026-07-07 オーナー承認。実際の投稿の見た目や添付メディアは含まず、
 // 取得済みのテキスト情報だけを描画するため、Xの利用規約・キャプチャ禁止事項に抵触しない。
 
-// imgur匿名アップロード用のClient-ID。空文字のままなら機能は無効化される
-// （imgur Developer Portalでの登録・承認はオーナー作業のため、別PRで設定する）。
-const IMGUR_CLIENT_ID = "";
-
 // 全角文字は半角の2倍幅として扱う簡易的な折返し重み。
 // canvasのmeasureTextに依存すると環境依存になり決定的なテストが書けないため、
 // 文字コード帯で全角/半角を判定する固定ロジックにする。
@@ -234,49 +230,48 @@ export function renderPostImage(post, options = {}) {
   return canvas;
 }
 
-// imgurへの匿名アップロード。ユーザーのボタン操作からのみ呼ばれる想定。
-// 実imgur APIへは、Client-IDが空文字の間は呼び出し自体をUI側で無効化して到達させない。
-export async function uploadImageToImgur(blob, clientId = IMGUR_CLIENT_ID) {
+// 記録画像を自サイトの /api/upload-image へ送り、catbox.moeへのアップロードを
+// サーバー側で中継してもらう。2026-07-07 オーナー決定によりimgur/RapidAPIから方式変更した
+// （imgurは新規Client-ID発行を廃止、RapidAPI経由は有料のみで不採用）。
+// クライアントはcatboxへ直接fetchしない（CORS回避のためサーバー中継が必須）。
+export async function uploadRecordImage(blob) {
   const formData = new FormData();
   formData.append("image", blob);
 
   let response;
   try {
-    response = await fetch("https://api.imgur.com/3/image", {
+    response = await fetch("/api/upload-image", {
       method: "POST",
-      headers: { Authorization: `Client-ID ${clientId}` },
       body: formData
     });
   } catch {
-    throw createImgurError("imgur_unreachable");
+    throw createUploadError("upload_unreachable");
   }
 
   let payload;
   try {
     payload = await response.json();
   } catch {
-    throw createImgurError("imgur_invalid_response");
+    throw createUploadError("upload_error");
   }
 
-  if (!response.ok || !payload?.success) {
-    throw createImgurError(response.status === 429 ? "imgur_429" : "imgur_error");
+  if (!response.ok) {
+    throw createUploadError(typeof payload?.code === "string" ? payload.code : "upload_error");
   }
 
-  return {
-    link: typeof payload?.data?.link === "string" ? payload.data.link : "",
-    deletehash: typeof payload?.data?.deletehash === "string" ? payload.data.deletehash : ""
-  };
+  return { url: typeof payload?.url === "string" ? payload.url : "" };
 }
 
-const IMGUR_ERROR_MESSAGES = new Map([
-  ["imgur_429", "imgurが混雑しています。時間を置いて再試行してください。"],
-  ["imgur_unreachable", "アップロードに失敗しました。時間を置いて再試行してください。"],
-  ["imgur_invalid_response", "アップロードに失敗しました。時間を置いて再試行してください。"],
-  ["imgur_error", "アップロードに失敗しました。時間を置いて再試行してください。"]
+const UPLOAD_ERROR_MESSAGES = new Map([
+  ["upload_429", "アップロード先が混雑しています。時間を置いて再試行してください。"],
+  ["upload_too_large", "画像サイズが大きすぎます。"],
+  ["upload_unsupported_type", "PNG画像のみアップロードできます。"],
+  ["upload_unreachable", "アップロード先に接続できませんでした。時間を置いて再試行してください。"],
+  ["upload_error", "アップロードに失敗しました。時間を置いて再試行してください。"]
 ]);
 
-function createImgurError(code) {
-  const error = new Error(IMGUR_ERROR_MESSAGES.get(code) || IMGUR_ERROR_MESSAGES.get("imgur_error"));
+function createUploadError(code) {
+  const error = new Error(UPLOAD_ERROR_MESSAGES.get(code) || UPLOAD_ERROR_MESSAGES.get("upload_error"));
   error.userMessage = error.message;
   error.code = code;
   return error;
@@ -678,10 +673,8 @@ function setupApp() {
   const imagePreview = document.querySelector("#image-preview");
   const imageDownloadLink = document.querySelector("#image-download-link");
   const imageUploadButton = document.querySelector("#image-upload-button");
-  const imageUploadHint = document.querySelector("#image-upload-hint");
   const imageUrlOutput = document.querySelector("#image-url-output");
   const imageUrlCopyButton = document.querySelector("#image-url-copy-button");
-  const imageDeleteHint = document.querySelector("#image-delete-hint");
   const imageMessage = document.querySelector("#image-message");
   let currentPost = null;
   // 取得済みポストのキー（postUrl）。同じポストの再取得では魚拓URLを保持し、別ポストではリセットする。
@@ -839,10 +832,6 @@ function setupApp() {
       imageUrlCopyButton.hidden = true;
     }
 
-    if (imageDeleteHint) {
-      setText(imageDeleteHint, "");
-    }
-
     if (imageMessage) {
       setText(imageMessage, "");
     }
@@ -851,7 +840,9 @@ function setupApp() {
       imageCreateButton.disabled = !currentPost;
     }
 
-    // アップロードボタンは、Client-ID未設定の間は常にdisabledのままにする。
+    // アップロードボタンは、画像がまだ作成されていない間はdisabledにする。
+    // catbox中継は無設定で常時動作するため、キー設定状態によるゲートは無い
+    // （画像作成後は#image-create-buttonのハンドラ側で無条件に有効化する）。
     if (imageUploadButton) {
       imageUploadButton.disabled = true;
     }
@@ -1059,24 +1050,16 @@ function setupApp() {
             imageDownloadLink.hidden = false;
           }
 
-          // Client-ID設定済みのときだけアップロードボタンを有効化する。
+          // catbox中継アップロードは無設定で常時動作するため、画像作成後は
+          // 無条件にアップロードボタンを有効化する。
           if (imageUploadButton) {
-            imageUploadButton.disabled = IMGUR_CLIENT_ID === "";
+            imageUploadButton.disabled = false;
           }
         }, "image/png");
       } catch {
         setImageMessage("画像の生成に失敗しました。時間を置いて再試行してください。");
       }
     });
-  }
-
-  if (imageUploadHint) {
-    setText(
-      imageUploadHint,
-      IMGUR_CLIENT_ID === ""
-        ? "アップロード機能は準備中です（imgur Client-ID 設定後に有効になります）。"
-        : ""
-    );
   }
 
   if (imageUploadButton) {
@@ -1092,24 +1075,18 @@ function setupApp() {
         // objectURLからBlobを取り出す（ローカルメモリ上の参照であり、外部通信は発生しない）。
         const blobResponse = await fetch(currentImageObjectUrl);
         const blob = await blobResponse.blob();
-        const result = await uploadImageToImgur(blob);
+        const result = await uploadRecordImage(blob);
 
         if (imageUrlOutput) {
-          imageUrlOutput.value = result.link;
+          imageUrlOutput.value = result.url;
         }
         if (imageUrlCopyButton) {
           imageUrlCopyButton.hidden = false;
         }
-        if (imageDeleteHint && result.deletehash) {
-          setText(
-            imageDeleteHint,
-            `削除用コード: ${result.deletehash}（削除ページ: https://imgur.com/delete/${result.deletehash}）`
-          );
-        }
       } catch (error) {
         setImageMessage(getUserFacingErrorMessage(error));
       } finally {
-        imageUploadButton.disabled = IMGUR_CLIENT_ID === "";
+        imageUploadButton.disabled = false;
       }
     });
   }

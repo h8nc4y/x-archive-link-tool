@@ -1,5 +1,56 @@
 # API Draft
 
+## POST /api/upload-image
+
+記録画像（任意機能）のPNGを、サーバー経由でcatbox.moeへ匿名アップロードするAPI。
+2026-07-07 オーナー決定により、imgur直接アップロード方式（新規Client-ID発行廃止）と
+RapidAPI経由方式（有料のみ）はどちらも不採用とし、この自サイト中継方式へ変更した。
+
+### Request
+
+`multipart/form-data`。フィールド `image` にPNG画像（Blob/File）を1つ設定する。
+
+### catbox中継
+
+サーバー（Cloudflare Pages Functions本番／ローカルNode開発サーバー共通）が
+`https://catbox.moe/user/api.php` へ `reqtype=fileupload` + `fileToUpload=<画像>` で
+POSTする（`userhash` を付けない匿名アップロード）。クライアントはcatboxへ直接fetchしない
+（catbox.moeがCORSヘッダを返さないため、ブラウザから直接アクセスするとブロックされる）。
+APIキーやCloudflare bindingは不要で、常時有効。
+
+catboxの成功レスポンスはJSONではなくプレーンテキストの直リンクURL1行
+（例: `https://files.catbox.moe/xxxxxx.png`）。失敗時も200でエラー文字列を返すことが
+あるため、サーバー側は応答本文が `^https://files\.catbox\.moe/\S+$` に一致するかで
+成否を再判定する。
+
+### Response（成功）
+
+```json
+{ "url": "https://files.catbox.moe/xxxxxx.png" }
+```
+
+### エラー
+
+| HTTP | code | 意味 |
+| --- | --- | --- |
+| 400 | `upload_invalid_request` | `image` フィールドが無い、またはmultipart解析失敗 |
+| 413 | `upload_too_large` | 画像サイズが5MB超 |
+| 415 | `upload_unsupported_type` | `image/png` 以外のMIMEタイプ |
+| 429 | `upload_429` | rate limit超過、またはcatbox側の429 |
+| 502 | `upload_unreachable` | catboxへ接続できない（fetch例外） |
+| 502 | `upload_error` | catboxがエラー応答、または想定外の応答形式 |
+
+### Rate limit
+
+`extract.js` と同じ方式（IP単位＋全体の1分あたり上限）。環境変数
+`UPLOAD_RATE_LIMIT_PER_IP_PER_MINUTE`（既定3）・`UPLOAD_RATE_LIMIT_GLOBAL_PER_MINUTE`
+（既定20）で調整できる。超過時は429 `{ "code": "rate_limit_exceeded" }`。
+
+### ログ
+
+`/api/extract` と同じ安全な構造化項目（request_id/method/path/statusCode/durationMs/
+errorCode）のみを残す。アップロード先URL・画像内容・catboxの応答本文はログに残さない。
+
 ## POST /api/extract
 
 Xポスト共有URLを受け取り、貼り付け用テキスト生成に必要な項目を返すAPI。

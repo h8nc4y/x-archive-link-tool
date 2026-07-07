@@ -7,11 +7,12 @@ import { OEmbedClientError } from "./oEmbedClient.js";
 import { createExtractPost } from "./extractService.js";
 import { createRateLimiter } from "./rateLimiter.js";
 import { XApiV2ClientError } from "./xApiV2Client.js";
+import { handleUploadImageRequest } from "../functions/api/upload-image.js";
 
 const MAX_BODY_BYTES = 1024;
 const SECURITY_HEADERS = {
   "content-security-policy":
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com https://api.imgur.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests",
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests",
   "x-frame-options": "DENY",
   "x-content-type-options": "nosniff",
   "referrer-policy": "strict-origin-when-cross-origin"
@@ -49,6 +50,19 @@ function sendBytes(res, statusCode, body, headers = {}) {
     ...headers
   });
   res.end(body);
+}
+
+// Web標準 Response（functions/api/upload-image.js の戻り値）をNodeの
+// http.ServerResponse へそのまま書き出すアダプタ。
+async function writeWebResponse(res, webResponse) {
+  const headers = {};
+  for (const [key, value] of webResponse.headers.entries()) {
+    headers[key] = value;
+  }
+
+  const bodyText = await webResponse.text();
+  res.writeHead(webResponse.status, headers);
+  res.end(bodyText);
 }
 
 function writeSafeLog(logger, entry) {
@@ -102,10 +116,67 @@ async function readJsonBody(req) {
   }
 }
 
+// アップロードAPI（multipart/form-data）専用。JSON APIと違い上限を大きく取り、
+// imageUploadService/functions側と同じ5MBチェックはハンドラ側で別途行う。
+const MAX_UPLOAD_BODY_BYTES = 8 * 1024 * 1024; // 8MB（5MB画像+multipart境界等の余白）
+
+async function readRawBody(req, maxBytes) {
+  let size = 0;
+  const chunks = [];
+
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > maxBytes) {
+      throw new HttpError(413, "Request body is too large.");
+    }
+    chunks.push(chunk);
+  }
+
+  return Buffer.concat(chunks);
+}
+
+// Node.js標準の http.IncomingMessage（readable stream）を、Cloudflare Pages Functions
+// と同じ Web標準 Request オブジェクトへ変換する。これにより、ローカル開発サーバーと
+// functions/api/upload-image.js の handleUploadImageRequest が同じ request.formData() /
+// request.headers.get() インターフェースを共有でき、実装の重複を避けられる。
+async function toWebRequest(req, { maxBytes = MAX_UPLOAD_BODY_BYTES } = {}) {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        headers.append(key, item);
+      }
+    } else if (value !== undefined) {
+      headers.set(key, value);
+    }
+  }
+
+  const method = req.method || "GET";
+  const requestInit = { method, headers };
+
+  // Web標準のRequestは GET/HEAD に body を付けると例外を投げるため、
+  // その場合は読み捨てずボディ自体を読まない（handleUploadImageRequest側で
+  // メソッド不一致として405を返す想定のパス）。
+  if (method !== "GET" && method !== "HEAD") {
+    requestInit.body = await readRawBody(req, maxBytes);
+  }
+
+  return new Request(new URL(req.url || "/", "http://localhost"), requestInit);
+}
+
 export async function handleRequest(
   req,
   res,
-  { extractPost = createExtractPost(), rateLimiter = null, logger = null, now = Date.now, staticFiles = STATIC_FILES, readFileFn = readFile } = {}
+  {
+    extractPost = createExtractPost(),
+    rateLimiter = null,
+    uploadImage = undefined,
+    uploadRateLimiter = undefined,
+    logger = null,
+    now = Date.now,
+    staticFiles = STATIC_FILES,
+    readFileFn = readFile
+  } = {}
 ) {
   const startedAt = now();
   const requestUrl = new URL(req.url || "/", "http://localhost");
@@ -139,6 +210,25 @@ export async function handleRequest(
 
     if (req.method === "GET" && requestUrl.pathname === "/healthz") {
       respond(200, { ok: true });
+      return;
+    }
+
+    if (requestUrl.pathname === "/api/upload-image") {
+      // multipart/form-data はNode標準のIncomingMessageでは扱いづらいため、
+      // Cloudflare Pages Functionsと同じ Web標準 Request/Response インターフェースへ
+      // 変換し、functions/api/upload-image.js のハンドラをそのまま再利用する
+      // （catbox中継ロジックの重複実装を避ける）。uploadImage/uploadRateLimiterは
+      // テストからfetchをmockするための差し替え口（実catboxへは通信しない）。
+      const webRequest = await toWebRequest(req);
+      const uploadOptions = { env: process.env, logger };
+      if (uploadImage !== undefined) {
+        uploadOptions.uploadImage = uploadImage;
+      }
+      if (uploadRateLimiter !== undefined) {
+        uploadOptions.rateLimiter = uploadRateLimiter;
+      }
+      const webResponse = await handleUploadImageRequest(webRequest, uploadOptions);
+      await writeWebResponse(res, webResponse);
       return;
     }
 
