@@ -64,6 +64,10 @@ node --test
 - `RATE_LIMIT_GLOBAL_PER_MINUTE`: 全体の1分あたり上限。既定値は `60`。
 - `X_BEARER_TOKEN`: 任意。設定時のみBring Your Own Token方式でX API v2を使い、メディアURL取得を試みます。未設定時はoEmbed fallbackを使います。
 - `X_POST_CACHE`: Cloudflare Pages ProductionのKV namespace binding。postId単位の本番cacheに使います。
+- `UPLOAD_RATE_LIMIT_PER_IP_PER_MINUTE`: 記録画像アップロード（`/api/upload-image`）のIP単位1分あたり上限。既定値は `3`。
+- `UPLOAD_RATE_LIMIT_GLOBAL_PER_MINUTE`: 同アップロードの全体1分あたり上限。既定値は `20`。
+
+記録画像のアップロードはcatbox.moeへのサーバー中継方式のため、APIキーや追加のCloudflare bindingは不要です。
 
 Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directoryは空欄/リポジトリルート、build commandは不要/空欄、build output directoryは `apps/web`、Functions directoryは `functions` です。Root directoryを `apps/web` にすると `/api/extract` のFunctionsが認識されない可能性があります。X API Bearer Tokenは任意です。ProductionではKV binding `X_POST_CACHE` を `x-archive-link-tool-post-cache` に設定済みです。
 

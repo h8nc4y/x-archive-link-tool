@@ -14,7 +14,7 @@ import {
   getUserFacingErrorMessage,
   hasArchiveUrlPasteNoise,
   isValidArchiveUrl,
-  uploadImageToImgur,
+  uploadRecordImage,
   validatePostUrl,
   wrapTextForCanvas
 } from "./app.js";
@@ -398,10 +398,8 @@ async function createDomAppHarness(fetchImpl) {
     "#image-preview": createElement({ hidden: true }),
     "#image-download-link": createElement({ hidden: true }),
     "#image-upload-button": createElement({ disabled: true }),
-    "#image-upload-hint": createElement(),
     "#image-url-output": createElement(),
     "#image-url-copy-button": createElement({ hidden: true }),
-    "#image-delete-hint": createElement(),
     "#image-message": createElement()
   };
 
@@ -999,56 +997,56 @@ test("buildPostImageLines passes through 未取得 values without throwing", () 
   ]);
 });
 
-test("uploadImageToImgur resolves link and deletehash on success (fetch mocked, no real network)", async () => {
+test("uploadRecordImage posts to /api/upload-image and resolves the catbox URL on success (fetch mocked, no real network)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
-    assert.equal(url, "https://api.imgur.com/3/image");
+    assert.equal(url, "/api/upload-image");
     assert.equal(init.method, "POST");
-    assert.equal(init.headers.Authorization, "Client-ID test-client-id");
+    assert.ok(init.body instanceof FormData);
     return {
       ok: true,
       status: 200,
-      json: async () => ({ success: true, data: { link: "https://i.imgur.com/dummy.png", deletehash: "abc123" } })
+      json: async () => ({ url: "https://files.catbox.moe/dummy.png" })
     };
   };
 
   try {
-    const result = await uploadImageToImgur(new Blob(["dummy"]), "test-client-id");
-    assert.deepEqual(result, { link: "https://i.imgur.com/dummy.png", deletehash: "abc123" });
+    const result = await uploadRecordImage(new Blob(["dummy"]));
+    assert.deepEqual(result, { url: "https://files.catbox.moe/dummy.png" });
   } finally {
     restoreGlobal("fetch", previousFetch);
   }
 });
 
-test("uploadImageToImgur throws a Japanese-friendly error on 429 (fetch mocked, no real network)", async () => {
+test("uploadRecordImage throws a Japanese-friendly error on rate limit (fetch mocked, no real network)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async () => ({
     ok: false,
     status: 429,
-    json: async () => ({ success: false })
+    json: async () => ({ code: "upload_429" })
   });
 
   try {
     await assert.rejects(
-      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
-      /imgurが混雑しています/
+      uploadRecordImage(new Blob(["dummy"])),
+      /アップロード先が混雑しています/
     );
   } finally {
     restoreGlobal("fetch", previousFetch);
   }
 });
 
-test("uploadImageToImgur throws a generic Japanese error on other failures (fetch mocked, no real network)", async () => {
+test("uploadRecordImage throws a generic Japanese error on other failures (fetch mocked, no real network)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async () => ({
     ok: false,
-    status: 500,
-    json: async () => ({ success: false })
+    status: 502,
+    json: async () => ({ code: "upload_error" })
   });
 
   try {
     await assert.rejects(
-      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
+      uploadRecordImage(new Blob(["dummy"])),
       /アップロードに失敗しました/
     );
   } finally {
@@ -1056,7 +1054,7 @@ test("uploadImageToImgur throws a generic Japanese error on other failures (fetc
   }
 });
 
-test("uploadImageToImgur throws when fetch itself fails (network error, mocked)", async () => {
+test("uploadRecordImage throws an unreachable error when fetch itself fails (network error, mocked)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async () => {
     throw new TypeError("Failed to fetch");
@@ -1064,8 +1062,8 @@ test("uploadImageToImgur throws when fetch itself fails (network error, mocked)"
 
   try {
     await assert.rejects(
-      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
-      /アップロードに失敗しました/
+      uploadRecordImage(new Blob(["dummy"])),
+      /アップロード先に接続できませんでした/
     );
   } finally {
     restoreGlobal("fetch", previousFetch);
@@ -1120,7 +1118,7 @@ test("switching to a different post resets the image preview and upload URL stat
     await harness.submit();
     // 1回目取得後は作成ボタンが有効。画像URL欄などは初期状態のまま。
     assert.equal(harness.elements["#image-create-button"].disabled, false);
-    harness.elements["#image-url-output"].value = "https://i.imgur.com/dummy.png";
+    harness.elements["#image-url-output"].value = "https://files.catbox.moe/dummy.png";
     harness.elements["#image-url-copy-button"].hidden = false;
 
     await harness.submit();

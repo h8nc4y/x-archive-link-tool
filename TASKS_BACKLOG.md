@@ -34,7 +34,7 @@
 | CC-016 | provider fetch例外の型付け（本番smoke 500の再発防止） | 2026-07-06 本番smoke結果 | 高 | S | done: PR #73（merged）。oembed/x_api の unreachable/invalid_response コード追加 |
 | CC-017 | oEmbedブラウザ直接フォールバック（Workers IP遮断対策） | 2026-07-07 オーナー承認（設計A） | 高 | M | done: PR #75（merged・本番反映）。本番E2Eで成功パス実証済み |
 | HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | done: 全項目決着＋本番検証完了（2026-07-07）。Issue #42 クローズ |
-| CC-018 | 記録画像の作成・保存・imgurアップロード | 2026-07-07 オーナー承認 | 高 | M | doing: 本PR（Client-ID設定待ちでアップロードは無効化中） |
+| CC-018 | 記録画像の作成・保存・アップロード | 2026-07-07 オーナー承認 | 高 | M | doing: catbox サーバー中継方式で再実装（本PR）。imgur/RapidAPIは廃止/有料で不採用 |
 
 ## 完了・skip済み（履歴）
 
