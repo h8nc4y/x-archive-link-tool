@@ -82,6 +82,26 @@
           <p id="copy-message" class="message" role="status" aria-live="polite"></p>
         </section>
 
+        <section id="image-section" class="archive" aria-labelledby="image-title">
+          <h2 id="image-title">記録画像（任意）</h2>
+          <p class="hint">取得したポスト情報をカード型の画像にします。実際の投稿の見た目や添付画像は含まれません。</p>
+          <div class="input-row">
+            <button id="image-create-button" type="button" disabled>画像を作成</button>
+          </div>
+          <img id="image-preview" alt="生成した記録画像のプレビュー" hidden>
+          <a id="image-download-link" class="archive-link" download hidden>PNGを保存</a>
+
+          <p class="hint">アップロードすると画像は imgur に送信され、URLを知っている人は誰でも閲覧できます。</p>
+          <div class="input-row">
+            <button id="image-upload-button" type="button" disabled>imgurへアップロード</button>
+          </div>
+          <p id="image-upload-hint" class="hint"></p>
+          <input id="image-url-output" type="text" readonly aria-label="アップロード後の画像URL">
+          <button id="image-url-copy-button" type="button" hidden>URLをコピー</button>
+          <p id="image-delete-hint" class="hint"></p>
+          <p id="image-message" class="message" role="status" aria-live="polite"></p>
+        </section>
+
         <footer class="footer">
           <a href="/privacy.html">プライバシーポリシー</a>
           ・
