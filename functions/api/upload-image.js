@@ -1,4 +1,3 @@
-import { uploadImageToCatbox, createUploadError } from "../../server/imageUploadService.js";
 import { createRateLimiter } from "../../server/rateLimiter.js";
 
 // 記録画像アップロードの上限。既定は極端に大きい画像を弾く安全マージン。
@@ -6,7 +5,8 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 const ALLOWED_IMAGE_TYPE = "image/png";
 
 // extract.js と同じ最小限のセキュリティヘッダー構成。
-// connect-src から api.imgur.com は既に削除済み（別PRで反映）で、ここでは追加しない。
+// connect-src / img-src はR2移行後も変更不要（クライアントは自サイトへPOSTするだけで、
+// 配信画像も同一オリジン /i/... のため img-src 'self' で足りる）。
 const SECURITY_HEADERS = {
   "content-security-policy":
     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests",
@@ -93,9 +93,16 @@ function getRateLimiter(env = {}) {
   return rateLimiter;
 }
 
+// idはcrypto.randomUUID()からハイフンを除いた32桁hexで生成する。
+// i/[id].js側のisValidImageId検証と形式を揃える必要があるため、生成ロジックは
+// このファイル内に閉じる（recordImage.jsは検証・定数の共有のみを担う）。
+function createImageId() {
+  return globalThis.crypto.randomUUID().replace(/-/g, "");
+}
+
 export async function handleUploadImageRequest(
   request,
-  { env = {}, uploadImage = uploadImageToCatbox, rateLimiter = getRateLimiter(env), logger = null, now = Date.now } = {}
+  { env = {}, rateLimiter = getRateLimiter(env), logger = null, now = Date.now } = {}
 ) {
   const startedAt = now();
   const requestUrl = new URL(request.url);
@@ -127,6 +134,13 @@ export async function handleUploadImageRequest(
     );
   }
 
+  // R2 binding未設定（オーナーがCloudflare Pages側でbindingを設定するまで）は503で
+  // 「準備中」を明示する。ここは401/403等の権限エラーではなく、機能自体が未提供の状態。
+  const bucket = env.RECORD_IMAGE_BUCKET;
+  if (!bucket || typeof bucket.put !== "function") {
+    return respond(503, { error: "Upload is not configured yet.", code: "upload_not_configured" }, {}, "upload_not_configured");
+  }
+
   let formData;
   try {
     formData = await request.formData();
@@ -147,15 +161,25 @@ export async function handleUploadImageRequest(
     return respond(415, { error: "Only image/png is supported.", code: "upload_unsupported_type" }, {}, "upload_unsupported_type");
   }
 
+  const id = createImageId();
+  const key = `${id}.png`;
+
   try {
-    // catboxは無設定（APIキー・binding不要）で常時動作するため、not_configured経路は無い。
-    const result = await uploadImage(image, {});
-    return respond(200, { url: result.url });
-  } catch (error) {
-    const code = typeof error?.code === "string" ? error.code : "upload_error";
-    const statusCode = typeof error?.statusCode === "number" ? error.statusCode : 502;
-    return respond(statusCode, { error: error?.message || "Upload failed.", code }, {}, code);
+    const arrayBuffer = await image.arrayBuffer();
+    // customMetadata.uploadedAtは配信側（i/[id].js）が3日経過判定に使う唯一の情報源。
+    // R2のObject lifecycleルール（オーナーがバケット側で設定）が実削除を担い、
+    // このuploadedAtチェックはlifecycle実行前でも3日でリンクを失効させる一次防衛線。
+    await bucket.put(key, arrayBuffer, {
+      httpMetadata: { contentType: ALLOWED_IMAGE_TYPE },
+      customMetadata: { uploadedAt: String(Date.now()) }
+    });
+  } catch {
+    // R2書き込み失敗の詳細（例外メッセージ）はログに残さない。画像内容やidも同様。
+    return respond(502, { error: "Upload failed.", code: "upload_error" }, {}, "upload_error");
   }
+
+  const url = new URL(`/i/${id}`, request.url).toString();
+  return respond(200, { url });
 }
 
 // extract.js の onRequest と同じパターン。全メソッドをここで受け、
@@ -165,7 +189,3 @@ export async function handleUploadImageRequest(
 export function onRequest(context) {
   return handleUploadImageRequest(context.request, { env: context.env, logger: console });
 }
-
-// createUploadError を re-export しておくと、テストや将来の拡張で型付きエラー生成を
-// このモジュール経由でも扱える（imageUploadService.js が正の定義元）。
-export { createUploadError };

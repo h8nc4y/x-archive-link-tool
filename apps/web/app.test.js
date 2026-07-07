@@ -997,7 +997,7 @@ test("buildPostImageLines passes through 未取得 values without throwing", () 
   ]);
 });
 
-test("uploadRecordImage posts to /api/upload-image and resolves the catbox URL on success (fetch mocked, no real network)", async () => {
+test("uploadRecordImage posts to /api/upload-image and resolves the same-origin /i/{id} URL on success (fetch mocked, no real network)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
     assert.equal(url, "/api/upload-image");
@@ -1006,13 +1006,31 @@ test("uploadRecordImage posts to /api/upload-image and resolves the catbox URL o
     return {
       ok: true,
       status: 200,
-      json: async () => ({ url: "https://files.catbox.moe/dummy.png" })
+      json: async () => ({ url: "https://example.pages.dev/i/1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d" })
     };
   };
 
   try {
     const result = await uploadRecordImage(new Blob(["dummy"]));
-    assert.deepEqual(result, { url: "https://files.catbox.moe/dummy.png" });
+    assert.deepEqual(result, { url: "https://example.pages.dev/i/1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d" });
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadRecordImage throws a Japanese-friendly hint when R2 binding is not configured (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 503,
+    json: async () => ({ code: "upload_not_configured" })
+  });
+
+  try {
+    await assert.rejects(
+      uploadRecordImage(new Blob(["dummy"])),
+      /アップロード機能は準備中です/
+    );
   } finally {
     restoreGlobal("fetch", previousFetch);
   }
@@ -1118,7 +1136,7 @@ test("switching to a different post resets the image preview and upload URL stat
     await harness.submit();
     // 1回目取得後は作成ボタンが有効。画像URL欄などは初期状態のまま。
     assert.equal(harness.elements["#image-create-button"].disabled, false);
-    harness.elements["#image-url-output"].value = "https://files.catbox.moe/dummy.png";
+    harness.elements["#image-url-output"].value = "https://example.pages.dev/i/1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d";
     harness.elements["#image-url-copy-button"].hidden = false;
 
     await harness.submit();

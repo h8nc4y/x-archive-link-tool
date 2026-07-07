@@ -54,9 +54,12 @@ export function buildGyotakuUrl(postUrl) {
 // 2026-07-07 オーナー承認。実際の投稿の見た目や添付メディアは含まず、
 // 取得済みのテキスト情報だけを描画するため、Xの利用規約・キャプチャ禁止事項に抵触しない。
 
-// アップロード機能の有効フラグ。catbox.moe 中継は Cloudflare Workers の egress 遮断で
-// 本番非対応と判明したため、恒久対策（R2 等）が入るまで false（画像作成・保存のみ提供）。
-const RECORD_IMAGE_UPLOAD_ENABLED = false;
+// アップロード機能の有効フラグ。2026-07-07 オーナー決定によりcatbox.moe中継
+//（Cloudflare Workersのegress遮断で本番不可と判明）からCloudflare R2方式へ再設計した。
+// R2はオーナーのCloudflare Pagesバインディング設定後に動作するため、ボタン自体は
+// 常に有効にし、binding未設定時はサーバーが返す upload_not_configured を
+// UIで案内する（後述のUPLOAD_ERROR_MESSAGES参照）。
+const RECORD_IMAGE_UPLOAD_ENABLED = true;
 
 // 全角文字は半角の2倍幅として扱う簡易的な折返し重み。
 // canvasのmeasureTextに依存すると環境依存になり決定的なテストが書けないため、
@@ -234,10 +237,10 @@ export function renderPostImage(post, options = {}) {
   return canvas;
 }
 
-// 記録画像を自サイトの /api/upload-image へ送り、catbox.moeへのアップロードを
-// サーバー側で中継してもらう。2026-07-07 オーナー決定によりimgur/RapidAPIから方式変更した
-// （imgurは新規Client-ID発行を廃止、RapidAPI経由は有料のみで不採用）。
-// クライアントはcatboxへ直接fetchしない（CORS回避のためサーバー中継が必須）。
+// 記録画像を自サイトの /api/upload-image へ送り、Cloudflare R2（オーナーのバケット、
+// bindingで自ドメインからのみアクセス）へ保存してもらう。2026-07-07 オーナー決定により
+// catbox.moe中継（Cloudflare Workersのegress遮断で本番不可）から方式変更した。
+// 成功時は自ドメインの配信URL（/i/{id}）を受け取る。画像は約3日で自動失効する。
 export async function uploadRecordImage(blob) {
   const formData = new FormData();
   formData.append("image", blob);
@@ -266,7 +269,10 @@ export async function uploadRecordImage(blob) {
   return { url: typeof payload?.url === "string" ? payload.url : "" };
 }
 
+// upload_not_configuredは「エラー」ではなく「オーナーのR2バインディング設定待ち」を
+// 示す状態のため、他のエラーコードと違い再試行を促さない文言にする。
 const UPLOAD_ERROR_MESSAGES = new Map([
+  ["upload_not_configured", "アップロード機能は準備中です（サーバー側のR2設定後に有効になります）。"],
   ["upload_429", "アップロード先が混雑しています。時間を置いて再試行してください。"],
   ["upload_too_large", "画像サイズが大きすぎます。"],
   ["upload_unsupported_type", "PNG画像のみアップロードできます。"],
@@ -845,8 +851,9 @@ function setupApp() {
     }
 
     // アップロードボタンは、画像がまだ作成されていない間はdisabledにする。
-    // catbox中継は無設定で常時動作するため、キー設定状態によるゲートは無い
-    // （画像作成後は#image-create-buttonのハンドラ側で無条件に有効化する）。
+    // R2バインディング未設定時はクリック時のサーバー応答（upload_not_configured）で
+    // 案内するため、ここではRECORD_IMAGE_UPLOAD_ENABLEDによるゲートは行わない
+    // （画像作成後は#image-create-buttonのハンドラ側でフラグに応じて有効化する）。
     if (imageUploadButton) {
       imageUploadButton.disabled = true;
     }
@@ -1054,10 +1061,10 @@ function setupApp() {
             imageDownloadLink.hidden = false;
           }
 
-          // 2026-07-07: catbox.moe が Cloudflare Workers の egress IP を遮断するため
-          // サーバー中継アップロードが本番で機能しない（502 upload_error）。恒久対策
-          // （Cloudflare R2 等）が入るまで、アップロードボタンは無効のままにする。
-          // 画像の作成・PNG保存は引き続き利用可能。
+          // 2026-07-07 R2移行後: 画像作成が完了すればアップロードボタンを有効化する。
+          // オーナーがCloudflare Pages側でR2バインディングを設定するまでは、
+          // クリック時にサーバーから upload_not_configured（503）が返り、
+          // #image-message にその旨を案内する（ボタン自体は常時有効のまま）。
           if (imageUploadButton) {
             imageUploadButton.disabled = !RECORD_IMAGE_UPLOAD_ENABLED;
           }

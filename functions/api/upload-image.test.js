@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { handleUploadImageRequest } from "./upload-image.js";
 
-// 実catboxへは一切通信しない。uploadImage options（uploadImageToCatbox相当）をmockして検証する。
+// 実R2へは一切通信しない。env.RECORD_IMAGE_BUCKET にmock bucketを注入して検証する。
 
 function uploadRequest({ formData, method = "POST" } = {}) {
   const options = { method };
@@ -37,85 +37,107 @@ function assertSecurityHeaders(response) {
 
 const allowRateLimiter = { check: () => ({ allowed: true, retryAfterSeconds: 0 }) };
 
-test("returns 400 when the image field is missing", async () => {
-  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData({ withImage: false }) }), {
+// putが呼ばれたら成功する最小mock bucket。呼び出し引数の検証にも使う。
+function createMockBucket({ put = async () => {} } = {}) {
+  return { put };
+}
+
+test("returns 503 when RECORD_IMAGE_BUCKET binding is not configured", async () => {
+  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
     env: {},
-    rateLimiter: allowRateLimiter,
-    uploadImage: async () => {
-      throw new Error("uploadImage should not run when image field is missing");
-    }
+    rateLimiter: allowRateLimiter
+  });
+
+  assert.equal(response.status, 503);
+  assert.equal((await readJson(response)).code, "upload_not_configured");
+  assertSecurityHeaders(response);
+});
+
+test("returns 400 when the image field is missing", async () => {
+  let putCalled = false;
+  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData({ withImage: false }) }), {
+    env: { RECORD_IMAGE_BUCKET: createMockBucket({ put: async () => { putCalled = true; } }) },
+    rateLimiter: allowRateLimiter
   });
 
   assert.equal(response.status, 400);
   assert.equal((await readJson(response)).code, "upload_invalid_request");
+  assert.equal(putCalled, false);
   assertSecurityHeaders(response);
 });
 
 test("returns 413 when the image exceeds 5MB", async () => {
+  let putCalled = false;
   const response = await handleUploadImageRequest(
     uploadRequest({ formData: pngFormData({ size: 5 * 1024 * 1024 + 1 }) }),
     {
-      env: {},
-      rateLimiter: allowRateLimiter,
-      uploadImage: async () => {
-        throw new Error("uploadImage should not run for oversized images");
-      }
+      env: { RECORD_IMAGE_BUCKET: createMockBucket({ put: async () => { putCalled = true; } }) },
+      rateLimiter: allowRateLimiter
     }
   );
 
   assert.equal(response.status, 413);
   assert.equal((await readJson(response)).code, "upload_too_large");
+  assert.equal(putCalled, false);
   assertSecurityHeaders(response);
 });
 
 test("returns 415 when the image type is not image/png", async () => {
+  let putCalled = false;
   const response = await handleUploadImageRequest(
     uploadRequest({ formData: pngFormData({ type: "image/jpeg" }) }),
     {
-      env: {},
-      rateLimiter: allowRateLimiter,
-      uploadImage: async () => {
-        throw new Error("uploadImage should not run for unsupported types");
-      }
+      env: { RECORD_IMAGE_BUCKET: createMockBucket({ put: async () => { putCalled = true; } }) },
+      rateLimiter: allowRateLimiter
     }
   );
 
   assert.equal(response.status, 415);
   assert.equal((await readJson(response)).code, "upload_unsupported_type");
+  assert.equal(putCalled, false);
   assertSecurityHeaders(response);
 });
 
-test("returns 200 with the catbox URL on success (uploadImage mocked, no real network)", async () => {
-  let receivedBlob = null;
-  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
-    env: {},
-    rateLimiter: allowRateLimiter,
-    uploadImage: async (image) => {
-      receivedBlob = image;
-      return { url: "https://files.catbox.moe/abc123.png" };
+test("returns 200 with a same-origin /i/{32hex} URL on success (R2 put mocked, no real network)", async () => {
+  let putArgs = null;
+  const bucket = createMockBucket({
+    put: async (key, body, options) => {
+      putArgs = { key, body, options };
     }
+  });
+
+  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
+    env: { RECORD_IMAGE_BUCKET: bucket },
+    rateLimiter: allowRateLimiter
   });
 
   assert.equal(response.status, 200);
-  assert.deepEqual(await readJson(response), { url: "https://files.catbox.moe/abc123.png" });
-  assert.ok(receivedBlob);
+  const payload = await readJson(response);
+  assert.match(payload.url, /^https:\/\/example\.pages\.dev\/i\/[a-f0-9]{32}$/);
   assertSecurityHeaders(response);
+
+  // putが正しい形式のキー・content-type・uploadedAt付きcustomMetadataで呼ばれたことを確認する。
+  assert.ok(putArgs);
+  assert.match(putArgs.key, /^[a-f0-9]{32}\.png$/);
+  assert.equal(putArgs.options.httpMetadata.contentType, "image/png");
+  assert.ok(putArgs.options.customMetadata.uploadedAt);
+  assert.ok(Number.isFinite(Number(putArgs.options.customMetadata.uploadedAt)));
 });
 
-test("propagates a typed upload error's statusCode and code", async () => {
-  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
-    env: {},
-    rateLimiter: allowRateLimiter,
-    uploadImage: async () => {
-      const error = new Error("アップロード先が混雑しています。時間を置いて再試行してください。");
-      error.code = "upload_429";
-      error.statusCode = 429;
-      throw error;
+test("returns 502 when R2 put throws", async () => {
+  const bucket = createMockBucket({
+    put: async () => {
+      throw new Error("R2 put failed");
     }
   });
 
-  assert.equal(response.status, 429);
-  assert.equal((await readJson(response)).code, "upload_429");
+  const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
+    env: { RECORD_IMAGE_BUCKET: bucket },
+    rateLimiter: allowRateLimiter
+  });
+
+  assert.equal(response.status, 502);
+  assert.equal((await readJson(response)).code, "upload_error");
   assertSecurityHeaders(response);
 });
 
@@ -133,10 +155,7 @@ test("rejects unsupported methods", async () => {
 test("returns 429 when the rate limiter rejects the request", async () => {
   const response = await handleUploadImageRequest(uploadRequest({ formData: pngFormData() }), {
     env: {},
-    rateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 42 }) },
-    uploadImage: async () => {
-      throw new Error("uploadImage should not run when rate limited");
-    }
+    rateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 42 }) }
   });
 
   assert.equal(response.status, 429);

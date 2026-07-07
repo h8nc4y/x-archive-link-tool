@@ -66,10 +66,17 @@ node --test
 - `X_POST_CACHE`: Cloudflare Pages ProductionのKV namespace binding。postId単位の本番cacheに使います。
 - `UPLOAD_RATE_LIMIT_PER_IP_PER_MINUTE`: 記録画像アップロード（`/api/upload-image`）のIP単位1分あたり上限。既定値は `3`。
 - `UPLOAD_RATE_LIMIT_GLOBAL_PER_MINUTE`: 同アップロードの全体1分あたり上限。既定値は `20`。
-
-記録画像のアップロードはcatbox.moeへのサーバー中継方式のため、APIキーや追加のCloudflare bindingは不要です。
+- `RECORD_IMAGE_BUCKET`: 記録画像を保存するCloudflare R2バケットのbinding。Cloudflare Pagesの管理画面（Settings → Functions → R2 bucket bindings）で設定します。未設定の間はアップロードが無効（`upload_not_configured`）で、ローカル開発サーバーには常にbindingがありません。
 
 Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directoryは空欄/リポジトリルート、build commandは不要/空欄、build output directoryは `apps/web`、Functions directoryは `functions` です。Root directoryを `apps/web` にすると `/api/extract` のFunctionsが認識されない可能性があります。X API Bearer Tokenは任意です。ProductionではKV binding `X_POST_CACHE` を `x-archive-link-tool-post-cache` に設定済みです。
+
+### 記録画像アップロード（R2）のオーナー設定手順
+
+記録画像の共有URL発行機能は、以下の設定が完了するまで `upload_not_configured` のまま無効です（画像の作成・PNG保存自体は設定不要で利用できます）。
+
+1. Cloudflare DashboardでR2バケットを作成する（例: `x-archive-link-tool-record-images`）。
+2. Cloudflare Pagesプロジェクトの Settings → Functions → R2 bucket bindings で、Variable name `RECORD_IMAGE_BUCKET` を上記バケットへ紐付ける。
+3. 作成したR2バケットの Settings → Object lifecycle rules で「3日後に削除」ルールを設定する（配信エンドポイント `GET /i/{id}` 側でもアップロードから3日経過した画像は404にするが、ストレージからの実削除はこのlifecycleルールが担う）。
 
 ## MVP対象範囲
 

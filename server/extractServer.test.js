@@ -485,8 +485,9 @@ test("safe logs do not include sensitive request or X data", async () => {
   assert.equal(serialized.includes("token"), false);
 });
 
-// ===== /api/upload-image（catboxサーバー中継） =====
-// 実catboxへは一切通信しない。uploadImage optionをmockして検証する。
+// ===== /api/upload-image（R2移行後のローカル開発サーバー） =====
+// ローカル開発サーバーにはR2 bindingが無いため、常に upload_not_configured（503）を
+// 返す設計になっている。実R2へは一切通信しない。
 
 function pngMultipartBody({ size = 100, boundary = "----extractServerTestBoundary" } = {}) {
   const header =
@@ -501,7 +502,7 @@ function pngMultipartBody({ size = 100, boundary = "----extractServerTestBoundar
   };
 }
 
-test("GET /api/upload-image is rejected as method not allowed (no body read, no catbox contact)", async () => {
+test("GET /api/upload-image is rejected as method not allowed", async () => {
   await withServer(async (port) => {
     const response = await request(port, {
       method: "GET",
@@ -514,9 +515,8 @@ test("GET /api/upload-image is rejected as method not allowed (no body read, no 
   });
 });
 
-test("POST /api/upload-image returns the mocked catbox URL on success (uploadImage mocked, no real network)", async () => {
+test("POST /api/upload-image always returns upload_not_configured (503) on the local dev server (no R2 binding)", async () => {
   const { boundary, body } = pngMultipartBody();
-  let receivedImage = null;
 
   await withServer(
     async (port) => {
@@ -529,17 +529,12 @@ test("POST /api/upload-image returns the mocked catbox URL on success (uploadIma
         body
       });
 
-      assert.equal(response.statusCode, 200);
-      assert.deepEqual(response.body, { url: "https://files.catbox.moe/abc123.png" });
-      assert.ok(receivedImage);
+      assert.equal(response.statusCode, 503);
+      assert.equal(response.body.code, "upload_not_configured");
       assertSecurityHeaders(response.headers);
     },
     {
-      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) },
-      uploadImage: async (image) => {
-        receivedImage = image;
-        return { url: "https://files.catbox.moe/abc123.png" };
-      }
+      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) }
     }
   );
 });
@@ -564,40 +559,31 @@ test("POST /api/upload-image returns 429 with retry-after when the upload rate l
       assertSecurityHeaders(response.headers);
     },
     {
-      uploadRateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 17 }) },
-      uploadImage: async () => {
-        throw new Error("uploadImage should not run when upload rate limited");
-      }
+      uploadRateLimiter: { check: () => ({ allowed: false, retryAfterSeconds: 17 }) }
     }
   );
 });
 
-test("POST /api/upload-image propagates a typed upload error (e.g. too large) without contacting catbox", async () => {
-  const { boundary, body } = pngMultipartBody();
-
+test("POST /api/upload-image with a malformed body still returns upload_not_configured (503) before validation", async () => {
   await withServer(
     async (port) => {
       const response = await request(port, {
         path: "/api/upload-image",
         headers: {
-          "content-type": `multipart/form-data; boundary=${boundary}`,
-          "content-length": String(body.length)
+          "content-type": "multipart/form-data; boundary=----broken",
+          "content-length": "0"
         },
-        body
+        body: ""
       });
 
-      assert.equal(response.statusCode, 413);
-      assert.equal(response.body.code, "upload_too_large");
+      // R2 binding未設定チェックはformData解析・バリデーションより先に行うため、
+      // 壊れたmultipart bodyでも400ではなく503のままになる。
+      assert.equal(response.statusCode, 503);
+      assert.equal(response.body.code, "upload_not_configured");
       assertSecurityHeaders(response.headers);
     },
     {
-      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) },
-      uploadImage: async () => {
-        const error = new Error("画像サイズが大きすぎます。");
-        error.code = "upload_too_large";
-        error.statusCode = 413;
-        throw error;
-      }
+      uploadRateLimiter: { check: () => ({ allowed: true, retryAfterSeconds: 0 }) }
     }
   );
 });
