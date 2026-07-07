@@ -54,6 +54,10 @@ export function buildGyotakuUrl(postUrl) {
 // 2026-07-07 オーナー承認。実際の投稿の見た目や添付メディアは含まず、
 // 取得済みのテキスト情報だけを描画するため、Xの利用規約・キャプチャ禁止事項に抵触しない。
 
+// アップロード機能の有効フラグ。catbox.moe 中継は Cloudflare Workers の egress 遮断で
+// 本番非対応と判明したため、恒久対策（R2 等）が入るまで false（画像作成・保存のみ提供）。
+const RECORD_IMAGE_UPLOAD_ENABLED = false;
+
 // 全角文字は半角の2倍幅として扱う簡易的な折返し重み。
 // canvasのmeasureTextに依存すると環境依存になり決定的なテストが書けないため、
 // 文字コード帯で全角/半角を判定する固定ロジックにする。
@@ -1050,10 +1054,12 @@ function setupApp() {
             imageDownloadLink.hidden = false;
           }
 
-          // catbox中継アップロードは無設定で常時動作するため、画像作成後は
-          // 無条件にアップロードボタンを有効化する。
+          // 2026-07-07: catbox.moe が Cloudflare Workers の egress IP を遮断するため
+          // サーバー中継アップロードが本番で機能しない（502 upload_error）。恒久対策
+          // （Cloudflare R2 等）が入るまで、アップロードボタンは無効のままにする。
+          // 画像の作成・PNG保存は引き続き利用可能。
           if (imageUploadButton) {
-            imageUploadButton.disabled = false;
+            imageUploadButton.disabled = !RECORD_IMAGE_UPLOAD_ENABLED;
           }
         }, "image/png");
       } catch {
