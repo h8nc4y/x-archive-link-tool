@@ -117,7 +117,7 @@ async function readJsonBody(req) {
 }
 
 // アップロードAPI（multipart/form-data）専用。JSON APIと違い上限を大きく取り、
-// imageUploadService/functions側と同じ5MBチェックはハンドラ側で別途行う。
+// functions/api/upload-image.js側と同じ5MBチェックはハンドラ側で別途行う。
 const MAX_UPLOAD_BODY_BYTES = 8 * 1024 * 1024; // 8MB（5MB画像+multipart境界等の余白）
 
 async function readRawBody(req, maxBytes) {
@@ -170,7 +170,6 @@ export async function handleRequest(
   {
     extractPost = createExtractPost(),
     rateLimiter = null,
-    uploadImage = undefined,
     uploadRateLimiter = undefined,
     logger = null,
     now = Date.now,
@@ -217,13 +216,11 @@ export async function handleRequest(
       // multipart/form-data はNode標準のIncomingMessageでは扱いづらいため、
       // Cloudflare Pages Functionsと同じ Web標準 Request/Response インターフェースへ
       // 変換し、functions/api/upload-image.js のハンドラをそのまま再利用する
-      // （catbox中継ロジックの重複実装を避ける）。uploadImage/uploadRateLimiterは
-      // テストからfetchをmockするための差し替え口（実catboxへは通信しない）。
+      // （R2 putロジックの重複実装を避ける）。ローカル開発サーバーにはR2 bindingが
+      // 無いため、env に RECORD_IMAGE_BUCKET を渡さず、常に upload_not_configured（503）
+      // へ自然に倒す。uploadRateLimiterはテストからrate limit判定をmockする差し替え口。
       const webRequest = await toWebRequest(req);
-      const uploadOptions = { env: process.env, logger };
-      if (uploadImage !== undefined) {
-        uploadOptions.uploadImage = uploadImage;
-      }
+      const uploadOptions = { env: {}, logger };
       if (uploadRateLimiter !== undefined) {
         uploadOptions.rateLimiter = uploadRateLimiter;
       }
