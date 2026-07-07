@@ -5,6 +5,7 @@ import {
   buildCopyText,
   buildGyotakuUrl,
   buildArchiveServiceLinks,
+  buildPostImageLines,
   buildSourceMessage,
   extractPostDate,
   extractPostText,
@@ -13,7 +14,9 @@ import {
   getUserFacingErrorMessage,
   hasArchiveUrlPasteNoise,
   isValidArchiveUrl,
-  validatePostUrl
+  uploadImageToImgur,
+  validatePostUrl,
+  wrapTextForCanvas
 } from "./app.js";
 
 const basePost = {
@@ -390,7 +393,16 @@ async function createDomAppHarness(fetchImpl) {
     "#copy-button": createElement({ disabled: true, initialAttributes: { "aria-describedby": "copy-hint" } }),
     "#copy-hint": createElement(),
     "#copy-message": createElement(),
-    "#source-message": createElement()
+    "#source-message": createElement(),
+    "#image-create-button": createElement({ disabled: true }),
+    "#image-preview": createElement({ hidden: true }),
+    "#image-download-link": createElement({ hidden: true }),
+    "#image-upload-button": createElement({ disabled: true }),
+    "#image-upload-hint": createElement(),
+    "#image-url-output": createElement(),
+    "#image-url-copy-button": createElement({ hidden: true }),
+    "#image-delete-hint": createElement(),
+    "#image-message": createElement()
   };
 
   const previousDocument = globalThis.document;
@@ -414,6 +426,9 @@ async function createDomAppHarness(fetchImpl) {
     },
     copy() {
       return elements["#copy-button"].dispatch("click");
+    },
+    createImage() {
+      return elements["#image-create-button"].dispatch("click");
     },
     cleanup() {
       restoreGlobal("document", previousDocument);
@@ -917,5 +932,203 @@ test("starting a new extract clears prior copy success feedback", async () => {
   } finally {
     harness.cleanup();
     restoreNavigator(previousNavigator);
+  }
+});
+
+// ===== 記録画像（任意機能） =====
+
+test("wrapTextForCanvas splits full-width Japanese text at the given weight limit", () => {
+  // 全角10文字ちょうど（重み10）はmaxChars=10ぴったりに収まり、分割されない。
+  assert.deepEqual(wrapTextForCanvas("あいうえおかきくけこ", 10), ["あいうえおかきくけこ"]);
+
+  // 全角11文字（重み11）はmaxChars=10を超えるため、10文字目と11文字目の間で改行される。
+  assert.deepEqual(wrapTextForCanvas("あいうえおかきくけこさ", 10), ["あいうえおかきくけこ", "さ"]);
+});
+
+test("wrapTextForCanvas preserves explicit newlines as separate lines", () => {
+  assert.deepEqual(wrapTextForCanvas("1行目\n2行目", 10), ["1行目", "2行目"]);
+  // 空行（連続する改行）もそのまま保持する。
+  assert.deepEqual(wrapTextForCanvas("1行目\n\n3行目", 10), ["1行目", "", "3行目"]);
+});
+
+test("wrapTextForCanvas treats half-width characters as half weight", () => {
+  // 半角20文字（重み10）はmaxChars=10ぴったりに収まり、分割されない。
+  const halfWidth = "0123456789abcdefghi9";
+  assert.equal(halfWidth.length, 20);
+  assert.deepEqual(wrapTextForCanvas(halfWidth, 10), [halfWidth]);
+
+  // 半角21文字（重み10.5）はmaxChars=10を超えるため分割される。
+  const overLimit = `${halfWidth}x`;
+  const wrapped = wrapTextForCanvas(overLimit, 10);
+  assert.equal(wrapped.length, 2);
+  assert.equal(wrapped.join(""), overLimit);
+});
+
+test("buildPostImageLines assembles header, wrapped body, and meta lines", () => {
+  const lines = buildPostImageLines(basePost, { now: "2026-07-07 12:00" });
+
+  assert.equal(lines.header, "Example @example_user");
+  assert.deepEqual(lines.body, wrapTextForCanvas("plain post text", 24));
+  assert.deepEqual(lines.meta, [
+    "投稿日：2026-05-09T00:00:00.000Z",
+    "ポストURL：https://x.com/example_user/status/67890",
+    "取得日時：2026-07-07 12:00",
+    "x-archive-link-tool で作成"
+  ]);
+});
+
+test("buildPostImageLines passes through 未取得 values without throwing", () => {
+  const lines = buildPostImageLines(
+    {
+      accountName: "未取得",
+      username: "未取得",
+      postUrl: "未取得",
+      createdAt: "未取得",
+      text: "未取得"
+    },
+    { now: "未取得" }
+  );
+
+  assert.equal(lines.header, "未取得 @未取得");
+  assert.deepEqual(lines.body, ["未取得"]);
+  assert.deepEqual(lines.meta, [
+    "投稿日：未取得",
+    "ポストURL：未取得",
+    "取得日時：未取得",
+    "x-archive-link-tool で作成"
+  ]);
+});
+
+test("uploadImageToImgur resolves link and deletehash on success (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    assert.equal(url, "https://api.imgur.com/3/image");
+    assert.equal(init.method, "POST");
+    assert.equal(init.headers.Authorization, "Client-ID test-client-id");
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: { link: "https://i.imgur.com/dummy.png", deletehash: "abc123" } })
+    };
+  };
+
+  try {
+    const result = await uploadImageToImgur(new Blob(["dummy"]), "test-client-id");
+    assert.deepEqual(result, { link: "https://i.imgur.com/dummy.png", deletehash: "abc123" });
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadImageToImgur throws a Japanese-friendly error on 429 (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 429,
+    json: async () => ({ success: false })
+  });
+
+  try {
+    await assert.rejects(
+      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
+      /imgurが混雑しています/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadImageToImgur throws a generic Japanese error on other failures (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 500,
+    json: async () => ({ success: false })
+  });
+
+  try {
+    await assert.rejects(
+      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
+      /アップロードに失敗しました/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadImageToImgur throws when fetch itself fails (network error, mocked)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new TypeError("Failed to fetch");
+  };
+
+  try {
+    await assert.rejects(
+      uploadImageToImgur(new Blob(["dummy"]), "test-client-id"),
+      /アップロードに失敗しました/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+// DOMハーネスによる記録画像UIの検証。canvas APIはNode環境に無いため、
+// renderPostImage自体の呼び出し（#image-create-buttonのclickハンドラ内部）はここでは検証せず、
+// ボタンのenable/disableとポスト切り替え時のリセット動作だけを確認する。
+// renderPostImage・canvas描画・toBlobの実挙動はブラウザ（Preview/Chrome MCP）検証に委ねる。
+test("image create button is disabled until a post is fetched, then enabled", async () => {
+  const harness = await createDomAppHarness(() => Promise.resolve(createJsonResponse(basePost)));
+
+  try {
+    assert.equal(harness.elements["#image-create-button"].disabled, true);
+
+    await harness.submit();
+
+    assert.equal(harness.elements["#image-create-button"].disabled, false);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("image create button is disabled again after a failed extract", async () => {
+  const harness = await createDomAppHarness(() =>
+    Promise.resolve(createJsonResponse({ code: "oembed_404" }, false))
+  );
+
+  try {
+    await harness.submit();
+
+    assert.equal(harness.elements["#image-create-button"].disabled, true);
+    assert.equal(harness.elements["#image-message"].textContent, "");
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("switching to a different post resets the image preview and upload URL state", async () => {
+  let call = 0;
+  const harness = await createDomAppHarness(() => {
+    call += 1;
+    const payload =
+      call === 1
+        ? basePost
+        : { ...basePost, postUrl: "https://x.com/other_user/status/99999", postId: "99999" };
+    return Promise.resolve(createJsonResponse(payload));
+  });
+
+  try {
+    await harness.submit();
+    // 1回目取得後は作成ボタンが有効。画像URL欄などは初期状態のまま。
+    assert.equal(harness.elements["#image-create-button"].disabled, false);
+    harness.elements["#image-url-output"].value = "https://i.imgur.com/dummy.png";
+    harness.elements["#image-url-copy-button"].hidden = false;
+
+    await harness.submit();
+    // 別ポスト取得でリセットされる。
+    assert.equal(harness.elements["#image-url-output"].value, "");
+    assert.equal(harness.elements["#image-url-copy-button"].hidden, true);
+    assert.equal(harness.elements["#image-create-button"].disabled, false);
+  } finally {
+    harness.cleanup();
   }
 });

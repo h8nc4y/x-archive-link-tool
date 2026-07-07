@@ -275,6 +275,21 @@ a[aria-disabled="true"] {
   margin-top: 2px;
 }
 
+/* 記録画像プレビューは幅いっぱいに収め、はみ出さないようにする。 */
+#image-preview {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+#image-download-link {
+  text-align: center;
+}
+
+#image-url-output {
+  background: var(--panel);
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

@@ -28,7 +28,7 @@ async function readJson(response) {
 function assertSecurityHeaders(response) {
   assert.equal(
     response.headers.get("content-security-policy"),
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://publish.x.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://publish.x.com https://api.imgur.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests"
   );
   assert.equal(response.headers.get("x-frame-options"), "DENY");
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");

@@ -50,6 +50,238 @@ export function buildGyotakuUrl(postUrl) {
   return `https://gyo.tc/${postUrl}`;
 }
 
+// ===== 記録画像（任意機能）: canvasでカード風PNGを生成する =====
+// 2026-07-07 オーナー承認。実際の投稿の見た目や添付メディアは含まず、
+// 取得済みのテキスト情報だけを描画するため、Xの利用規約・キャプチャ禁止事項に抵触しない。
+
+// imgur匿名アップロード用のClient-ID。空文字のままなら機能は無効化される
+// （imgur Developer Portalでの登録・承認はオーナー作業のため、別PRで設定する）。
+const IMGUR_CLIENT_ID = "";
+
+// 全角文字は半角の2倍幅として扱う簡易的な折返し重み。
+// canvasのmeasureTextに依存すると環境依存になり決定的なテストが書けないため、
+// 文字コード帯で全角/半角を判定する固定ロジックにする。
+function isFullWidthChar(char) {
+  const codePoint = char.codePointAt(0) || 0;
+  // 大まかな全角範囲: ひらがな/カタカナ/CJK統合漢字/全角記号/絵文字等。
+  return (
+    (codePoint >= 0x1100 && codePoint <= 0x115f) ||
+    (codePoint >= 0x2e80 && codePoint <= 0xa4cf) ||
+    (codePoint >= 0xac00 && codePoint <= 0xd7a3) ||
+    (codePoint >= 0xf900 && codePoint <= 0xfaff) ||
+    (codePoint >= 0xff00 && codePoint <= 0xff60) ||
+    (codePoint >= 0xffe0 && codePoint <= 0xffe6) ||
+    codePoint >= 0x1f300
+  );
+}
+
+function charWeight(char) {
+  return isFullWidthChar(char) ? 1 : 0.5;
+}
+
+// 日本語対応の簡易折返し。改行は保持したまま、各行を maxChars 相当の重みごとに分割する。
+export function wrapTextForCanvas(text, maxChars) {
+  const limit = Number.isFinite(maxChars) && maxChars > 0 ? maxChars : 1;
+  const sourceLines = String(text ?? "").split("\n");
+  const resultLines = [];
+
+  for (const sourceLine of sourceLines) {
+    if (sourceLine === "") {
+      resultLines.push("");
+      continue;
+    }
+
+    let currentLine = "";
+    let currentWeight = 0;
+
+    for (const char of sourceLine) {
+      const weight = charWeight(char);
+      if (currentLine !== "" && currentWeight + weight > limit) {
+        resultLines.push(currentLine);
+        currentLine = "";
+        currentWeight = 0;
+      }
+      currentLine += char;
+      currentWeight += weight;
+    }
+
+    resultLines.push(currentLine);
+  }
+
+  return resultLines;
+}
+
+// 記録画像に描く行データを組み立てる。値が「未取得」でもそのまま表示する。
+export function buildPostImageLines(post, options = {}) {
+  const accountName = post?.accountName || post?.authorName || "未取得";
+  const username = post?.username && post.username !== "未取得" ? `@${post.username}` : "@未取得";
+  const header = `${accountName} ${username}`;
+
+  const bodyText = post?.text || "未取得";
+  const body = wrapTextForCanvas(bodyText, 24);
+
+  const postUrl = post?.postUrl || post?.canonicalUrl || "未取得";
+  const createdAt = post?.createdAt || "未取得";
+  const now = typeof options.now === "string" && options.now ? options.now : "未取得";
+
+  const meta = [
+    `投稿日：${createdAt}`,
+    `ポストURL：${postUrl}`,
+    `取得日時：${now}`,
+    "x-archive-link-tool で作成"
+  ];
+
+  return { header, body, meta };
+}
+
+const IMAGE_WIDTH = 1200;
+const IMAGE_DEVICE_PIXEL_RATIO = 2;
+const IMAGE_COLORS = {
+  background: "#ffffff",
+  topBar: "#0f766e",
+  text: "#1b232c",
+  muted: "#566570",
+  line: "#d8dfdb"
+};
+const IMAGE_FONT_FAMILY = "Arial, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif";
+
+// ポスト情報をカード風PNGとしてcanvasへ描画する。本文はfillTextのみを使い、
+// HTMLとして描画しない（禁止事項: oEmbed html等をHTMLレンダリングしない、の延長で徹底する）。
+export function renderPostImage(post, options = {}) {
+  const lines = buildPostImageLines(post, options);
+
+  const topBarHeight = 8;
+  const paddingX = 48;
+  const headerTop = 40;
+  const headerHeight = 28 + 8 + 22 + 24; // アカウント名 + 間隔 + username + 下マージン
+  const bodyLineHeight = 26 * 1.6;
+  const bodyTop = headerTop + headerHeight + 24; // 罫線分の余白込み
+  const bodyHeight = Math.max(lines.body.length, 1) * bodyLineHeight;
+  const metaTop = bodyTop + bodyHeight + 24;
+  const metaLineHeight = 20 * 1.6;
+  const metaHeight = lines.meta.length * metaLineHeight;
+  const footerHeight = 48;
+  const totalHeight = metaTop + metaHeight + footerHeight;
+
+  const canvas = document.createElement("canvas");
+  const ratio = IMAGE_DEVICE_PIXEL_RATIO;
+  canvas.width = IMAGE_WIDTH * ratio;
+  canvas.height = totalHeight * ratio;
+  canvas.style.width = `${IMAGE_WIDTH}px`;
+  canvas.style.height = `${totalHeight}px`;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return canvas;
+  }
+
+  ctx.scale(ratio, ratio);
+
+  // 背景
+  ctx.fillStyle = IMAGE_COLORS.background;
+  ctx.fillRect(0, 0, IMAGE_WIDTH, totalHeight);
+
+  // 上辺ティールバー
+  ctx.fillStyle = IMAGE_COLORS.topBar;
+  ctx.fillRect(0, 0, IMAGE_WIDTH, topBarHeight);
+
+  // ヘッダー: アカウント名(太字28px) + @username(22px補助色)
+  ctx.fillStyle = IMAGE_COLORS.text;
+  ctx.font = `bold 28px ${IMAGE_FONT_FAMILY}`;
+  ctx.textBaseline = "top";
+  ctx.fillText(lines.header.split(" @")[0] || lines.header, paddingX, headerTop);
+
+  ctx.fillStyle = IMAGE_COLORS.muted;
+  ctx.font = `22px ${IMAGE_FONT_FAMILY}`;
+  const usernamePart = lines.header.includes(" @") ? `@${lines.header.split(" @").slice(1).join(" @")}` : "";
+  ctx.fillText(usernamePart, paddingX, headerTop + 28 + 8);
+
+  // 罫線（ヘッダー下）
+  ctx.strokeStyle = IMAGE_COLORS.line;
+  ctx.beginPath();
+  ctx.moveTo(paddingX, headerTop + headerHeight - 12);
+  ctx.lineTo(IMAGE_WIDTH - paddingX, headerTop + headerHeight - 12);
+  ctx.stroke();
+
+  // 本文
+  ctx.fillStyle = IMAGE_COLORS.text;
+  ctx.font = `26px ${IMAGE_FONT_FAMILY}`;
+  lines.body.forEach((line, index) => {
+    ctx.fillText(line, paddingX, bodyTop + index * bodyLineHeight);
+  });
+
+  // 罫線（本文下）
+  ctx.strokeStyle = IMAGE_COLORS.line;
+  ctx.beginPath();
+  ctx.moveTo(paddingX, metaTop - 12);
+  ctx.lineTo(IMAGE_WIDTH - paddingX, metaTop - 12);
+  ctx.stroke();
+
+  // メタ4行
+  ctx.fillStyle = IMAGE_COLORS.muted;
+  ctx.font = `20px ${IMAGE_FONT_FAMILY}`;
+  lines.meta.forEach((line, index) => {
+    ctx.fillText(line, paddingX, metaTop + index * metaLineHeight);
+  });
+
+  // フッター右下にツール名
+  ctx.fillStyle = IMAGE_COLORS.muted;
+  ctx.font = `16px ${IMAGE_FONT_FAMILY}`;
+  ctx.textAlign = "right";
+  ctx.fillText("x-archive-link-tool", IMAGE_WIDTH - paddingX, totalHeight - footerHeight + 16);
+  ctx.textAlign = "left";
+
+  return canvas;
+}
+
+// imgurへの匿名アップロード。ユーザーのボタン操作からのみ呼ばれる想定。
+// 実imgur APIへは、Client-IDが空文字の間は呼び出し自体をUI側で無効化して到達させない。
+export async function uploadImageToImgur(blob, clientId = IMGUR_CLIENT_ID) {
+  const formData = new FormData();
+  formData.append("image", blob);
+
+  let response;
+  try {
+    response = await fetch("https://api.imgur.com/3/image", {
+      method: "POST",
+      headers: { Authorization: `Client-ID ${clientId}` },
+      body: formData
+    });
+  } catch {
+    throw createImgurError("imgur_unreachable");
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw createImgurError("imgur_invalid_response");
+  }
+
+  if (!response.ok || !payload?.success) {
+    throw createImgurError(response.status === 429 ? "imgur_429" : "imgur_error");
+  }
+
+  return {
+    link: typeof payload?.data?.link === "string" ? payload.data.link : "",
+    deletehash: typeof payload?.data?.deletehash === "string" ? payload.data.deletehash : ""
+  };
+}
+
+const IMGUR_ERROR_MESSAGES = new Map([
+  ["imgur_429", "imgurが混雑しています。時間を置いて再試行してください。"],
+  ["imgur_unreachable", "アップロードに失敗しました。時間を置いて再試行してください。"],
+  ["imgur_invalid_response", "アップロードに失敗しました。時間を置いて再試行してください。"],
+  ["imgur_error", "アップロードに失敗しました。時間を置いて再試行してください。"]
+]);
+
+function createImgurError(code) {
+  const error = new Error(IMGUR_ERROR_MESSAGES.get(code) || IMGUR_ERROR_MESSAGES.get("imgur_error"));
+  error.userMessage = error.message;
+  error.code = code;
+  return error;
+}
+
 // 魚拓サービスの一覧。どれかが落ちても代替が残るよう複数を併記する。
 // gyo.tc / Wayback / archive.today は canonical URL を末尾に付けるprefix型。
 // twtr.satoru.net は GET フォーム（mode=check + url）のため、同じパラメータを
@@ -440,11 +672,24 @@ function setupApp() {
   const copyHint = document.querySelector("#copy-hint");
   const copyMessage = document.querySelector("#copy-message");
   const sourceMessage = document.querySelector("#source-message");
+  // 記録画像（任意機能）関連のDOM要素。存在しないDOM（旧テストハーネス等）でも
+  // null安全に扱い、既存機能を壊さない。
+  const imageCreateButton = document.querySelector("#image-create-button");
+  const imagePreview = document.querySelector("#image-preview");
+  const imageDownloadLink = document.querySelector("#image-download-link");
+  const imageUploadButton = document.querySelector("#image-upload-button");
+  const imageUploadHint = document.querySelector("#image-upload-hint");
+  const imageUrlOutput = document.querySelector("#image-url-output");
+  const imageUrlCopyButton = document.querySelector("#image-url-copy-button");
+  const imageDeleteHint = document.querySelector("#image-delete-hint");
+  const imageMessage = document.querySelector("#image-message");
   let currentPost = null;
   // 取得済みポストのキー（postUrl）。同じポストの再取得では魚拓URLを保持し、別ポストではリセットする。
   let currentPostKey = "";
   let postInputHasInvalidPaste = false;
   let archiveInputHasInvalidPaste = false;
+  // プレビューimg用のobjectURL。別ポスト取得やページ離脱前に解放してメモリリークを防ぐ。
+  let currentImageObjectUrl = "";
   const ARCHIVE_STATUS_IDLE = "先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。";
   const ARCHIVE_STATUS_ACTIVE = "別のXポストを取得すると、入力した魚拓URLはリセットされます。";
   const submitButtonLabel = submitButton?.textContent || "取得";
@@ -569,10 +814,54 @@ function setupApp() {
     setArchiveStatus(ARCHIVE_STATUS_IDLE);
   }
 
+  // 記録画像セクションを初期状態へ戻す。objectURLは明示的に解放してメモリリークを防ぐ。
+  function resetImageState() {
+    if (currentImageObjectUrl) {
+      URL.revokeObjectURL(currentImageObjectUrl);
+      currentImageObjectUrl = "";
+    }
+
+    if (imagePreview) {
+      imagePreview.src = "";
+      imagePreview.hidden = true;
+    }
+
+    if (imageDownloadLink) {
+      imageDownloadLink.href = "";
+      imageDownloadLink.hidden = true;
+    }
+
+    if (imageUrlOutput) {
+      imageUrlOutput.value = "";
+    }
+
+    if (imageUrlCopyButton) {
+      imageUrlCopyButton.hidden = true;
+    }
+
+    if (imageDeleteHint) {
+      setText(imageDeleteHint, "");
+    }
+
+    if (imageMessage) {
+      setText(imageMessage, "");
+    }
+
+    if (imageCreateButton) {
+      imageCreateButton.disabled = !currentPost;
+    }
+
+    // アップロードボタンは、Client-ID未設定の間は常にdisabledのままにする。
+    if (imageUploadButton) {
+      imageUploadButton.disabled = true;
+    }
+  }
+
   function showError(message) {
     currentPost = null;
     refreshArchiveState();
     refreshCopyText();
+    resetImageState();
     setText(errorMessage, message);
     errorMessage.focus();
   }
@@ -618,7 +907,8 @@ function setupApp() {
       }
 
       const newPostKey = payload.postUrl || payload.canonicalUrl || "";
-      if (newPostKey !== currentPostKey) {
+      const isDifferentPost = newPostKey !== currentPostKey;
+      if (isDifferentPost) {
         // 別のポストに切り替わったときだけ、前のポスト向けに入力した魚拓URLをリセットする。
         archiveInput.value = "";
         archiveInputHasInvalidPaste = false;
@@ -627,6 +917,15 @@ function setupApp() {
       currentPost = payload;
       refreshArchiveState();
       refreshCopyText();
+      if (isDifferentPost) {
+        // 画像プレビュー・アップロードURL表示も別ポストでは意味を持たないためリセットする。
+        // resetImageStateはcurrentPostの有無で作成ボタンのdisabledを決めるため、
+        // currentPost設定後に呼ぶ（＝ここでは常に作成ボタンが有効化される）。
+        resetImageState();
+      } else if (imageCreateButton) {
+        // 同じポストの再取得では画像プレビューは維持しつつ、作成ボタンだけ有効状態を保証する。
+        imageCreateButton.disabled = false;
+      }
     } catch (error) {
       showError(getUserFacingErrorMessage(error));
     } finally {
@@ -712,8 +1011,133 @@ function setupApp() {
     );
   });
 
+  function setImageMessage(message) {
+    if (imageMessage) {
+      setText(imageMessage, message);
+    }
+  }
+
+  if (imageCreateButton) {
+    imageCreateButton.addEventListener("click", () => {
+      if (!currentPost) {
+        return;
+      }
+
+      setImageMessage("");
+
+      try {
+        // 取得日時は表示用にJST相当をローカル時刻文字列で組み立てる（サーバー往復なし）。
+        const now = new Date().toLocaleString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        const canvas = renderPostImage(currentPost, { now });
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            setImageMessage("画像の生成に失敗しました。時間を置いて再試行してください。");
+            return;
+          }
+
+          if (currentImageObjectUrl) {
+            URL.revokeObjectURL(currentImageObjectUrl);
+          }
+          currentImageObjectUrl = URL.createObjectURL(blob);
+
+          if (imagePreview) {
+            imagePreview.src = currentImageObjectUrl;
+            imagePreview.hidden = false;
+          }
+
+          if (imageDownloadLink) {
+            const postId = currentPost.postId || "post";
+            imageDownloadLink.href = currentImageObjectUrl;
+            imageDownloadLink.setAttribute("download", `x-post-record-${postId}.png`);
+            imageDownloadLink.hidden = false;
+          }
+
+          // Client-ID設定済みのときだけアップロードボタンを有効化する。
+          if (imageUploadButton) {
+            imageUploadButton.disabled = IMGUR_CLIENT_ID === "";
+          }
+        }, "image/png");
+      } catch {
+        setImageMessage("画像の生成に失敗しました。時間を置いて再試行してください。");
+      }
+    });
+  }
+
+  if (imageUploadHint) {
+    setText(
+      imageUploadHint,
+      IMGUR_CLIENT_ID === ""
+        ? "アップロード機能は準備中です（imgur Client-ID 設定後に有効になります）。"
+        : ""
+    );
+  }
+
+  if (imageUploadButton) {
+    imageUploadButton.addEventListener("click", async () => {
+      if (!currentImageObjectUrl) {
+        return;
+      }
+
+      setImageMessage("");
+      imageUploadButton.disabled = true;
+
+      try {
+        // objectURLからBlobを取り出す（ローカルメモリ上の参照であり、外部通信は発生しない）。
+        const blobResponse = await fetch(currentImageObjectUrl);
+        const blob = await blobResponse.blob();
+        const result = await uploadImageToImgur(blob);
+
+        if (imageUrlOutput) {
+          imageUrlOutput.value = result.link;
+        }
+        if (imageUrlCopyButton) {
+          imageUrlCopyButton.hidden = false;
+        }
+        if (imageDeleteHint && result.deletehash) {
+          setText(
+            imageDeleteHint,
+            `削除用コード: ${result.deletehash}（削除ページ: https://imgur.com/delete/${result.deletehash}）`
+          );
+        }
+      } catch (error) {
+        setImageMessage(getUserFacingErrorMessage(error));
+      } finally {
+        imageUploadButton.disabled = IMGUR_CLIENT_ID === "";
+      }
+    });
+  }
+
+  if (imageUrlCopyButton) {
+    imageUrlCopyButton.addEventListener("click", async () => {
+      if (!imageUrlOutput?.value) {
+        return;
+      }
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(imageUrlOutput.value);
+          setImageMessage("URLをコピーしました。");
+          return;
+        }
+      } catch {
+        // Fall through to manual selection.
+      }
+
+      imageUrlOutput.select();
+      setImageMessage("自動コピーできませんでした。テキストを選択したので、コピー操作でコピーしてください。");
+    });
+  }
+
   // 初期表示で魚拓リンク・入力欄を無効状態に揃える。
   refreshArchiveState();
+  resetImageState();
 }
 
 if (typeof document !== "undefined") {
