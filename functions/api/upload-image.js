@@ -166,9 +166,9 @@ export async function handleUploadImageRequest(
 
   try {
     const arrayBuffer = await image.arrayBuffer();
-    // customMetadata.uploadedAtは配信側（i/[id].js）が3日経過判定に使う唯一の情報源。
+    // customMetadata.uploadedAtは配信側（i/[id].js）が7日経過判定に使う唯一の情報源。
     // R2のObject lifecycleルール（オーナーがバケット側で設定）が実削除を担い、
-    // このuploadedAtチェックはlifecycle実行前でも3日でリンクを失効させる一次防衛線。
+    // このuploadedAtチェックはlifecycle実行前でも7日でリンクを失効させる一次防衛線。
     await bucket.put(key, arrayBuffer, {
       httpMetadata: { contentType: ALLOWED_IMAGE_TYPE },
       customMetadata: { uploadedAt: String(Date.now()) }

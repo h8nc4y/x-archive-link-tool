@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { RECORD_IMAGE_TTL_MS, isValidImageId } from "./recordImage.js";
 
-test("RECORD_IMAGE_TTL_MS is exactly 3 days", () => {
-  assert.equal(RECORD_IMAGE_TTL_MS, 3 * 24 * 60 * 60 * 1000);
+test("RECORD_IMAGE_TTL_MS is exactly 7 days", () => {
+  assert.equal(RECORD_IMAGE_TTL_MS, 7 * 24 * 60 * 60 * 1000);
 });
 
 test("isValidImageId accepts a 32-digit lowercase hex string", () => {

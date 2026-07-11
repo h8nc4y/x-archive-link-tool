@@ -31,10 +31,10 @@
 - 添付メディア（実際の投稿画像・動画）は含まず、取得できたテキスト情報（アカウント名・`@username`・本文・投稿日・ポストURL・取得日時）だけを描画する。
 - 本文はcanvasの`fillText`のみで描画し、HTMLとしては描画しない。
 - 生成したPNGは、ユーザーが明示的にボタン操作した場合だけ、自サイトの `/api/upload-image` 経由でCloudflare R2（オーナーのバケット、binding経由でアクセス）へ保存し、共有URLを取得できる（2026-07-07 オーナー決定。catbox.moe中継がCloudflare Workersのegress遮断で本番不可と判明したため方式変更）。
-- 保存先はCloudflare R2で、画像は約3日で自動削除される一時共有リンクである。共有URLは自ドメインの配信エンドポイント（`/i/{id}`）で、URLを知っている人は誰でも閲覧できる。
+- 保存先はCloudflare R2で、画像は約7日で自動削除される一時共有リンクである。共有URLは自ドメインの配信エンドポイント（`/i/{id}`）で、URLを知っている人は誰でも閲覧できる。
 - R2バケットbinding `RECORD_IMAGE_BUCKET` はオーナーがCloudflare Pages側で設定する。未設定の間はアップロードが無効（`upload_not_configured`）で、UIにその旨を案内する。
-- アップロードはブラウザからcatboxへ直接送信せず、必ず自サイトのサーバー（Cloudflare Pages Functions）を経由する（catbox.moeがCORSヘッダを返さないため）。
-- 匿名アップロードのため、後から個別に削除する手段は無い。一定期間アクセスがないと自動削除されることがある旨をUIに明記する。
+- アップロードはブラウザから外部サービスへ直接送信せず、必ず自サイトのサーバー（Cloudflare Pages Functions）を経由してR2 bindingへ書き込む（外部egressを持たないため、第三者ホストのWorkers遮断の影響を受けない）。
+- アップロード後の個別削除UIは提供しない。約7日後の自動削除（配信側の経過チェック＋R2 Object lifecycleルールの二重）をUIに明記する。
 
 ## 対象外
 
