@@ -34,26 +34,6 @@
           <p id="error-message" class="message error" role="alert" tabindex="-1"></p>
         </form>
 
-        <section id="archive-section" class="archive" aria-labelledby="archive-title">
-          <h2 id="archive-title">魚拓URL（任意）</h2>
-          <p class="hint archive-help">ポストが削除・非公開になっても内容を後から参照できるよう、外部サイトで魚拓（保存用スナップショット）を残せます。必須ではありません。どれか1つのサービスで残せれば十分です。</p>
-          <ol class="archive-steps">
-            <li>下のいずれかの魚拓サービスを開きます（別タブで開きます）。</li>
-            <li>開いた外部サイトで魚拓を作成し、できたページのURLをコピーします。</li>
-            <li>このページに戻り、コピーしたURLを下の欄に貼り付けます。</li>
-          </ol>
-          <ul class="archive-links" aria-label="魚拓サービス">
-            <li><a id="gyotaku-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">ウェブ魚拓（gyo.tc）で魚拓を取る</a></li>
-            <li><a id="wayback-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Wayback Machine（archive.org）で保存する</a></li>
-            <li><a id="archivetoday-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">archive.today で保存・確認する</a></li>
-            <li><a id="twtr-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Twitter魚拓（twtr.satoru.net）で画像魚拓を取る</a></li>
-          </ul>
-          <p class="hint archive-note">Wayback Machine・archive.today は、Xのログイン制限により保存できないことがあります。Twitter魚拓はポストURLが入力済みの状態で開きます。</p>
-          <label for="archive-url">取得後の魚拓URL</label>
-          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/... や https://archive.ph/..." disabled aria-describedby="archive-status">
-          <p id="archive-status" class="hint" role="status" aria-live="polite">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
-        </section>
-
         <section class="output" aria-labelledby="output-title">
           <div class="output-header">
             <h2 id="output-title">コピー用テキスト</h2>
@@ -85,20 +65,40 @@
         <section id="image-section" class="archive" aria-labelledby="image-title">
           <h2 id="image-title">記録画像（任意）</h2>
           <p class="hint">取得したポスト情報をカード型の画像にします。実際の投稿の見た目や添付画像は含まれません。</p>
+          <p class="hint">作成した画像は自動でこのサイトのストレージ（Cloudflare R2）に保存され、共有用URLが発行されます。画像は約7日後に自動削除されます。URLを知っている人は誰でも閲覧できます。</p>
           <div class="input-row">
-            <button id="image-create-button" type="button" disabled>画像を作成</button>
+            <button id="image-create-button" type="button" disabled>画像を作成して共有URLを発行</button>
           </div>
           <img id="image-preview" alt="生成した記録画像のプレビュー" hidden>
           <a id="image-download-link" class="archive-link" download hidden>PNGを保存</a>
 
-          <p class="hint">共有用の画像URLを発行します。画像はこのサイトのストレージ（Cloudflare R2）に保存され、約7日後に自動削除されます。URLを知っている人は誰でも閲覧できます。</p>
           <div class="input-row">
-            <button id="image-upload-button" type="button" disabled>画像URLを取得</button>
+            <button id="image-upload-button" type="button" disabled hidden>共有URLを再取得</button>
           </div>
           <input id="image-url-output" type="text" readonly aria-label="アップロード後の画像URL">
           <button id="image-url-copy-button" type="button" hidden>URLをコピー</button>
           <p id="image-message" class="message" role="status" aria-live="polite"></p>
         </section>
+
+        <details id="archive-section" class="archive">
+          <summary>魚拓・アーカイブを取得（任意）</summary>
+          <p class="hint archive-help">ポストが削除・非公開になっても内容を後から参照できるよう、外部サイトで魚拓（保存用スナップショット）を残せます。必須ではありません。どれか1つのサービスで残せれば十分です。</p>
+          <ol class="archive-steps">
+            <li>下のいずれかの魚拓サービスを開きます（別タブで開きます）。</li>
+            <li>開いた外部サイトで魚拓を作成し、できたページのURLをコピーします。</li>
+            <li>このページに戻り、コピーしたURLを下の欄に貼り付けます。</li>
+          </ol>
+          <ul class="archive-links" aria-label="魚拓サービス">
+            <li><a id="gyotaku-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">ウェブ魚拓（gyo.tc）で魚拓を取る</a></li>
+            <li><a id="wayback-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Wayback Machine（archive.org）で保存する</a></li>
+            <li><a id="archivetoday-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">archive.today で保存・確認する</a></li>
+            <li><a id="twtr-link" class="archive-link" target="_blank" rel="noopener" aria-disabled="true">Twitter魚拓（twtr.satoru.net）で画像魚拓を取る</a></li>
+          </ul>
+          <p class="hint archive-note">Wayback Machine・archive.today は、Xのログイン制限により保存できないことがあります。Twitter魚拓はポストURLが入力済みの状態で開きます。</p>
+          <label for="archive-url">取得後の魚拓URL</label>
+          <input id="archive-url" type="url" autocomplete="off" placeholder="https://megalodon.jp/... や https://archive.ph/..." disabled aria-describedby="archive-status">
+          <p id="archive-status" class="hint" role="status" aria-live="polite">先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。</p>
+        </details>
 
         <footer class="footer">
           <a href="/privacy.html">プライバシーポリシー</a>
