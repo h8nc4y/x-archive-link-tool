@@ -6,7 +6,9 @@
 
 Prepared by Codex for Issue #42. This is a decision packet, not an operations approval.
 
-Codex has not decided privacy, legal, billing, credits, log retention, 429 policy, production smoke, Cloudflare log handling, or incident ownership. Items below remain human or ChatGPT decisions until explicitly recorded.
+**Resolution: Issue #42 was closed on 2026-07-07.** All decision items were explicitly recorded by the owner (M3 public release decision and related operations decisions). The decision records live in `docs/issue-42-mode-decision-packet.md` (§決定記録) and `docs/DECISION_LOG.md`. This packet is retained as the historical record of the decision space. The production smoke approval gate and the prohibited-work boundaries below remain in force through `AGENTS.md` and `docs/CODEX_HANDOFF.md`.
+
+At preparation time (2026/05/31), Codex had not decided privacy, legal, billing, credits, log retention, 429 policy, production smoke, Cloudflare log handling, or incident ownership. Items below remained human or ChatGPT decisions until explicitly recorded.
 
 ## Current repository state
 
@@ -15,7 +17,7 @@ Codex has not decided privacy, legal, billing, credits, log retention, 429 polic
 - Production URL is documented as `https://x-archive-link-tool.pages.dev`.
 - Issue #40 is closed: CL-001 received no runtime change and CL-002 degraded fallback responses use a short TTL.
 - Issue #41 is closed: Production HEAD was verified in a separate read-only pass and recorded in `docs/post-release-human-verification-record.md`.
-- Issue #42 is open: post-release operations decisions are not complete.
+- Issue #42 state at preparation time: open (post-release operations decisions were not complete). Issue #42 was closed on 2026-07-07 after all decision items were recorded.
 - No production `/api/extract`, production smoke, live X API, live oEmbed, real X URL submission, Cloudflare write/deploy, secret/OAuth, or real-data access is approved by this packet.
 
 ## Issue #42 scope
@@ -315,7 +317,7 @@ Production smoke may only proceed after all of the following are true:
 
 ## Issue #42 close conditions
 
-Issue #42 can be closed only when all required decisions below are explicitly recorded, or when the owner explicitly marks remaining items as not MVP-blocking:
+All conditions below were met and recorded by 2026-07-07, and Issue #42 was closed. Issue #42 could be closed only when all required decisions below were explicitly recorded, or when the owner explicitly marked remaining items as not MVP-blocking:
 
 - Privacy/legal status.
 - Support contact and support scope.
@@ -326,9 +328,9 @@ Issue #42 can be closed only when all required decisions below are explicitly re
 - KV/incident owner and cache-disabled continuation policy.
 - Data-recording boundary owner for future operation summaries.
 
-## Why Issue #42 remains open
+## Why Issue #42 remained open until 2026-07-07
 
-This packet organizes the decision space but does not supply the human decisions. Codex cannot verify current billing, credits, privacy/legal approval, log retention, support responsibility, or Cloudflare log ownership from repo files alone. Therefore Issue #42 should remain open after this docs-only PR.
+This packet organized the decision space but did not supply the human decisions. Codex cannot verify current billing, credits, privacy/legal approval, log retention, support responsibility, or Cloudflare log ownership from repo files alone. Therefore Issue #42 remained open until the owner recorded all decisions (2026-07-06〜07), after which it was closed.
 
 ## Source evidence inspected
 

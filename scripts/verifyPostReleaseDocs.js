@@ -52,10 +52,10 @@ export const REQUIRED_DOCS = [
       "## Codex prohibited work for Issue #42",
       "## Production smoke approval gate",
       "## Issue #42 close conditions",
-      "## Why Issue #42 remains open"
+      "## Why Issue #42 remained open until 2026-07-07"
     ],
     requiredPhrases: [
-      "Issue #42 is open",
+      "Issue #42 was closed on 2026-07-07",
       "human or ChatGPT decisions",
       "privacy and legal review",
       "support contact and support scope",
