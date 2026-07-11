@@ -9,7 +9,7 @@
 ## §1. Codexの役割
 
 - Codex は主実装者として、タスク選定、設計確認、実装、テスト、セルフレビュー、コミット、push、PR作成/更新、merge、必要な範囲のブランチ整理まで自走する。
-- レビューは Codex セルフレビューを既定とし、リスク・曖昧さ・専門判断・反復失敗がある場合だけ ChatGPT / Claude / GitHub review / agmsg 相談を使う。
+- レビューは Codex セルフレビューを既定とし、リスク・曖昧さ・専門判断・反復失敗がある場合だけ ChatGPT / Claude / GitHub review を使う。廃止済みの `agmsg` は復活させない。
 - 停止するのは、課金・有料API、secret/OAuth/実データ・実素材の外部送信、実X投稿URLや本番 `/api/extract` を使うlive provider確認、製品要件変更、または権限/OAuth/usage-limit等で物理的に継続できない場合に限る。
 - このリポジトリ固有のpost-release境界は維持する。本番API smoke、live X API/oEmbed、X Developer Portal、billing/credits、secret/token/OAuth、実データ読み取りは実行しない。
 - GitHub PR mergeに伴うCloudflare Pagesの自動デプロイは通常のGitHub workflowとして扱う。直接のCloudflare write/deploy/config/rollbackは、明示タスクと無料・secret安全確認がない限り実行しない。
@@ -119,7 +119,7 @@ PowerShellの実行ポリシーで `npm.ps1` が拒否されたら `npm.cmd` を
 
 Web UI、HTML、CSS、client JSに触れる場合は、secretや実データを含まないqueryでModern Web Guidanceを必要最小限参照する。UI変更後は実レンダリングを確認する。
 
-新しい配色、書体、ブランド表現、ビジュアル方向性の創出が必要で、現行トークンや既存UI規約から機械的に決められない場合は、§12のブリーフまたはagmsg相談を使う。当該デザイン判断が詰まっても、独立して進められるテスト・docs・機能修正は続行する。
+新しい配色、書体、ブランド表現、ビジュアル方向性の創出も Codex が担当する。§12 のブリーフは判断根拠と受け入れ基準を整理する内部メモとして使い、実レンダー検証まで完遂する。補助レビュー待ちだけを理由に停止しない。
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## 状態サマリ
 
-- 2026-07-04〜05 は Claude Code Fable5/Opus4.8 が要件再検討〜実装を担当（`docs/CLAUDECODE_FABLE5_PROMPT.md`）。
+- 2026-07-04〜05 は Claude Code Fable5/Opus4.8 が要件再検討〜実装を担当（当時の専用 prompt は active tree から削除済みで、git 履歴に保持）。
 - CC-001〜CC-014 は完了・masterへ統合済み。2026-07-04 オーナー決定で公開範囲=**M3一般公開**、位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
 - Web UI 実装・視覚再設計は一巡。残る公開ブロッカーは Issue #42 の人間判断（下記）。
 - Issue #42 の post-release operations は一部決着（M3決定）。残りは人間判断待ち＝privacy法務レビュー / 公開窓口 / logs保持数値 / smoke要否（`docs/issue-42-mode-decision-packet.md` §決定記録）。
@@ -25,7 +25,7 @@
 | CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | done: `docs/issue-42-mode-decision-packet.md`（公開範囲別3モード縮退案）を2026-07-03起草。決定はHUM-001 |
 | CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | todo: 必要なら別タスクで検討 |
 | CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merged） |
-| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
+| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | git 履歴上の旧 Fable5 prompt | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
 | CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | done: PR #66（merged） |
 | CC-012 | 魚拓導線の複数サービス併記化（gyo.tc/Wayback/archive.today/twtr.satoru） | 2026-07-04 オーナー決定（Q6） | 高 | M | done: PR #67（merged）。敵対的レビュー（Ultracode）済み |
 | CC-013 | 無料メディアURL取得手段の調査（syndication/fxtwitter等、禁止事項との整合評価） | 2026-07-04 オーナー指示（Q4） | 高 | M | done: PR #67（merged）`docs/media-url-and-archive-research-2026-07-04.md`。規約適合の無料手段なし→oEmbed-first維持。採用はゲート④ |
