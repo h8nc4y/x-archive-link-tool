@@ -76,7 +76,7 @@ Cloudflare Pagesでは `PORT` は不要です。試験公開時のRoot directory
 
 1. Cloudflare DashboardでR2バケットを作成する（例: `x-archive-link-tool-record-images`）。
 2. Cloudflare Pagesプロジェクトの Settings → Functions → R2 bucket bindings で、Variable name `RECORD_IMAGE_BUCKET` を上記バケットへ紐付ける。
-3. 作成したR2バケットの Settings → Object lifecycle rules で「3日後に削除」ルールを設定する（配信エンドポイント `GET /i/{id}` 側でもアップロードから3日経過した画像は404にするが、ストレージからの実削除はこのlifecycleルールが担う）。
+3. 作成したR2バケットの Settings → Object lifecycle rules で「7日後に削除」ルールを設定する（配信エンドポイント `GET /i/{id}` 側でもアップロードから7日経過した画像は404にするが、ストレージからの実削除はこのlifecycleルールが担う）。設定済み（2026-07-11）。
 
 ## MVP対象範囲
 

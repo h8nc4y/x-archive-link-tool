@@ -6,7 +6,7 @@ import { RECORD_IMAGE_TTL_MS, isValidImageId } from "../lib/recordImage.js";
 // さらに絞った最小CSP（img-srcのみ許可、他は全拒否＋sandbox）を使う。
 const IMAGE_RESPONSE_HEADERS = {
   "content-type": "image/png",
-  // TTL(3日)内で程々にキャッシュする。TTL超過後は404になるため、
+  // TTL(7日)内で程々にキャッシュする。TTL超過後は404になるため、
   // ブラウザ/中間キャッシュに極端に長く残ってもrevalidateで404へ収束する。
   "cache-control": "public, max-age=3600",
   "x-content-type-options": "nosniff",

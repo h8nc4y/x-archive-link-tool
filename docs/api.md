@@ -5,7 +5,7 @@
 記録画像（任意機能）のPNGを、Cloudflare R2（オーナーのバケット、binding経由でアクセス。
 外部egress不要）へ保存するAPI。2026-07-07 オーナー決定により、catbox.moe中継方式
 （Cloudflare Workersのegress遮断で本番不可と判明）から、この自サイト完結方式へ変更した。
-画像は約3日で自動失効する一時共有リンクである。
+画像は約7日で自動失効する一時共有リンクである。
 
 ### Request
 
@@ -17,7 +17,7 @@ Cloudflare Pages Functionsの環境にR2バケットbinding `RECORD_IMAGE_BUCKET
 アクセスする。外部サービスへの通信は発生しない（Cloudflare Workersのegress遮断の
 影響を受けない）。`crypto.randomUUID()` からハイフンを除いた32桁hexをidとして生成し、
 `{id}.png` をキーにR2へ `put` する。`customMetadata.uploadedAt` にアップロード時刻
-（epoch ms）を記録し、配信側（`GET /i/{id}`）が3日経過判定に使う。
+（epoch ms）を記録し、配信側（`GET /i/{id}`）が7日経過判定に使う。
 
 `RECORD_IMAGE_BUCKET` binding未設定時は503 `upload_not_configured` を返す
 （オーナーがCloudflare Pages側でbindingを設定するまでの既定状態）。
@@ -59,10 +59,10 @@ errorCode）のみを残す。発行したid・配信URL・画像内容はログ
 - `{id}` は32桁hex（`^[a-f0-9]{32}$`）のみを受け付ける。不一致・binding未設定・
   オブジェクト不存在・期限切れは、存在有無の情報漏えいを避けるためすべて同じ404
   （プレーンテキスト、`cache-control: no-store`）を返す。
-- R2から取得した画像の `customMetadata.uploadedAt` から3日
+- R2から取得した画像の `customMetadata.uploadedAt` から7日
   （`RECORD_IMAGE_TTL_MS`）経過している場合は、配信を拒否（404）した上で
   best-effort削除（`bucket.delete`、失敗は無視）を行う。これにより、R2バケット側の
-  Object lifecycleルール（オーナーが手動設定する実削除）が未実行の間でも3日で
+  Object lifecycleルール（オーナーが手動設定する実削除）が未実行の間でも7日で
   リンクが失効することを保証する。
 - 成功時のレスポンスヘッダー: `content-type: image/png`、
   `cache-control: public, max-age=3600`（TTL内で程々にキャッシュ）、
