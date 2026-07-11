@@ -100,7 +100,7 @@ KVはpostId単位cacheの最適化層です。cache miss時はX API v2またはo
 
 | 項目 | 状態 | 人間が確認する内容 |
 | --- | --- | --- |
-| privacy文面 | 未確認 | `docs/privacy-policy-draft.md` と公開 `/privacy` の文面が、実運用、ログ項目、X API/oEmbed利用、問い合わせ先と矛盾しないか確認する。 |
+| privacy文面 | 未確認 | 公開 `/privacy` の文面（正本は `apps/web/privacy.html`。旧ドラフトは `docs/archive/privacy-policy-draft.md`）が、実運用、ログ項目、X API/oEmbed利用、問い合わせ先と矛盾しないか確認する。 |
 | 問い合わせ先 | 未確認 | `h8nc4y.sub01@gmail.com` を公開問い合わせ先として使うか、受信体制、返信SLA、迷惑メール対策を確認する。 |
 | 法務レビュー | 未確認 | privacy文面、問い合わせ先、ログ保存期間、外部API利用、X投稿URL処理、魚拓外部リンク導線について法務または責任者レビューを行う。 |
 | public release表示 | 未確認 | GitHub Release、README、公開UI、privacyページの説明が一致しているか確認する。 |

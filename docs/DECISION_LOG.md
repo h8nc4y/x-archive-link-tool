@@ -33,7 +33,7 @@ Use this template for future decisions:
 - Rationale: Keeping ChatGPT as the decision-maker prevents advisory review findings from becoming uncontrolled implementation changes.
 - Consequences: Claude findings must be returned to ChatGPT before Codex implements anything.
 - Status: Active.
-- Related files: `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: none yet.
 
 ### Decision 002: Claude Code is used as an independent reviewer
@@ -45,9 +45,9 @@ Use this template for future decisions:
   - Claude review-only.
   - Claude edits the repository directly.
 - Rationale: Review-only use preserves separation between reviewer, triage commander, and implementer.
-- Consequences: Claude review output belongs in `docs/CLAUDE_REVIEW.md`; implementation tasks are not created until ChatGPT triage.
+- Consequences: Claude review output belongs in `docs/archive/CLAUDE_REVIEW.md`; implementation tasks are not created until ChatGPT triage.
 - Status: Active.
-- Related files: `CLAUDE.md`, `docs/claude-code-usage.md`, `docs/CLAUDE_REVIEW.md`.
+- Related files: `CLAUDE.md`, `docs/archive/claude-code-usage.md`, `docs/archive/CLAUDE_REVIEW.md`.
 - Related review findings: none yet.
 
 ### Decision 003: Codex implements only ChatGPT-approved tasks
@@ -59,9 +59,9 @@ Use this template for future decisions:
   - Codex implements every Claude suggestion.
   - Codex implements only ChatGPT-approved tasks.
 - Rationale: ChatGPT triage can reject false positives, defer non-MVP work, and keep implementation scoped.
-- Consequences: `docs/CODEX_TASKS.md` must be based on approved items in `docs/AI_REVIEW_TRIAGE.md`.
+- Consequences: `docs/CODEX_TASKS.md` must be based on approved items in `docs/archive/AI_REVIEW_TRIAGE.md`.
 - Status: Active.
-- Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: none yet.
 
 ### Decision 004: Claude review findings are not automatically accepted
@@ -75,7 +75,7 @@ Use this template for future decisions:
 - Rationale: Advisory handling avoids implementing unsupported requirements, risky changes, or suggestions that conflict with `AGENTS.md`.
 - Consequences: Deferred and rejected findings must not be implemented unless later approved by ChatGPT.
 - Status: Active.
-- Related files: `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`.
+- Related files: `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/AI_REVIEW_TRIAGE.md`.
 - Related review findings: none yet.
 
 ### Decision 005: AI coordination docs preserve cross-tool context
@@ -87,9 +87,9 @@ Use this template for future decisions:
   - Keep review state only in chat transcripts.
   - Store review brief, Claude output, ChatGPT triage, Codex tasks, and decisions in repository docs.
 - Rationale: Repository docs make the workflow auditable and reduce the chance of losing context across chats or tools.
-- Consequences: `docs/REVIEW_BRIEF.md`, `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, and `docs/DECISION_LOG.md` become the coordination packet for future review passes.
+- Consequences: `docs/archive/REVIEW_BRIEF.md`, `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, and `docs/DECISION_LOG.md` become the coordination packet for future review passes.
 - Status: Active.
-- Related files: `docs/REVIEW_BRIEF.md`, `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/DECISION_LOG.md`.
+- Related files: `docs/archive/REVIEW_BRIEF.md`, `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/DECISION_LOG.md`.
 - Related review findings: none yet.
 
 ### Decision 006: Limit the first Claude-review implementation pass
@@ -103,7 +103,7 @@ Use this template for future decisions:
 - Rationale: CL-003 and CL-005 are small UI fixes with clear acceptance criteria. Other findings require product, privacy, production, or follow-up decisions.
 - Consequences: Codex must not implement CL-001, CL-002, CL-004, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, or CL-013 in this pass.
 - Status: Active for this implementation pass.
-- Related files: `docs/CLAUDE_REVIEW.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `apps/web/app.js`, `apps/web/app.test.js`.
+- Related files: `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `apps/web/app.js`, `apps/web/app.test.js`.
 - Related review findings: CL-003, CL-005, CL-010.
 
 ### Decision 007: Approve CL-004 as the next single-item follow-up
@@ -118,7 +118,7 @@ Use this template for future decisions:
 - Rationale: CL-004 is a small hardening change that aligns provider client behavior with repository security guidance without requiring live X API, oEmbed, production, Cloudflare, secret, OAuth, or real-data validation.
 - Consequences: Codex may add non-following redirect options and mock-fetch tests for CL-004 only. CL-001, CL-002, CL-006, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain out of scope for this pass.
 - Status: Active for this implementation pass.
-- Related files: `server/oEmbedClient.js`, `server/xApiV2Client.js`, `server/oEmbedClient.test.js`, `server/xApiV2Client.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `server/oEmbedClient.js`, `server/xApiV2Client.js`, `server/oEmbedClient.test.js`, `server/xApiV2Client.test.js`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-004.
 
 ### Decision 008: Clarify CL-001 and CL-002 as docs-only follow-up
@@ -134,7 +134,7 @@ Use this template for future decisions:
 - Rationale: KV retention and degraded fallback caching affect privacy, legal, retention, and product behavior. ChatGPT approved documentation clarification only, not runtime cache changes.
 - Consequences: Current docs must not claim production KV guarantees `stale-cache` after KV physical expiration. Future runtime changes require explicit ChatGPT approval and should not use live X API, oEmbed, production smoke, Cloudflare write, secrets, OAuth, or real data without separate approval.
 - Status: Active for this documentation pass.
-- Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/incident-and-kv-failure-runbook.md`.
+- Related files: `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/api.md`, `docs/requirements.md`, `docs/archive/current-status.md`, `docs/incident-and-kv-failure-runbook.md`.
 - Related review findings: CL-001, CL-002.
 
 ### Decision 009: Approve CL-006 as the next single-item UI follow-up
@@ -149,7 +149,7 @@ Use this template for future decisions:
 - Rationale: CL-006 is a small UX improvement that can be tested with a mock fetch and local UI verification without live X API, oEmbed, production, Cloudflare write, secret, OAuth, or real-data operations.
 - Consequences: Codex may add minimal pending-state UI and regression tests for CL-006 only. CL-001/CL-002 runtime cache behavior, CL-007, CL-008, CL-009, CL-011, CL-012, and CL-013 remain out of scope for this pass.
 - Status: Active for this implementation pass.
-- Related files: `apps/web/app.js`, `apps/web/app.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `apps/web/app.js`, `apps/web/app.test.js`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-006.
 
 ### Decision 010: Approve CL-007 and CL-008 as bounded rate-limit hardening
@@ -164,7 +164,7 @@ Use this template for future decisions:
 - Rationale: Both items are small server/function hardening changes that can be validated with local tests and do not require live X API, oEmbed, production smoke, Cloudflare write, secret, OAuth, deploy, or real-data operations.
 - Consequences: Codex may add bounded cleanup for expired per-IP rate limiter counters and normalize `x-forwarded-for` fallback to the first candidate only. CL-001/CL-002 runtime cache behavior, CL-009 docs-only production wording, CL-012, and CL-013 remain out of scope for this pass.
 - Status: Active for this implementation pass.
-- Related files: `server/rateLimiter.js`, `server/rateLimiter.test.js`, `functions/api/extract.js`, `functions/api/extract.test.js`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `server/rateLimiter.js`, `server/rateLimiter.test.js`, `functions/api/extract.js`, `functions/api/extract.test.js`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-007, CL-008.
 
 ### Decision 011: Approve CL-009 as docs-only production HEAD wording cleanup
@@ -179,7 +179,7 @@ Use this template for future decisions:
 - Rationale: Updating the production HEAD without Cloudflare evidence would create a new unverified claim. Production smoke, live API calls, and Cloudflare write/deploy are out of scope.
 - Consequences: Docs should distinguish dated historical production evidence from current production state. Current production HEAD remains unverified until a separate approved runbook or human Cloudflare verification records it.
 - Status: Active for this documentation pass.
-- Related files: `README.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/pre-release-checklist.md`, `docs/pre-release-operations-runbook.md`, `docs/privacy-policy-draft.md`, `docs/support-page-draft.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `README.md`, `docs/archive/current-status.md`, `docs/archive/deployment-plan.md`, `docs/archive/pre-release-checklist.md`, `docs/archive/pre-release-operations-runbook.md`, `docs/archive/privacy-policy-draft.md`, `docs/archive/support-page-draft.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-009.
 
 ### Decision 012: Close Claude review follow-up implementation queue
@@ -191,9 +191,9 @@ Use this template for future decisions:
   - Leave the review-management docs in a per-pass state.
   - Record the final disposition of CL-001 through CL-013 and close the current Codex task queue.
 - Rationale: The repository should not leave stale "current pass" or pending task wording that could cause Codex to implement unapproved Claude suggestions later.
-- Consequences: `docs/AI_REVIEW_TRIAGE.md` records the final CL-001 through CL-013 disposition, and `docs/CODEX_TASKS.md` states that no active approved Codex task remains. CL-001/CL-002 runtime cache behavior remains a human/product/privacy decision. CL-012 is resolved through tracked governance docs without application code changes. CL-013 remains rejected for implementation.
+- Consequences: `docs/archive/AI_REVIEW_TRIAGE.md` records the final CL-001 through CL-013 disposition, and `docs/CODEX_TASKS.md` states that no active approved Codex task remains. CL-001/CL-002 runtime cache behavior remains a human/product/privacy decision. CL-012 is resolved through tracked governance docs without application code changes. CL-013 remains rejected for implementation.
 - Status: Active.
-- Related files: `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/CLAUDE_REVIEW.md`, `docs/CHATGPT_HANDOFF.md`, `docs/REVIEW_BRIEF.md`, `docs/claude-code-usage.md`.
+- Related files: `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/archive/CLAUDE_REVIEW.md`, `docs/archive/CHATGPT_HANDOFF.md`, `docs/archive/REVIEW_BRIEF.md`, `docs/archive/claude-code-usage.md`.
 - Related review findings: CL-001, CL-002, CL-003, CL-004, CL-005, CL-006, CL-007, CL-008, CL-009, CL-010, CL-011, CL-012, CL-013.
 
 ### Decision 013: Package remaining decisions before runtime work
@@ -205,9 +205,9 @@ Use this template for future decisions:
   - Leave the remaining items scattered across release, operations, and review docs.
   - Create one decision backlog packet and matching GitHub issues for human/ChatGPT decisions.
 - Rationale: The remaining work is decision-heavy and can affect privacy, retention, API usage, production verification, billing, and operations. Codex should not infer these choices from implementation convenience.
-- Consequences: `docs/post-claude-review-decision-backlog.md` becomes the coordination packet for the next human/ChatGPT decisions. Future implementation still requires explicit approval and must preserve the existing secret, real-data, Cloudflare write, production smoke, and live API boundaries.
+- Consequences: `docs/archive/post-claude-review-decision-backlog.md` becomes the coordination packet for the next human/ChatGPT decisions. Future implementation still requires explicit approval and must preserve the existing secret, real-data, Cloudflare write, production smoke, and live API boundaries.
 - Status: Active.
-- Related files: `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/requirements.md`, `docs/api.md`, `docs/current-status.md`, `docs/deployment-plan.md`, `docs/production-smoke-runbook.md`, `docs/post-release-operations-checklist.md`.
+- Related files: `docs/archive/post-claude-review-decision-backlog.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`, `docs/requirements.md`, `docs/api.md`, `docs/archive/current-status.md`, `docs/archive/deployment-plan.md`, `docs/production-smoke-runbook.md`, `docs/post-release-operations-checklist.md`.
 - Related review findings: CL-001, CL-002, CL-009.
 
 ### Decision 014: Resolve Issue #40 cache policy with degraded fallback short TTL
@@ -223,7 +223,7 @@ Use this template for future decisions:
 - Rationale: A 1-hour degraded fallback TTL limits the lifetime of fallback data after temporary X API failures without increasing KV physical retention, changing cache key version, or repeatedly calling providers on every miss.
 - Consequences: Normal X API success results and token-missing oEmbed primary results continue to use the normal 30-day TTL. Only token-configured X API failure followed by successful oEmbed fallback uses the 1-hour TTL. Production KV stale-cache remains not guaranteed after physical expiration.
 - Status: Active.
-- Related files: `server/extractService.js`, `server/extractService.test.js`, `docs/api.md`, `docs/requirements.md`, `docs/current-status.md`, `docs/post-claude-review-decision-backlog.md`, `docs/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
+- Related files: `server/extractService.js`, `server/extractService.test.js`, `docs/api.md`, `docs/requirements.md`, `docs/archive/current-status.md`, `docs/archive/post-claude-review-decision-backlog.md`, `docs/archive/AI_REVIEW_TRIAGE.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-001, CL-002.
 
 ### Decision 015: Verify current Production HEAD without production API smoke
@@ -238,7 +238,7 @@ Use this template for future decisions:
 - Rationale: GitHub Deployments API returned no deployment records and Wrangler was not installed locally or globally. The available evidence shows the Cloudflare Workers and Pages App check suite ran on `head_branch=master` at `head_sha=a6fe436f3f08326c6479561ea997ed6bb3e23f9c`, completed successfully, and reported deployment ID `143cd043-10bf-406b-b8c8-3a22bb6a9ca2` with latest commit `a6fe436`. The public production URL and the deployment URL both returned static root page HTTP 200 with matching ETag.
 - Consequences: Docs may state the current Production HEAD verification result for Issue #41. This does not authorize production `/api/extract`, smoke tests, Cloudflare write/deploy/rollback/config changes, or Issue #42 operations work.
 - Status: Active.
-- Related files: `docs/current-status.md`, `docs/deployment-plan.md`, `docs/post-release-human-verification-record.md`, `docs/post-claude-review-decision-backlog.md`, `docs/CODEX_TASKS.md`.
+- Related files: `docs/archive/current-status.md`, `docs/archive/deployment-plan.md`, `docs/post-release-human-verification-record.md`, `docs/archive/post-claude-review-decision-backlog.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: CL-009, Issue #41.
 
 ### Decision 016: Keep Issue #42 open until post-release operations decisions are supplied
@@ -253,7 +253,7 @@ Use this template for future decisions:
 - Rationale: A dedicated decision packet makes the remaining choices reviewable without changing runtime behavior or performing prohibited production, Cloudflare, billing, secret, or live-provider operations.
 - Consequences: `docs/post-release-operations-decision-packet.md` is the current coordination document for Issue #42. Future Codex work may only record explicit decisions or implement separately approved tasks. Issue #42 remains open while human decisions are incomplete.
 - Status: Active.
-- Related files: `docs/post-release-operations-decision-packet.md`, `docs/post-claude-review-decision-backlog.md`, `docs/post-release-operations-checklist.md`, `docs/post-release-human-verification-template.md`, `docs/production-smoke-runbook.md`, `docs/incident-and-kv-failure-runbook.md`, `docs/deployment-plan.md`, `docs/current-status.md`, `docs/CODEX_TASKS.md`.
+- Related files: `docs/post-release-operations-decision-packet.md`, `docs/archive/post-claude-review-decision-backlog.md`, `docs/post-release-operations-checklist.md`, `docs/post-release-human-verification-template.md`, `docs/production-smoke-runbook.md`, `docs/incident-and-kv-failure-runbook.md`, `docs/archive/deployment-plan.md`, `docs/archive/current-status.md`, `docs/CODEX_TASKS.md`.
 - Related review findings: Issue #42.
 
 ### Decision 017: Keep the post-review maintenance audit docs-only
@@ -266,9 +266,9 @@ Use this template for future decisions:
   - Use the audit only to record repository state and fix docs inventory drift.
   - Close Issue #42 based on existing docs.
 - Rationale: The remaining open work is decision-oriented and may affect privacy/legal, billing, support, log retention, production smoke, 429 policy, and incident ownership. Codex can make the docs easier to review, but cannot supply those decisions.
-- Consequences: `docs/post-review-maintenance-audit.md` records the audit results. `README.md` links the audit and avoids stale current-production wording. `docs/test-cases.md` reflects the current local test count. Issue #42 remains open.
+- Consequences: `docs/archive/post-review-maintenance-audit.md` records the audit results. `README.md` links the audit and avoids stale current-production wording. `docs/test-cases.md` reflects the current local test count. Issue #42 remains open.
 - Status: Active.
-- Related files: `README.md`, `docs/post-review-maintenance-audit.md`, `docs/test-cases.md`, `docs/post-release-operations-decision-packet.md`, `docs/current-status.md`.
+- Related files: `README.md`, `docs/archive/post-review-maintenance-audit.md`, `docs/test-cases.md`, `docs/post-release-operations-decision-packet.md`, `docs/archive/current-status.md`.
 - Related review findings: Issue #42.
 
 ### Decision 018: Guard Issue #42 decision boundaries in docs verification

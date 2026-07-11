@@ -39,8 +39,8 @@ Issue #42 does not approve runtime code changes, production API checks, X API li
 
 | ID | Area | Current repo evidence | Human or ChatGPT decision still needed |
 | --- | --- | --- | --- |
-| OPS-PRIVACY | Privacy/legal | `docs/privacy-policy-draft.md` exists and states it is not a legal final version. | Whether the privacy wording is approved, who reviewed it, and whether any public wording must change. |
-| OPS-SUPPORT | Support | `docs/support-page-draft.md` and `docs/deployment-plan.md` contain the candidate contact address. | Whether the contact may be public, expected response scope, owner role, and escalation path. |
+| OPS-PRIVACY | Privacy/legal | `docs/archive/privacy-policy-draft.md` exists and states it is not a legal final version. | Whether the privacy wording is approved, who reviewed it, and whether any public wording must change. |
+| OPS-SUPPORT | Support | `docs/archive/support-page-draft.md` and `docs/archive/deployment-plan.md` contain the candidate contact address. | Whether the contact may be public, expected response scope, owner role, and escalation path. |
 | OPS-BILLING | Billing and X API credits | `docs/post-release-operations-checklist.md` and `docs/post-release-human-verification-template.md` define safe abstract recording. Historical human verification exists, but Issue #42 does not re-confirm current billing or credits state. | Current review cadence, responsible owner, OK/NG/unknown state, and stop conditions without sharing billing details. |
 | OPS-LOGS | Log retention and Cloudflare logs | `SECURITY.md` and runbooks restrict logs to safe structured fields. Retention remains unresolved in current docs. | Retention period, deletion policy, log reviewer role, and whether Cloudflare default retention is acceptable. |
 | OPS-429 | 429 policy | Rate limiting is implemented and tested locally. Production 429 verification is explicitly not part of normal smoke. | Whether to rely on local tests only, when production 429 checks are allowed, support response, and rate-limit adjustment path. |
@@ -68,7 +68,7 @@ Recommended record:
 - Review date.
 - Reviewer role, not private identity unless intentionally public.
 - Status: `approved`, `approved with edits`, `blocked`, or `not reviewed`.
-- Files reviewed: `docs/privacy-policy-draft.md`, public `/privacy`, README/support wording if applicable.
+- Files reviewed: `docs/archive/privacy-policy-draft.md`, public `/privacy`, README/support wording if applicable.
 - Required wording changes, if any.
 
 Forbidden record:
@@ -336,13 +336,13 @@ This packet organized the decision space but did not supply the human decisions.
 
 - `README.md`: project overview, public URL, post-release operation boundaries, docs index.
 - `SECURITY.md`: safe logging fields and security prohibitions.
-- `docs/post-claude-review-decision-backlog.md`: Issue #42 scope and decision backlog.
+- `docs/archive/post-claude-review-decision-backlog.md`: Issue #42 scope and decision backlog.
 - `docs/post-release-operations-checklist.md`: current human checklist and production smoke boundaries.
 - `docs/post-release-human-verification-template.md`: safe human-verification format.
 - `docs/post-release-human-verification-record.md`: historical human/Codex records; not a fresh Issue #42 re-verification.
 - `docs/production-smoke-runbook.md`: production smoke approval language and stop conditions.
 - `docs/incident-and-kv-failure-runbook.md`: KV/incident ownership and log boundaries.
-- `docs/deployment-plan.md`: Cloudflare settings, rate-limit policy, and unresolved operational items.
-- `docs/current-status.md`: current app status and remaining operation decisions.
-- `docs/privacy-policy-draft.md`: privacy draft and legal-review caveat.
-- `docs/support-page-draft.md`: support page draft and support-scope caveat.
+- `docs/archive/deployment-plan.md`: Cloudflare settings, rate-limit policy, and unresolved operational items.
+- `docs/archive/current-status.md`: current app status and remaining operation decisions.
+- `docs/archive/privacy-policy-draft.md`: privacy draft and legal-review caveat.
+- `docs/archive/support-page-draft.md`: support page draft and support-scope caveat.
