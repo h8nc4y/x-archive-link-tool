@@ -10,6 +10,7 @@ import {
   extractPostDate,
   extractPostText,
   formatCreatedAt,
+  getUploadUserFacingMessage,
   getUserErrorMessage,
   getUserFacingErrorMessage,
   hasArchiveUrlPasteNoise,
@@ -371,6 +372,36 @@ function restoreNavigator(previousDescriptor) {
   delete globalThis.navigator;
 }
 
+// renderPostImage用の最小フェイクcanvas。Node環境には実canvasが無いため、
+// 2D contextのメソッド呼び出しを黙って受け流し、toBlobは即座にダミーBlobでcallbackを呼ぶ。
+// これにより#image-create-buttonクリックからperformAutoUploadまでの一連の流れを
+// 実DOMハーネス上で検証できる（プロパティ描画の正確さ自体はブラウザ検証に委ねる）。
+function createFakeCanvasContext() {
+  return {
+    scale() {},
+    fillRect() {},
+    fillText() {},
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    stroke() {}
+  };
+}
+
+function createFakeCanvasElement() {
+  return {
+    width: 0,
+    height: 0,
+    style: {},
+    getContext() {
+      return createFakeCanvasContext();
+    },
+    toBlob(callback) {
+      callback(new Blob(["fake-png-bytes"], { type: "image/png" }));
+    }
+  };
+}
+
 async function createDomAppHarness(fetchImpl) {
   const elements = {
     "#extract-form": createElement(),
@@ -397,7 +428,7 @@ async function createDomAppHarness(fetchImpl) {
     "#image-create-button": createElement({ disabled: true }),
     "#image-preview": createElement({ hidden: true }),
     "#image-download-link": createElement({ hidden: true }),
-    "#image-upload-button": createElement({ disabled: true }),
+    "#image-upload-button": createElement({ disabled: true, hidden: true }),
     "#image-url-output": createElement(),
     "#image-url-copy-button": createElement({ hidden: true }),
     "#image-message": createElement()
@@ -408,6 +439,12 @@ async function createDomAppHarness(fetchImpl) {
   globalThis.document = {
     querySelector(selector) {
       return elements[selector] || null;
+    },
+    createElement(tagName) {
+      if (tagName === "canvas") {
+        return createFakeCanvasElement();
+      }
+      throw new Error(`createDomAppHarness: unsupported createElement tag "${tagName}"`);
     }
   };
   globalThis.fetch = fetchImpl;
@@ -427,6 +464,9 @@ async function createDomAppHarness(fetchImpl) {
     },
     createImage() {
       return elements["#image-create-button"].dispatch("click");
+    },
+    retryUpload() {
+      return elements["#image-upload-button"].dispatch("click");
     },
     cleanup() {
       restoreGlobal("document", previousDocument);
@@ -1036,7 +1076,7 @@ test("uploadRecordImage throws a Japanese-friendly hint when R2 binding is not c
   }
 });
 
-test("uploadRecordImage throws a Japanese-friendly error on rate limit (fetch mocked, no real network)", async () => {
+test("uploadRecordImage throws a Japanese-friendly error on rate limit via upload_429 (fetch mocked, no real network)", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async () => ({
     ok: false,
@@ -1047,7 +1087,61 @@ test("uploadRecordImage throws a Japanese-friendly error on rate limit (fetch mo
   try {
     await assert.rejects(
       uploadRecordImage(new Blob(["dummy"])),
-      /アップロード先が混雑しています/
+      /アップロードが混み合っています/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadRecordImage throws the same rate-limit message for the generic rate_limit_exceeded code (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 429,
+    json: async () => ({ code: "rate_limit_exceeded" })
+  });
+
+  try {
+    await assert.rejects(
+      uploadRecordImage(new Blob(["dummy"])),
+      /アップロードが混み合っています/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadRecordImage throws a Japanese-friendly error when the image is too large (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 413,
+    json: async () => ({ code: "upload_too_large" })
+  });
+
+  try {
+    await assert.rejects(
+      uploadRecordImage(new Blob(["dummy"])),
+      /画像サイズが大きすぎます/
+    );
+  } finally {
+    restoreGlobal("fetch", previousFetch);
+  }
+});
+
+test("uploadRecordImage throws a Japanese-friendly error for unsupported file types (fetch mocked, no real network)", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 415,
+    json: async () => ({ code: "upload_unsupported_type" })
+  });
+
+  try {
+    await assert.rejects(
+      uploadRecordImage(new Blob(["dummy"])),
+      /PNG画像のみアップロードできます/
     );
   } finally {
     restoreGlobal("fetch", previousFetch);
@@ -1065,7 +1159,7 @@ test("uploadRecordImage throws a generic Japanese error on other failures (fetch
   try {
     await assert.rejects(
       uploadRecordImage(new Blob(["dummy"])),
-      /アップロードに失敗しました/
+      /共有URLの発行に失敗しました/
     );
   } finally {
     restoreGlobal("fetch", previousFetch);
@@ -1086,6 +1180,36 @@ test("uploadRecordImage throws an unreachable error when fetch itself fails (net
   } finally {
     restoreGlobal("fetch", previousFetch);
   }
+});
+
+// エラーコード→日本語文言の網羅テスト。汎用「取得に失敗しました」（GENERIC_FETCH_ERROR_MESSAGE）
+// へフォールバックしないことも合わせて確認する（オーナーFB①の明示要件）。
+test("getUploadUserFacingMessage maps every known upload error code to a specific Japanese message", () => {
+  const cases = [
+    ["upload_not_configured", "アップロード機能は準備中です。"],
+    ["upload_429", "アップロードが混み合っています。時間を置いて再試行してください。"],
+    ["rate_limit_exceeded", "アップロードが混み合っています。時間を置いて再試行してください。"],
+    ["upload_too_large", "画像サイズが大きすぎます。"],
+    ["upload_unsupported_type", "PNG画像のみアップロードできます。"],
+    ["upload_unreachable", "アップロード先に接続できませんでした。"],
+    ["upload_error", "共有URLの発行に失敗しました。時間を置いて再試行してください。"],
+    ["some_unknown_code", "共有URLの発行に失敗しました。時間を置いて再試行してください。"]
+  ];
+
+  for (const [code, expectedMessage] of cases) {
+    const error = new Error(expectedMessage);
+    error.userMessage = expectedMessage;
+    error.code = code;
+    assert.equal(getUploadUserFacingMessage(error), expectedMessage);
+  }
+});
+
+test("getUploadUserFacingMessage never falls back to the generic 取得に失敗しました message", () => {
+  // userMessageを持たない想定外の例外（fetch自体の再取得失敗等）でも、
+  // extractフロー用の汎用文言ではなく、アップロード専用の汎用文言を返す。
+  const error = new Error("unexpected");
+  assert.equal(getUploadUserFacingMessage(error), "共有URLの発行に失敗しました。時間を置いて再試行してください。");
+  assert.doesNotMatch(getUploadUserFacingMessage(error), /^取得に失敗しました/);
 });
 
 // DOMハーネスによる記録画像UIの検証。canvas APIはNode環境に無いため、
@@ -1144,6 +1268,92 @@ test("switching to a different post resets the image preview and upload URL stat
     assert.equal(harness.elements["#image-url-output"].value, "");
     assert.equal(harness.elements["#image-url-copy-button"].hidden, true);
     assert.equal(harness.elements["#image-create-button"].disabled, false);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+// 2026-07-11 オーナーFB①: 画像作成ボタン1回押下で自動アップロードまで行う一連の流れを、
+// フェイクcanvas（createFakeCanvasElement）とfetchモックだけで実DOMハーネス上で検証する。
+test("creating the record image auto-uploads and shows the shared URL on success (fake canvas + fetch mocked, no real network)", async () => {
+  const harness = await createDomAppHarness((url) => {
+    if (url === "/api/upload-image") {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ url: "https://example.pages.dev/i/deadbeef00112233445566778899aabb" })
+      });
+    }
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+
+  try {
+    await harness.submit();
+    assert.equal(harness.elements["#image-create-button"].disabled, false);
+
+    await harness.createImage();
+    // canvas.toBlobのcallbackとperformAutoUploadは非同期のため、マイクロタスクをflushする。
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(
+      harness.elements["#image-url-output"].value,
+      "https://example.pages.dev/i/deadbeef00112233445566778899aabb"
+    );
+    assert.equal(harness.elements["#image-url-copy-button"].hidden, false);
+    assert.equal(harness.elements["#image-upload-button"].hidden, true);
+    assert.equal(harness.elements["#image-message"].textContent, "共有URLを発行しました。");
+    assert.equal(harness.elements["#image-message"].classList.contains("is-success"), true);
+    assert.equal(harness.elements["#image-create-button"].disabled, false);
+  } finally {
+    harness.cleanup();
+  }
+});
+
+test("creating the record image shows a mapped Japanese error and enables retry on upload failure, then retry resends the same blob (fake canvas + fetch mocked, no real network)", async () => {
+  let uploadCallCount = 0;
+  const harness = await createDomAppHarness((url) => {
+    if (url === "/api/upload-image") {
+      uploadCallCount += 1;
+      if (uploadCallCount === 1) {
+        return Promise.resolve({
+          ok: false,
+          status: 429,
+          json: async () => ({ code: "upload_429" })
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ url: "https://example.pages.dev/i/retried0011223344556677889900aabb" })
+      });
+    }
+    return Promise.resolve(createJsonResponse(basePost));
+  });
+
+  try {
+    await harness.submit();
+    await harness.createImage();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(uploadCallCount, 1);
+    assert.equal(
+      harness.elements["#image-message"].textContent,
+      "アップロードが混み合っています。時間を置いて再試行してください。"
+    );
+    assert.equal(harness.elements["#image-upload-button"].hidden, false);
+    assert.equal(harness.elements["#image-upload-button"].disabled, false);
+    assert.equal(harness.elements["#image-url-output"].value, "");
+
+    await harness.retryUpload();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(uploadCallCount, 2);
+    assert.equal(
+      harness.elements["#image-url-output"].value,
+      "https://example.pages.dev/i/retried0011223344556677889900aabb"
+    );
+    assert.equal(harness.elements["#image-upload-button"].hidden, true);
+    assert.equal(harness.elements["#image-message"].textContent, "共有URLを発行しました。");
   } finally {
     harness.cleanup();
   }

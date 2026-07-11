@@ -30,7 +30,7 @@
 - 取得済みポスト情報をブラウザのcanvasでカード風PNG画像に描画し、プレビュー表示・ダウンロード保存できる。
 - 添付メディア（実際の投稿画像・動画）は含まず、取得できたテキスト情報（アカウント名・`@username`・本文・投稿日・ポストURL・取得日時）だけを描画する。
 - 本文はcanvasの`fillText`のみで描画し、HTMLとしては描画しない。
-- 生成したPNGは、ユーザーが明示的にボタン操作した場合だけ、自サイトの `/api/upload-image` 経由でCloudflare R2（オーナーのバケット、binding経由でアクセス）へ保存し、共有URLを取得できる（2026-07-07 オーナー決定。catbox.moe中継がCloudflare Workersのegress遮断で本番不可と判明したため方式変更）。
+- 生成したPNGは、「画像を作成して共有URLを発行」ボタン1回の押下で、画像生成に続けて自動的に自サイトの `/api/upload-image` 経由でCloudflare R2（オーナーのバケット、binding経由でアクセス）へ保存し、共有URLを取得できる（2026-07-07 オーナー決定でcatbox.moe中継からR2方式へ、2026-07-11 オーナーFBで手動アップロードから自動アップロードへ変更）。アップロード失敗時は「共有URLを再取得」ボタンでリトライでき、同じ画像データを再送する。
 - 保存先はCloudflare R2で、画像は約7日で自動削除される一時共有リンクである。共有URLは自ドメインの配信エンドポイント（`/i/{id}`）で、URLを知っている人は誰でも閲覧できる。
 - R2バケットbinding `RECORD_IMAGE_BUCKET` はオーナーがCloudflare Pages側で設定する。未設定の間はアップロードが無効（`upload_not_configured`）で、UIにその旨を案内する。
 - アップロードはブラウザから外部サービスへ直接送信せず、必ず自サイトのサーバー（Cloudflare Pages Functions）を経由してR2 bindingへ書き込む（外部egressを持たないため、第三者ホストのWorkers遮断の影響を受けない）。
@@ -104,6 +104,7 @@
 - 各リンク共通: `target="_blank"`、`rel="noopener"`、`noreferrer` は付けない。ポスト取得前は `aria-disabled="true"` で無効化する。
 - 「取得後の魚拓URL」貼り付け欄は、上記サービスの結果URL（megalodon.jp / gyo.tc / web.archive.org / archive.today系 / twtr.satoru.net）のみ許可する。
 - サーバーから魚拓を取得しない。出力（コピー用テキスト）の魚拓URL項目は1件のまま変更しない。
+- 2026-07-11 オーナーFBにより、UI上は魚拓セクションを `<details>` で折りたたみ表示にし、既定は閉（任意機能であることを明示）とする。
 
 ## 今後の実装順序
 

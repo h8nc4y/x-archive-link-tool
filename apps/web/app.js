@@ -56,9 +56,10 @@ export function buildGyotakuUrl(postUrl) {
 
 // アップロード機能の有効フラグ。2026-07-07 オーナー決定によりcatbox.moe中継
 //（Cloudflare Workersのegress遮断で本番不可と判明）からCloudflare R2方式へ再設計した。
-// R2はオーナーのCloudflare Pagesバインディング設定後に動作するため、ボタン自体は
-// 常に有効にし、binding未設定時はサーバーが返す upload_not_configured を
-// UIで案内する（後述のUPLOAD_ERROR_MESSAGES参照）。
+// 2026-07-11 オーナーFBにより「画像を作成」1押下で自動アップロードまで行う方式へ変更。
+// R2バインディング未設定時はサーバーが返す upload_not_configured をUIで案内し、
+// #image-upload-button を「共有URLを再取得」のリトライ手段として使う
+// （後述のUPLOAD_ERROR_MESSAGES参照）。
 const RECORD_IMAGE_UPLOAD_ENABLED = true;
 
 // 全角文字は半角の2倍幅として扱う簡易的な折返し重み。
@@ -271,13 +272,17 @@ export async function uploadRecordImage(blob) {
 
 // upload_not_configuredは「エラー」ではなく「オーナーのR2バインディング設定待ち」を
 // 示す状態のため、他のエラーコードと違い再試行を促さない文言にする。
+// rate_limit_exceeded はサーバー側の汎用rate limitコードと同義のため upload_429 と同文言にする。
+// 2026-07-11 オーナーFBにより文言を確定。汎用「取得に失敗しました」へはフォールバックさせない
+// （getUploadUserFacingMessage 参照）。
 const UPLOAD_ERROR_MESSAGES = new Map([
-  ["upload_not_configured", "アップロード機能は準備中です（サーバー側のR2設定後に有効になります）。"],
-  ["upload_429", "アップロード先が混雑しています。時間を置いて再試行してください。"],
+  ["upload_not_configured", "アップロード機能は準備中です。"],
+  ["upload_429", "アップロードが混み合っています。時間を置いて再試行してください。"],
+  ["rate_limit_exceeded", "アップロードが混み合っています。時間を置いて再試行してください。"],
   ["upload_too_large", "画像サイズが大きすぎます。"],
   ["upload_unsupported_type", "PNG画像のみアップロードできます。"],
-  ["upload_unreachable", "アップロード先に接続できませんでした。時間を置いて再試行してください。"],
-  ["upload_error", "アップロードに失敗しました。時間を置いて再試行してください。"]
+  ["upload_unreachable", "アップロード先に接続できませんでした。"],
+  ["upload_error", "共有URLの発行に失敗しました。時間を置いて再試行してください。"]
 ]);
 
 function createUploadError(code) {
@@ -285,6 +290,18 @@ function createUploadError(code) {
   error.userMessage = error.message;
   error.code = code;
   return error;
+}
+
+const UPLOAD_IN_PROGRESS_MESSAGE = "共有URLを発行しています…";
+const UPLOAD_SUCCESS_MESSAGE = "共有URLを発行しました。";
+
+// uploadRecordImage が投げる例外は必ず userMessage を持つが、想定外の例外
+// （fetchの再取得失敗など）に備え、getUserFacingErrorMessage の汎用「取得に失敗しました」へ
+// フォールバックしないよう、アップロード専用の汎用文言を返す。
+export function getUploadUserFacingMessage(error) {
+  return typeof error?.userMessage === "string" && error.userMessage
+    ? error.userMessage
+    : UPLOAD_ERROR_MESSAGES.get("upload_error");
 }
 
 // 魚拓サービスの一覧。どれかが落ちても代替が残るよう複数を併記する。
@@ -693,6 +710,9 @@ function setupApp() {
   let archiveInputHasInvalidPaste = false;
   // プレビューimg用のobjectURL。別ポスト取得やページ離脱前に解放してメモリリークを防ぐ。
   let currentImageObjectUrl = "";
+  // 自動アップロード・再取得（リトライ）で送信するBlob。画像作成のたびに差し替え、
+  // 別ポスト取得やページ離脱前にresetImageStateで参照を破棄する。
+  let pendingUploadBlob = null;
   const ARCHIVE_STATUS_IDLE = "先にXポストURLを取得すると、魚拓リンクと貼り付け欄が使えるようになります。";
   const ARCHIVE_STATUS_ACTIVE = "別のXポストを取得すると、入力した魚拓URLはリセットされます。";
   const submitButtonLabel = submitButton?.textContent || "取得";
@@ -817,12 +837,13 @@ function setupApp() {
     setArchiveStatus(ARCHIVE_STATUS_IDLE);
   }
 
-  // 記録画像セクションを初期状態へ戻す。objectURLは明示的に解放してメモリリークを防ぐ。
+  // 記録画像セクションを初期状態へ戻す。objectURL・保留中Blobは明示的に解放/破棄してメモリリークを防ぐ。
   function resetImageState() {
     if (currentImageObjectUrl) {
       URL.revokeObjectURL(currentImageObjectUrl);
       currentImageObjectUrl = "";
     }
+    pendingUploadBlob = null;
 
     if (imagePreview) {
       imagePreview.src = "";
@@ -842,20 +863,17 @@ function setupApp() {
       imageUrlCopyButton.hidden = true;
     }
 
-    if (imageMessage) {
-      setText(imageMessage, "");
-    }
+    setImageMessage("");
 
     if (imageCreateButton) {
       imageCreateButton.disabled = !currentPost;
     }
 
-    // アップロードボタンは、画像がまだ作成されていない間はdisabledにする。
-    // R2バインディング未設定時はクリック時のサーバー応答（upload_not_configured）で
-    // 案内するため、ここではRECORD_IMAGE_UPLOAD_ENABLEDによるゲートは行わない
-    // （画像作成後は#image-create-buttonのハンドラ側でフラグに応じて有効化する）。
+    // 再取得（リトライ）ボタンは、画像作成の自動アップロードが失敗したときだけ
+    // 表示・有効化する（performAutoUpload参照）。それ以外の間は隠しておく。
     if (imageUploadButton) {
       imageUploadButton.disabled = true;
+      imageUploadButton.hidden = true;
     }
   }
 
@@ -1013,9 +1031,54 @@ function setupApp() {
     );
   });
 
-  function setImageMessage(message) {
+  function setImageMessage(message, isSuccess = false) {
     if (imageMessage) {
       setText(imageMessage, message);
+      if (imageMessage.classList) {
+        imageMessage.classList.toggle("is-success", isSuccess === true);
+      }
+    }
+  }
+
+  // 2026-07-11 オーナーFB①: 画像作成ボタン1回の押下で、生成〜アップロード〜共有URL発行まで
+  // 自動的に行う。失敗時だけ#image-upload-buttonを「共有URLを再取得」として表示・有効化し、
+  // 同じblob（pendingUploadBlob）を再送できるようにする。
+  async function performAutoUpload(blob) {
+    pendingUploadBlob = blob;
+    setImageMessage(UPLOAD_IN_PROGRESS_MESSAGE);
+
+    if (imageCreateButton) {
+      imageCreateButton.disabled = true;
+    }
+    if (imageUploadButton) {
+      imageUploadButton.disabled = true;
+    }
+
+    try {
+      const result = await uploadRecordImage(blob);
+
+      if (imageUrlOutput) {
+        imageUrlOutput.value = result.url;
+      }
+      if (imageUrlCopyButton) {
+        imageUrlCopyButton.hidden = false;
+      }
+      if (imageUploadButton) {
+        imageUploadButton.hidden = true;
+      }
+      setImageMessage(UPLOAD_SUCCESS_MESSAGE, true);
+    } catch (error) {
+      setImageMessage(getUploadUserFacingMessage(error));
+      // 失敗時は再取得（リトライ）手段として#image-upload-buttonを表示・有効化する。
+      // ラベルはindex.html側で常に「共有URLを再取得」固定のため、ここでは変更しない。
+      if (imageUploadButton) {
+        imageUploadButton.hidden = false;
+        imageUploadButton.disabled = false;
+      }
+    } finally {
+      if (imageCreateButton) {
+        imageCreateButton.disabled = !currentPost;
+      }
     }
   }
 
@@ -1026,6 +1089,9 @@ function setupApp() {
       }
 
       setImageMessage("");
+      if (imageUploadButton) {
+        imageUploadButton.hidden = true;
+      }
 
       try {
         // 取得日時は表示用にJST相当をローカル時刻文字列で組み立てる（サーバー往復なし）。
@@ -1061,12 +1127,9 @@ function setupApp() {
             imageDownloadLink.hidden = false;
           }
 
-          // 2026-07-07 R2移行後: 画像作成が完了すればアップロードボタンを有効化する。
-          // オーナーがCloudflare Pages側でR2バインディングを設定するまでは、
-          // クリック時にサーバーから upload_not_configured（503）が返り、
-          // #image-message にその旨を案内する（ボタン自体は常時有効のまま）。
-          if (imageUploadButton) {
-            imageUploadButton.disabled = !RECORD_IMAGE_UPLOAD_ENABLED;
+          // 2026-07-11 オーナーFB①: 画像が作成できたら、続けて自動でアップロードする。
+          if (RECORD_IMAGE_UPLOAD_ENABLED) {
+            void performAutoUpload(blob);
           }
         }, "image/png");
       } catch {
@@ -1075,32 +1138,15 @@ function setupApp() {
     });
   }
 
+  // 失敗後の再取得（リトライ）専用ボタン。通常時は非表示・disabledで、
+  // performAutoUploadの失敗時だけ表示・有効化される。
   if (imageUploadButton) {
-    imageUploadButton.addEventListener("click", async () => {
-      if (!currentImageObjectUrl) {
+    imageUploadButton.addEventListener("click", () => {
+      if (!pendingUploadBlob) {
         return;
       }
 
-      setImageMessage("");
-      imageUploadButton.disabled = true;
-
-      try {
-        // objectURLからBlobを取り出す（ローカルメモリ上の参照であり、外部通信は発生しない）。
-        const blobResponse = await fetch(currentImageObjectUrl);
-        const blob = await blobResponse.blob();
-        const result = await uploadRecordImage(blob);
-
-        if (imageUrlOutput) {
-          imageUrlOutput.value = result.url;
-        }
-        if (imageUrlCopyButton) {
-          imageUrlCopyButton.hidden = false;
-        }
-      } catch (error) {
-        setImageMessage(getUserFacingErrorMessage(error));
-      } finally {
-        imageUploadButton.disabled = false;
-      }
+      void performAutoUpload(pendingUploadBlob);
     });
   }
 
