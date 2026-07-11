@@ -341,13 +341,51 @@ Use this template for future decisions:
 - Status: Active.
 - Related files: `AGENTS.md`, `docs/CODEX_HANDOFF.md`, `TASKS_BACKLOG.md`.
 - Related review findings: none (workflow/governance update).
+### Decision 023: Reposition as a record-support tool and release publicly (M3)
+
+- Date: 2026-07-04
+- Decision: The product is repositioned as a record-support tool (記録補助ツール), not a legal-evidence preservation tool. The release scope is M3 (general public release). The archive link section lists multiple external services (gyo.tc, Wayback Machine, archive.today, twtr.satoru.net) instead of a single gyo.tc link. The API policy stays oEmbed-first with optional BYOT X API v2.
+- Context: The Fable5 requirements review (`docs/fable5-requirements-review-2026-07-03.md`) re-examined the value hypothesis and posed owner questions. The owner answered on 2026-07-04 (Q1=M3, Q2=record-support positioning with screenshot/PDF guidance, Q4=investigate free media-URL options, Q6=multiple archive services).
+- Rationale: The tool cannot guarantee legal evidence preservation; honest positioning plus screenshot/PDF guidance serves users better. Multiple archive services remove a single point of failure. The 2026-07-04 research (`docs/media-url-and-archive-research-2026-07-04.md`) found no terms-compliant free media-URL source, so oEmbed-first stays.
+- Consequences: UI wording, README, and privacy page state the record-support positioning (CC-011, PR #66). Archive links became multi-service (CC-012, PR #67). A visual redesign for public release followed (CC-014, PR #69). `docs/requirements.md` carries the positioning as the requirement source.
+- Status: Active.
+- Related files: `docs/requirements.md`, `docs/fable5-requirements-review-2026-07-03.md`, `docs/media-url-and-archive-research-2026-07-04.md`, `apps/web/index.html`.
+- Related review findings: none (product/positioning decision).
+
+### Decision 024: Record M3 operations decisions and close Issue #42
+
+- Date: 2026-07-06 (decisions recorded), 2026-07-07 (Issue #42 closed)
+- Decision: The owner recorded the remaining post-release operations decisions for M3: the public contact channel is GitHub Issues with the repository made public, log-retention wording was finalized, and the production smoke policy was recorded. With all decision items recorded, Issue #42 was closed on 2026-07-07.
+- Context: Issue #42 tracked human decisions for privacy/legal, support, billing, log retention, 429 policy, smoke approval, KV/incident ownership, and data-recording boundaries (`docs/post-release-operations-decision-packet.md`). The M3 mode decision packet (`docs/issue-42-mode-decision-packet.md` §決定記録) captured the owner answers.
+- Rationale: All Issue #42 close conditions were met by explicit owner records; keeping the issue open no longer served a purpose.
+- Consequences: CC-015 (PR #72) applied the decisions to the repository, and the repository became public. The decision packet remains as a historical record; the smoke gate and prohibited-work boundaries stay in force through `AGENTS.md` and `docs/CODEX_HANDOFF.md`.
+- Status: Active (recorded decisions); Issue #42 closed.
+- Related files: `docs/issue-42-mode-decision-packet.md`, `docs/post-release-operations-decision-packet.md`, `TASKS_BACKLOG.md`.
+- Related review findings: Issue #42.
+
+### Decision 025: Record image upload via Cloudflare R2 with about-7-day retention
+
+- Date: 2026-07-07 (feature approved), 2026-07-08 to 2026-07-11 (R2 redesign and rollout)
+- Decision: The record image feature renders fetched post text onto a canvas PNG client-side, and uploads through the site's own `/api/upload-image` Pages Function into a Cloudflare R2 bucket binding (`RECORD_IMAGE_BUCKET`), served back via `/i/{id}` with about-7-day automatic deletion (serving-side expiry check plus an owner-configured R2 object lifecycle rule).
+- Context: The initial design relayed uploads to catbox.moe, which failed in production because Cloudflare Workers egress to that host is blocked. The owner approved redesigning to R2 (PR #78/#80/#81/#82). The owner completed the R2 bucket, binding, and lifecycle setup on 2026-07-11, and a production E2E confirmed upload, share-URL issuance, and byte-identical delivery.
+- Rationale: Serving uploads through the site's own function avoids third-party egress blocks and keeps the no-external-transmission boundary; a short retention window fits the temporary-share use case and limits storage cost to the free tier.
+- Consequences: The image renders text only (no fetched media), keeping X terms compliance. Upload stays disabled with `upload_not_configured` guidance until the binding exists. Rate limits are separate from `/api/extract` (`UPLOAD_RATE_LIMIT_*`).
+- Status: Active.
+- Related files: `functions/api/upload-image.js`, `functions/i/[id].js`, `functions/lib/recordImage.js`, `docs/api.md`, `docs/requirements.md`, `README.md`.
+- Related review findings: none (feature decision, CC-018).
+
+### Decision 026: One-press auto-upload and collapsed archive section
+
+- Date: 2026-07-11
+- Decision: The record image flow becomes a single button that creates the image and automatically uploads it for a share URL (with a retry button reusing the same blob on failure). Page sections were reordered, and the archive (魚拓) section became a collapsed `<details>` element, closed by default.
+- Context: Owner feedback after using the shipped CC-018 feature asked for fewer steps and a lighter-weight archive section (CC-019, PR #84). Production E2E on 2026-07-11 confirmed create → auto-upload → share-URL issuance.
+- Rationale: One press removes the most common friction; collapsing the archive section signals it is optional without removing it.
+- Consequences: Upload failure now surfaces a retry path instead of a dead end. UI tests cover the retry-resends-same-blob behavior.
+- Status: Active.
+- Related files: `apps/web/app.js`, `apps/web/index.html`, `apps/web/styles.css`, `docs/requirements.md`.
+- Related review findings: none (UX decision, CC-019).
+
 ## Open decisions
 
-- Which branch should be reviewed by Claude Code.
-- Whether Claude Code should review the whole repository or a specific diff.
-- Whether secrets/config should be audited before any external review transcript is shared.
-- Which issues are MVP-blocking.
-- Which severity taxonomy should be used consistently for Claude findings and ChatGPT triage.
-- Whether future Claude review should include production-operation docs or only code and tests.
-- Whether future Claude review should use a refreshed single handoff file or the full tracked review-management doc set.
-- Which Issue #42 post-release operations items are MVP-blocking, or whether any can be explicitly deferred/non-blocking.
+- Priority and adoption of the next UX improvement candidates (to be drafted as v2 by CC-022; owner decides which to implement).
+- Whether to wire the local lint into CI (`.github/workflows/`); proposal drafted by CC-023, adoption is gate ① (human approval).

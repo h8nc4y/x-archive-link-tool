@@ -24,8 +24,8 @@
 | CC-006 | PR5 入力寛容化・高コントラスト（C-09, C-08） | `docs/ux-improvement-candidates.md` | 中 | M | done: PR #57 / #58 |
 | CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | done: `docs/issue-42-mode-decision-packet.md`（公開範囲別3モード縮退案）を2026-07-03起草。決定はHUM-001 |
 | CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | in-review: PR #86（ESLint flat config + `lint`/`check:all` scripts。CIは未変更＝ゲート①）。mergeとdone更新はCC-020 |
-| CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merged） |
-| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
+| CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/archive/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merged） |
+| CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/archive/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
 | CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | done: PR #66（merged） |
 | CC-012 | 魚拓導線の複数サービス併記化（gyo.tc/Wayback/archive.today/twtr.satoru） | 2026-07-04 オーナー決定（Q6） | 高 | M | done: PR #67（merged）。敵対的レビュー（Ultracode）済み |
 | CC-013 | 無料メディアURL取得手段の調査（syndication/fxtwitter等、禁止事項との整合評価） | 2026-07-04 オーナー指示（Q4） | 高 | M | done: PR #67（merged）`docs/media-url-and-archive-research-2026-07-04.md`。規約適合の無料手段なし→oEmbed-first維持。採用はゲート④ |
@@ -36,7 +36,7 @@
 | HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | done: 全項目決着＋本番検証完了（2026-07-07）。Issue #42 クローズ |
 | CC-018 | 記録画像の作成・保存・アップロード | 2026-07-07 オーナー承認 | 高 | M | done: PR #78/#80/#81/#82（merged・本番反映）。R2方式・約7日自動削除。2026-07-11 オーナーのR2設定完了後、本番E2Eでアップロード→共有URL発行→配信（バイト一致）を確認 |
 | CC-019 | UX改善（自動アップロード/並べ替え/魚拓折りたたみ） | 2026-07-11 オーナーFB | 高 | M | done: PR #84（merged・本番反映）。本番E2Eで作成→自動アップロード→共有URL発行を確認（2026-07-11） |
-| CC-020 | PR #86（CC-008 lint）の独立レビューとmerge・backlog更新 | 2026-07-11 Claude→Codex引き継ぎ | 高 | S | todo: CI緑と `docs/CODEX_HANDOFF.md` §9 の観点で確認後にmergeし、CC-008 を done へ |
+| CC-020 | PR #86（CC-008 lint）/ PR #87（docs整備）の独立レビューとmerge・backlog更新 | 2026-07-11 Claude→Codex引き継ぎ | 高 | S | todo: CI緑と `docs/CODEX_HANDOFF.md` §9 の観点で確認後にmergeし、CC-008 / CC-020 を done へ |
 | CC-021 | merge済みremote branchの整理 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: GitHubのmerged状態を実測確認して削除（master と open PR head は除く） |
 | CC-022 | 現行UIのUX再レビュー（改善候補リスト v2 起草） | 2026-07-11 Claude→Codex引き継ぎ | 中 | M | todo: 4視点（操作性・文言・a11y/レスポンシブ・出力形式）で外部通信なしに再レビュー。実装着手はオーナーの優先度判断後 |
 | CC-023 | lintのCI組み込み提案書の起草 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: 提案docsまで（`.github/workflows/` 変更はゲート①のため実施はオーナー承認後） |

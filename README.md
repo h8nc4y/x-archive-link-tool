@@ -130,28 +130,29 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 
 ## ドキュメント
 
+現行ドキュメント（開発・運用の正）:
+
 - [Codex自律主開発ハンドオフ（運用契約）](docs/CODEX_HANDOFF.md)
+- [現在タスク一覧](TASKS_BACKLOG.md) / [引き継ぎ状態](HANDOFF.md)
 - [要件](docs/requirements.md)
-- [API案](docs/api.md)
+- [API仕様](docs/api.md)
 - [テストケース](docs/test-cases.md)
-- [現状まとめ](docs/current-status.md)
-- [UX改善候補リスト](docs/ux-improvement-candidates.md)
-- [公開前チェックリスト](docs/pre-release-checklist.md)
-- [リリース候補メモ](docs/release-candidate.md)
-- [v0.1.0 Release Notes](docs/release-notes-v0.1.0.md)
-- [公開前運用Runbook](docs/pre-release-operations-runbook.md)
-- [v0.1.0後の人間確認チェックリスト](docs/post-release-operations-checklist.md)
-- [post-release operations判断パケット](docs/post-release-operations-decision-packet.md)
-- [post-review maintenance audit](docs/post-review-maintenance-audit.md)
-- [本番API smoke Runbook](docs/production-smoke-runbook.md)
-- [人間確認結果テンプレート](docs/post-release-human-verification-template.md)
-- [人間確認結果記録](docs/post-release-human-verification-record.md)
-- [Incident / KV障害Runbook](docs/incident-and-kv-failure-runbook.md)
-- [デプロイ準備](docs/deployment-plan.md)
-- [プライバシーポリシードラフト](docs/privacy-policy-draft.md)
-- [サポートページドラフト](docs/support-page-draft.md)
-- [Claude Code利用手順](docs/claude-code-usage.md)
+- [意思決定ログ](docs/DECISION_LOG.md)
 - [セキュリティ](SECURITY.md)
+
+運用Runbook・確認記録:
+
+- [v0.1.0後の人間確認チェックリスト](docs/post-release-operations-checklist.md)
+- [本番API smoke Runbook](docs/production-smoke-runbook.md)
+- [Incident / KV障害Runbook](docs/incident-and-kv-failure-runbook.md)
+- [人間確認結果テンプレート](docs/post-release-human-verification-template.md) / [記録](docs/post-release-human-verification-record.md)
+- [post-release operations判断パケット](docs/post-release-operations-decision-packet.md)（Issue #42・2026-07-07クローズ済みの記録）
+- [Issue #42 M3決定記録](docs/issue-42-mode-decision-packet.md)
+- [UX改善候補リスト](docs/ux-improvement-candidates.md)（12件全実装済み。次版はCC-022で作成予定）
+- [要件再検討記録 2026-07-03](docs/fable5-requirements-review-2026-07-03.md) / [メディアURL・魚拓調査 2026-07-04](docs/media-url-and-archive-research-2026-07-04.md)
+- [過去の承認タスク履歴](docs/CODEX_TASKS.md)
+
+役目を終えた文書（旧体制のハンドオフ、公開前チェックリスト、置き換え済みドラフト等）は [docs/archive/](docs/archive/README.md) に保管しています。プライバシーポリシーの正本は [apps/web/privacy.html](apps/web/privacy.html)（本番ページ）です。
 
 ## 検証
 
