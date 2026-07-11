@@ -2,7 +2,7 @@
 
 作成: 2026-07-03 JST（Claude Code Fable 5）
 改訂: 2026-07-03 Codex GPT-5.5 相談（codex-deep, thread 019f276a）と市場調査を反映
-位置づけ: `docs/CLAUDECODE_FABLE5_PROMPT.md` の work loop に基づく再要件定義の材料。既存資料の置き換えではなく、オーナー判断のための1枚整理＋質問リスト＋調査メモ。
+位置づけ: git 履歴上の旧 Fable5 prompt の work loop に基づく再要件定義の材料。既存資料の置き換えではなく、オーナー判断のための1枚整理＋質問リスト＋調査メモ。
 
 ## 1. 現状の1枚整理（確認済み事実）
 
