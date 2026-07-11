@@ -37,7 +37,7 @@ node server/extractServer.js
 
 ## テスト
 
-GitHub Actionsでは、pull request、`master` へのpush、手動実行で最小CIとして `npm test` を実行します。package-lock.json がないため、CIにinstall stepは入れていません。`npm test` は `node --test` の自動探索で `*.test.js` を実行します。
+GitHub Actionsでは、pull request、`master` へのpush、手動実行で最小CIとして `npm test` を実行します。実行時依存はゼロで、テストはNode.js標準機能だけで動くため、CIにinstall stepは入れていません（devDependenciesはローカルlint用です）。`npm test` は `node --test` の自動探索で `*.test.js` を実行します。
 
 ```powershell
 npm test
@@ -160,6 +160,18 @@ npm test
 ```
 
 PowerShellで `npm.ps1` の実行ポリシーエラーになる場合は `npm.cmd test` を使います。
+
+軽量lint（ESLint、`eslint:recommended` ベース）。初回は `npm.cmd install` でdevDependenciesを取得してから実行します:
+
+```powershell
+npm.cmd run lint
+```
+
+lint・テスト・post-release docs guardをまとめて実行する場合:
+
+```powershell
+npm.cmd run check:all
+```
 
 post-release運用docsの必須セクションだけを外部通信なしで確認する場合:
 
