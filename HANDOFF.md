@@ -1,48 +1,38 @@
 # HANDOFF
 
-最終更新: 2026/07/01 10:28 JST
+最終更新: 2026/07/11 JST（Claude Code → Codex 引き継ぎ）
 
 ## リポジトリの目的
 
-このリポジトリは、Xポスト共有URLから貼り付け用テキストを生成するWeb MVPです。Web UI、ローカルNodeサーバー、Cloudflare Pages Functions、任意のBYOT X API v2連携、公式oEmbed fallbackを含みます。iOSアプリ、DB、独自ドメイン、X HTMLスクレイピング、魚拓のサーバー取得は対象外です。
+Xポスト共有URLから貼り付け用テキストを生成するWeb MVP（記録補助ツール）。Web UI、ローカルNodeサーバー、Cloudflare Pages Functions、BYOT X API v2連携（任意）、公式oEmbed fallback、記録画像の生成・R2アップロード（約7日保持）を含む。iOSアプリ、DB、独自ドメイン、Xスクレイピング、魚拓のサーバー取得は対象外。
 
-## 現状サマリ
+## 現状サマリ（2026-07-11）
 
-- 現在の基準は `origin/master` の PR #61 merge commit `9056345`。open PR はありません。
-- Codex は `docs/CODEX_HANDOFF.md` と 2026-06-29以降のグローバル自走方針に従う主実装者です。
-- CC-001〜CC-006 のUX/backlog系タスクは PR #51、#52、#53、#54、#55、#57、#58 までに完了済みです。
-- PR #59〜#61 では Claude review advisory / local path redaction / ChatGPT triage wording をdocs同期済みです。
-- Issue #42 の post-release operations decisions は引き続き人間/ChatGPT判断待ちです。Codex が自走してよいのは判断材料整理、repo内docs、外部通信しないdry-run/testの整備までです。
-- 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、X Developer Portal、billing/credits確認、Cloudflare write/deploy/rollback/config変更は未実施です。
+- バックログ CC-001〜CC-019 / HUM-001 はすべて完了・masterへ統合・本番反映済み。Issue #42 もクローズ済みで、open issue / open PR は本引き継ぎ時点で PR #86 のみ。
+- 最後の残タスクだった CC-008（軽量lint導入）を Claude Code が実装し、PR #86（`chore/cc008-eslint`）としてレビュー・merge待ち。内容: ESLint flat config（eslint:recommended のみ）、`lint` / `check:all` scripts、未使用import 1件の実修正、README追記。CIワークフローは未変更（ゲート①のため）。
+- 検証基準は今後 `npm.cmd run check:all`（lint + test + post-release docs guard）を基本とする。2026-07-11 時点で緑（lint 0件 / 225 tests pass / docs guard OK）。
+- 一般公開(M3)済み。公開URL https://x-archive-link-tool.pages.dev、Production branch は `master`（merge = 本番反映）。
+- 記録画像アップロードはR2方式で本番E2E確認済み（CC-018/019、2026-07-11）。R2 lifecycle 7日削除はオーナー設定済み。
 
-## 完了タスクと根拠
+## 引き継ぎタスク（Codex向け、優先順）
 
-| ID | 状態 | 根拠 |
-| --- | --- | --- |
-| CC-001 | done | PR #54 `docs/codex-autonomous-handoff` |
-| CC-002 | done | PR #51 `feat/ux-input-error-improvements` |
-| CC-003 | done | PR #52 `feat/ux-archive-guidance` |
-| CC-004 | done | PR #53 `feat/ux-copy-feedback` |
-| CC-005 | done | PR #55 `feat/ux-output-format-options` |
-| CC-006 | done | PR #57 `feat/ux-high-contrast` / PR #58 `feat/ux-paste-tolerance-refresh` |
-| Advisory docs | done | PR #59 `docs/sync-claude-review-advisory`, PR #60 `docs/redact-local-paths`, PR #61 `docs/chatgpt-triage-wording` |
+1. **CC-020**: PR #86 の独立レビューと merge。CI緑・レビュー観点（CODEX_HANDOFF §9）確認のうえ merge し、`TASKS_BACKLOG.md` の CC-008 を done に更新する。
+2. **CC-021**: merge済みremote branchの整理。GitHub上のmerged branchを実測確認して削除（`master` と open PR の head は除く）。
+3. **CC-022**: UI/UXの再レビュー。2026-06-13版 `docs/ux-improvement-candidates.md` は12件全消化済みのため、現行UI（記録画像・魚拓折りたたみ・自動アップロード導入後）を4視点で再レビューし、候補リスト v2 を起草する。実装着手はオーナーの優先度判断後。
+4. **CC-023**（任意）: lintのCI組み込み提案書の起草。`.github/workflows/` 変更はゲート①のため、提案docsまでを自走範囲とし、実施はオーナー承認後。
 
-## 未完了 / 停止境界
+## 停止境界（変更なし）
 
-- CC-007 / HUM-001: Issue #42 post-release operations decisions は人間/ChatGPT判断待ち。privacy/legal、support、billing/credits、log retention、429 policy、Cloudflare logs、production smoke、incident owner は Codex が決定しません。
-- CC-008: 軽量lint/typecheck導入は未採用。導入する場合は別タスクとして、保守コストとCI条件を明記して扱います。
-- 本番API smoke、live provider、secret/OAuth、実URL/実データ、課金・billing・Cloudflare write は停止条件です。
+- 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth/実データ、課金、X Developer Portal、Cloudflare write/config は停止条件。
+- ゲート①〜④（デプロイ/Actions/release・課金・secret外部送信・製品要件変更）は人間承認。
+- 詳細は `docs/CODEX_HANDOFF.md`（運用契約の正）と `AGENTS.md` を参照。
 
-## 最新検証
+## 最新検証（2026-07-11、chore/cc008-eslint 上で実測）
 
-2026/07/01 の docs sync 作業前に `origin/master` worktree で確認:
+- `npm.cmd run check:all`: 緑。lint指摘0件、225 tests pass / 0 fail、post-release docs guard OK（markdown local links 26 checked / 4 skipped / 40 files）。
+- `gh pr list --state open`: PR #86 のみ。`gh issue list --state open`: なし。
 
-- `npm.cmd run check:post-release-docs`: pass。local markdown links 24 checked / 4 skipped / 34 files。
-- `node --test --test-isolation=none`: 169 tests pass / 0 fail。
-- `gh pr list --state open`: `[]`。
+## Do not re-read
 
-## 次にやるべき候補
-
-1. Issue #42 について、人間/ChatGPTから判断結果が提供された場合だけ、`docs/post-release-human-verification-template.md` 形式で記録を更新する。
-2. local-safeで進める場合は、post-release docs guardやMarkdown link/anchor guardの小さな整備に限定する。
-3. UIを再度変更する場合は `docs/CODEX_HANDOFF.md` のviewport/UI検証条件に従い、本番APIやlive providerを呼ばない。
+- `docs/ux-improvement-candidates.md` の12候補は全実装済み。再実装候補を探す目的では読み直さない（CC-022で新版を作る）。
+- `docs/issue-42-mode-decision-packet.md` は決着済み（M3決定・Issue #42クローズ）。
