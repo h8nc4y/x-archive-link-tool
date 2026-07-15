@@ -54,3 +54,10 @@
 - `docs/CODEX_TASKS.md` の `Current backlog inventory` はBT-001からBT-003のCodex作業記録です。
 - `HUM-001` はCodexが自走決定するタスクではありません。人間確認結果は `docs/post-release-human-verification-template.md` の形式で受け取ってから扱ってください。
 - 実装PRは小さく保ち、Web UI変更時はlocal/previewのレンダリング検証を行います。本番 `/api/extract` は呼びません。
+
+## 外部レビュー指摘の台帳（2026-07-15 maxエフォート横断レビュー）
+
+読取専用レビュー（実行検証なし）の指摘。採否と実装は次担当が判断する。完了時は行頭を [x] にし、対応PRを追記する。
+
+- [ ] rateLimiter(isolate内メモリ)のためグローバル20/分が実質POP毎 — R2無料枠へのコスト露出。推奨: Cloudflare WAF rate rule / Turnstileの追加(オーナー判断・ダッシュボード作業)。confidence機構高
+- [ ] getClientIpのx-forwarded-forフォールバックはローカルextractServer実行時のみ偽装可(CF上はcf-connecting-ip優先で問題なし)。confidence高/影響低
