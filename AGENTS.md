@@ -7,7 +7,7 @@
 - このリポジトリの主実装は Codex（自律的な主開発者）が担当する（2026-06-20 再委譲。`docs/DECISION_LOG.md` Decision 021）。Codex の運用契約は `docs/CODEX_HANDOFF.md` を正とする。
 - Codex はタスク選定→実装→自己検証→日本語コミット→PR 作成/更新/mergeまでを承認待ちなしで自走する。レビューは原則 Codex のセルフレビュー（`check:all` 緑＋敵対的自己レビュー）で、必要時のみ ChatGPT/Claude へ依頼する。
 - 人間承認が必要なのは、課金・有料API、secret/OAuth/実データ・実素材の外部送信、実X投稿URLや本番APIを使うlive provider確認、製品要件変更、または権限/OAuth/usage-limit等で物理的に継続できない場合に限る。GitHub PR mergeやGitHub Actionsの通常実行は、それ自体を停止条件にしない。
-- Claude Code は司令塔（orchestrator）＋レビュー担当。フロントのビジュアルデザイン創出や判断が materially useful なときだけ、Codex は `docs/CODEX_HANDOFF.md` §12 のブリーフまたは agmsg 相談を使う。明確な実装作業は停止せずに続ける。
+- 開発の主軸は Codex。要件、ビジュアルデザイン、実装、検証、docs を end-to-end で担当する。Claude Code、subagent、外部レビューは必要時の実行手段であり固定担当ではない。旧 `agmsg` 連携は使わず、復活させない。
 - 本セクションは実装体制の定義であり、下記「Prohibitions」「Post-release operations」のセキュリティ・データ境界は上書きしない。
 
 ## Project scope
