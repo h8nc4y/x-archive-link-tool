@@ -12,10 +12,14 @@ function uploadRequest({ formData, method = "POST" } = {}) {
   return new Request("https://example.pages.dev/api/upload-image", options);
 }
 
-function pngFormData({ withImage = true, size = 100, type = "image/png" } = {}) {
+function pngFormData({ withImage = true, size = 100, type = "image/png", validSignature = true } = {}) {
   const formData = new FormData();
   if (withImage) {
     const bytes = new Uint8Array(size);
+    if (validSignature) {
+      // 実PNGと同じ先頭8バイト署名(マジックバイト検証を通すための最小fixture)
+      bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+    }
     formData.append("image", new Blob([bytes], { type }), "record.png");
   }
   return formData;
@@ -78,6 +82,38 @@ test("returns 413 when the image exceeds 5MB", async () => {
 
   assert.equal(response.status, 413);
   assert.equal((await readJson(response)).code, "upload_too_large");
+  assert.equal(putCalled, false);
+  assertSecurityHeaders(response);
+});
+
+test("returns 415 when the image type is empty", async () => {
+  let putCalled = false;
+  const response = await handleUploadImageRequest(
+    uploadRequest({ formData: pngFormData({ type: "" }) }),
+    {
+      env: { RECORD_IMAGE_BUCKET: createMockBucket({ put: async () => { putCalled = true; } }) },
+      rateLimiter: allowRateLimiter
+    }
+  );
+
+  assert.equal(response.status, 415);
+  assert.equal((await readJson(response)).code, "upload_unsupported_type");
+  assert.equal(putCalled, false);
+  assertSecurityHeaders(response);
+});
+
+test("returns 415 when the bytes are not a real PNG (magic byte check)", async () => {
+  let putCalled = false;
+  const response = await handleUploadImageRequest(
+    uploadRequest({ formData: pngFormData({ validSignature: false }) }),
+    {
+      env: { RECORD_IMAGE_BUCKET: createMockBucket({ put: async () => { putCalled = true; } }) },
+      rateLimiter: allowRateLimiter
+    }
+  );
+
+  assert.equal(response.status, 415);
+  assert.equal((await readJson(response)).code, "upload_unsupported_type");
   assert.equal(putCalled, false);
   assertSecurityHeaders(response);
 });

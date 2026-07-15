@@ -157,7 +157,8 @@ export async function handleUploadImageRequest(
     return respond(413, { error: "Image is too large.", code: "upload_too_large" }, {}, "upload_too_large");
   }
 
-  if (typeof image.type === "string" && image.type !== "" && image.type !== ALLOWED_IMAGE_TYPE) {
+  // 空typeの素通しを許さない（fail-closed）。type偽装は下のマジックバイト検証で弾く。
+  if (image.type !== ALLOWED_IMAGE_TYPE) {
     return respond(415, { error: "Only image/png is supported.", code: "upload_unsupported_type" }, {}, "upload_unsupported_type");
   }
 
@@ -166,6 +167,17 @@ export async function handleUploadImageRequest(
 
   try {
     const arrayBuffer = await image.arrayBuffer();
+    // size申告が無い/偽装されたuploadへの二次防衛。実バイト長で再検査する。
+    if (arrayBuffer.byteLength > MAX_IMAGE_BYTES) {
+      return respond(413, { error: "Image is too large.", code: "upload_too_large" }, {}, "upload_too_large");
+    }
+    // PNGマジックバイト検証: content-type偽装で任意バイト列を7日間ホストされる悪用を防ぐ。
+    const header = new Uint8Array(arrayBuffer.slice(0, 8));
+    const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    const isPng = header.length === 8 && pngSignature.every((byte, index) => header[index] === byte);
+    if (!isPng) {
+      return respond(415, { error: "Only image/png is supported.", code: "upload_unsupported_type" }, {}, "upload_unsupported_type");
+    }
     // customMetadata.uploadedAtは配信側（i/[id].js）が7日経過判定に使う唯一の情報源。
     // R2のObject lifecycleルール（オーナーがバケット側で設定）が実削除を担い、
     // このuploadedAtチェックはlifecycle実行前でも7日でリンクを失効させる一次防衛線。
