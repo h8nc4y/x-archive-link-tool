@@ -1,16 +1,18 @@
 # CODEX_TASKS
 
+> **歴史的記録（〜2026-06）**: このファイルは旧体制（ChatGPT承認制、Decision 001〜004）での実装タスク記録です。現在の体制はCodex自律主開発（Decision 021/022、運用契約は `docs/CODEX_HANDOFF.md`）であり、現在タスクは `TASKS_BACKLOG.md` を正とします。本文中の「Issue #42 remains open」等の現在形の記述は記録当時の状態です（Issue #42 は 2026-07-07 にクローズ済み。Decision 024）。
+
 ## Status
 
 ChatGPT-approved tasks recorded for the 2026-05-30 and 2026-05-31 Claude review follow-up implementation passes, including the Issue #40 cache-policy follow-up and Issue #42 docs guardrail follow-ups.
 
-Current closure state: Issue #40 approves CL-001 no runtime change and CL-002 degraded fallback short-TTL caching only. Issue #42 remains a human/ChatGPT decision item; the current Codex scope is limited to documentation verification guardrails, including Markdown local link and anchor checking. No additional runtime implementation task is approved. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/AI_REVIEW_TRIAGE.md`.
+Current closure state (as of 2026-05-31): Issue #40 approves CL-001 no runtime change and CL-002 degraded fallback short-TTL caching only. Issue #42 remains a human/ChatGPT decision item; the current Codex scope is limited to documentation verification guardrails, including Markdown local link and anchor checking. No additional runtime implementation task is approved. Do not implement additional Claude findings unless ChatGPT records a new approval in `docs/archive/AI_REVIEW_TRIAGE.md`.
 
 ## Source of truth
 
-This file should be generated from approved items in `docs/AI_REVIEW_TRIAGE.md` only.
+This file should be generated from approved items in `docs/archive/AI_REVIEW_TRIAGE.md` only.
 
-Claude suggestions in `docs/CLAUDE_REVIEW.md` are not implementation instructions until ChatGPT approves them in `docs/AI_REVIEW_TRIAGE.md`.
+Claude suggestions in `docs/archive/CLAUDE_REVIEW.md` are not implementation instructions until ChatGPT approves them in `docs/archive/AI_REVIEW_TRIAGE.md`.
 
 ## Rules for Codex
 
@@ -66,14 +68,14 @@ No active approved task is queued for Codex after the Issue #40 task recorded be
 
 CL-001 is closed as no runtime change and no KV physical TTL extension. CL-002 is approved only for degraded oEmbed fallback short-TTL caching. CL-011 quality gates are not adopted for MVP unless later approved. CL-012 is resolved by tracked governance docs without application code changes. CL-013 local server logger injection is rejected unless ChatGPT later approves a specific safe-logging design.
 
-Decision backlog: `docs/post-claude-review-decision-backlog.md`.
+Decision backlog: `docs/archive/post-claude-review-decision-backlog.md`.
 
 ## Current backlog inventory
 
 | ID | タスク名 | 出典 | 優先度 | 規模 | 状態 |
 | --- | --- | --- | --- | --- | --- |
 | BT-001 | Markdown link verifier tests use repo-local fixture temp directory fallback | `node --test` failure in `scripts/verifyMarkdownLinks.test.js`; OS temp `mkdtemp` returned `EPERM` in Codex managed sandbox | 高 | S | done |
-| BT-002 | Post-release operations owner and production policy decisions remain human-confirmation items | `README.md`, `docs/current-status.md`, `docs/pre-release-checklist.md`, `docs/deployment-plan.md`, open issue #42; live provider, billing, legal, owner, and production checks are outside Codex local implementation scope | 低 | L | skip: human/ChatGPT decision, billing/legal/live-production boundary |
+| BT-002 | Post-release operations owner and production policy decisions remain human-confirmation items | `README.md`, `docs/archive/current-status.md`, `docs/archive/pre-release-checklist.md`, `docs/archive/deployment-plan.md`, open issue #42; live provider, billing, legal, owner, and production checks are outside Codex local implementation scope | 低 | L | skip: human/ChatGPT decision, billing/legal/live-production boundary |
 | BT-003 | Open GitHub issue inventory | `gh issue list --limit 30 --state open --json number,title,state,labels` returned open issue #42 for post-release operations decisions | 低 | S | done |
 
 ## Historical approved task records
@@ -102,9 +104,9 @@ Record CL-001 as no runtime change and implement CL-002 degraded fallback short-
 - `server/extractService.test.js`
 - `docs/api.md`
 - `docs/requirements.md`
-- `docs/current-status.md`
-- `docs/post-claude-review-decision-backlog.md`
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/current-status.md`
+- `docs/archive/post-claude-review-decision-backlog.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 
@@ -167,13 +169,13 @@ Documentation wording only.
 ### Files likely affected
 
 - `README.md`
-- `docs/current-status.md`
-- `docs/deployment-plan.md`
-- `docs/pre-release-checklist.md`
-- `docs/pre-release-operations-runbook.md`
-- `docs/privacy-policy-draft.md`
-- `docs/support-page-draft.md`
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/current-status.md`
+- `docs/archive/deployment-plan.md`
+- `docs/archive/pre-release-checklist.md`
+- `docs/archive/pre-release-operations-runbook.md`
+- `docs/archive/privacy-policy-draft.md`
+- `docs/archive/support-page-draft.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 
@@ -236,7 +238,7 @@ Rate limiter cleanup, IP key fallback normalization, and regression tests only.
 - `server/rateLimiter.test.js`
 - `functions/api/extract.js`
 - `functions/api/extract.test.js`
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 
@@ -300,7 +302,7 @@ Web UI submit state and regression tests only.
 
 - `apps/web/app.js`
 - `apps/web/app.test.js`
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 
@@ -361,12 +363,12 @@ Documentation only.
 
 ### Files likely affected
 
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 - `docs/api.md`
 - `docs/requirements.md`
-- `docs/current-status.md`
+- `docs/archive/current-status.md`
 - `docs/incident-and-kv-failure-runbook.md`
 
 ### Implementation plan
@@ -427,7 +429,7 @@ Provider client fetch options and mock-fetch regression tests only.
 - `server/xApiV2Client.js`
 - `server/oEmbedClient.test.js`
 - `server/xApiV2Client.test.js`
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
 - `docs/DECISION_LOG.md`
 
@@ -641,9 +643,9 @@ Review-management docs only.
 
 ### Files likely affected
 
-- `docs/AI_REVIEW_TRIAGE.md`
+- `docs/archive/AI_REVIEW_TRIAGE.md`
 - `docs/CODEX_TASKS.md`
-- `docs/CLAUDE_REVIEW.md`
+- `docs/archive/CLAUDE_REVIEW.md`
 
 ### Implementation plan
 
@@ -653,7 +655,7 @@ Update triage status, approved/non-approved items, Codex task queue, and Claude 
 
 - Docs show CL-003, CL-005, and CL-010-approved tests as the only implementation tasks.
 - Docs explicitly prevent implementation of non-approved CL items.
-- `docs/CLAUDE_REVIEW.md` status does not contradict the recorded Claude review output.
+- `docs/archive/CLAUDE_REVIEW.md` status does not contradict the recorded Claude review output.
 
 ### Validation commands
 
@@ -694,6 +696,6 @@ Completed by PR #31 and subsequent review-management doc updates.
 
 ## 📌 参考メモ（タスクではない）: Claude Code 独立再レビュー (2026-06-21) を配置
 
-Claude Code (Opus 4.8) による 2026-06-21 時点の独立再レビュー結果を `docs/CLAUDE_CODE_REVIEW_2026-06-21.md` に配置しました。
+Claude Code (Opus 4.8) による 2026-06-21 時点の独立再レビュー結果を `docs/archive/CLAUDE_CODE_REVIEW_2026-06-21.md` に配置しました。
 着手前の参考にしてください。これは advisory（助言）であり、確定タスクではありません。従来どおり ChatGPT triage を経てから実装判断してください。
 ソースコード/資材は変更していません（docs への本レビュー追加のみ）。横断索引はローカル管理資料のため、この公開向けタスク台帳には絶対パスを記載しません。

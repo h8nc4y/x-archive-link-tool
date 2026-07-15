@@ -27,7 +27,7 @@
 - GitHub branches APIで `master` が同commitを指すことを確認した。
 - Cloudflare Workers and Pages GitHub Appのcheck suite `71569644229` は `head_branch=master`, `head_sha=a6fe436f3f08326c6479561ea997ed6bb3e23f9c`, conclusion `success`。
 - Cloudflare Pages check-run `78690922988` は `Latest commit: a6fe436`, `Deploy successful`, deployment ID `143cd043-10bf-406b-b8c8-3a22bb6a9ca2`。
-- `docs/deployment-plan.md` 上のProduction branchは `master`。
+- `docs/archive/deployment-plan.md` 上のProduction branchは `master`。
 - Cloudflare Pages公式docsでは、production branchへのcommitが `*.pages.dev` production URLを更新し、non-production branchはpreview deploymentとして扱われる。
 - 公開Production URLの静的 `/` と `/privacy.html` はGET 200。deployment URLの静的 `/` もGET 200。root pageのETagはproduction URLとdeployment URLで一致した。
 

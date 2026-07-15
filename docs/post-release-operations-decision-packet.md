@@ -6,7 +6,9 @@
 
 Prepared by Codex for Issue #42. This is a decision packet, not an operations approval.
 
-Codex has not decided privacy, legal, billing, credits, log retention, 429 policy, production smoke, Cloudflare log handling, or incident ownership. Items below remain human or ChatGPT decisions until explicitly recorded.
+**Resolution: Issue #42 was closed on 2026-07-07.** All decision items were explicitly recorded by the owner (M3 public release decision and related operations decisions). The decision records live in `docs/issue-42-mode-decision-packet.md` (§決定記録) and `docs/DECISION_LOG.md`. This packet is retained as the historical record of the decision space. The production smoke approval gate and the prohibited-work boundaries below remain in force through `AGENTS.md` and `docs/CODEX_HANDOFF.md`.
+
+At preparation time (2026/05/31), Codex had not decided privacy, legal, billing, credits, log retention, 429 policy, production smoke, Cloudflare log handling, or incident ownership. Items below remained human or ChatGPT decisions until explicitly recorded.
 
 ## Current repository state
 
@@ -15,7 +17,7 @@ Codex has not decided privacy, legal, billing, credits, log retention, 429 polic
 - Production URL is documented as `https://x-archive-link-tool.pages.dev`.
 - Issue #40 is closed: CL-001 received no runtime change and CL-002 degraded fallback responses use a short TTL.
 - Issue #41 is closed: Production HEAD was verified in a separate read-only pass and recorded in `docs/post-release-human-verification-record.md`.
-- Issue #42 is open: post-release operations decisions are not complete.
+- Issue #42 state at preparation time: open (post-release operations decisions were not complete). Issue #42 was closed on 2026-07-07 after all decision items were recorded.
 - No production `/api/extract`, production smoke, live X API, live oEmbed, real X URL submission, Cloudflare write/deploy, secret/OAuth, or real-data access is approved by this packet.
 
 ## Issue #42 scope
@@ -37,8 +39,8 @@ Issue #42 does not approve runtime code changes, production API checks, X API li
 
 | ID | Area | Current repo evidence | Human or ChatGPT decision still needed |
 | --- | --- | --- | --- |
-| OPS-PRIVACY | Privacy/legal | `docs/privacy-policy-draft.md` exists and states it is not a legal final version. | Whether the privacy wording is approved, who reviewed it, and whether any public wording must change. |
-| OPS-SUPPORT | Support | `docs/support-page-draft.md` and `docs/deployment-plan.md` contain the candidate contact address. | Whether the contact may be public, expected response scope, owner role, and escalation path. |
+| OPS-PRIVACY | Privacy/legal | `docs/archive/privacy-policy-draft.md` exists and states it is not a legal final version. | Whether the privacy wording is approved, who reviewed it, and whether any public wording must change. |
+| OPS-SUPPORT | Support | `docs/archive/support-page-draft.md` and `docs/archive/deployment-plan.md` contain the candidate contact address. | Whether the contact may be public, expected response scope, owner role, and escalation path. |
 | OPS-BILLING | Billing and X API credits | `docs/post-release-operations-checklist.md` and `docs/post-release-human-verification-template.md` define safe abstract recording. Historical human verification exists, but Issue #42 does not re-confirm current billing or credits state. | Current review cadence, responsible owner, OK/NG/unknown state, and stop conditions without sharing billing details. |
 | OPS-LOGS | Log retention and Cloudflare logs | `SECURITY.md` and runbooks restrict logs to safe structured fields. Retention remains unresolved in current docs. | Retention period, deletion policy, log reviewer role, and whether Cloudflare default retention is acceptable. |
 | OPS-429 | 429 policy | Rate limiting is implemented and tested locally. Production 429 verification is explicitly not part of normal smoke. | Whether to rely on local tests only, when production 429 checks are allowed, support response, and rate-limit adjustment path. |
@@ -66,7 +68,7 @@ Recommended record:
 - Review date.
 - Reviewer role, not private identity unless intentionally public.
 - Status: `approved`, `approved with edits`, `blocked`, or `not reviewed`.
-- Files reviewed: `docs/privacy-policy-draft.md`, public `/privacy`, README/support wording if applicable.
+- Files reviewed: `docs/archive/privacy-policy-draft.md`, public `/privacy`, README/support wording if applicable.
 - Required wording changes, if any.
 
 Forbidden record:
@@ -315,7 +317,7 @@ Production smoke may only proceed after all of the following are true:
 
 ## Issue #42 close conditions
 
-Issue #42 can be closed only when all required decisions below are explicitly recorded, or when the owner explicitly marks remaining items as not MVP-blocking:
+All conditions below were met and recorded by 2026-07-07, and Issue #42 was closed. Issue #42 could be closed only when all required decisions below were explicitly recorded, or when the owner explicitly marked remaining items as not MVP-blocking:
 
 - Privacy/legal status.
 - Support contact and support scope.
@@ -326,21 +328,21 @@ Issue #42 can be closed only when all required decisions below are explicitly re
 - KV/incident owner and cache-disabled continuation policy.
 - Data-recording boundary owner for future operation summaries.
 
-## Why Issue #42 remains open
+## Why Issue #42 remained open until 2026-07-07
 
-This packet organizes the decision space but does not supply the human decisions. Codex cannot verify current billing, credits, privacy/legal approval, log retention, support responsibility, or Cloudflare log ownership from repo files alone. Therefore Issue #42 should remain open after this docs-only PR.
+This packet organized the decision space but did not supply the human decisions. Codex cannot verify current billing, credits, privacy/legal approval, log retention, support responsibility, or Cloudflare log ownership from repo files alone. Therefore Issue #42 remained open until the owner recorded all decisions (2026-07-06〜07), after which it was closed.
 
 ## Source evidence inspected
 
 - `README.md`: project overview, public URL, post-release operation boundaries, docs index.
 - `SECURITY.md`: safe logging fields and security prohibitions.
-- `docs/post-claude-review-decision-backlog.md`: Issue #42 scope and decision backlog.
+- `docs/archive/post-claude-review-decision-backlog.md`: Issue #42 scope and decision backlog.
 - `docs/post-release-operations-checklist.md`: current human checklist and production smoke boundaries.
 - `docs/post-release-human-verification-template.md`: safe human-verification format.
 - `docs/post-release-human-verification-record.md`: historical human/Codex records; not a fresh Issue #42 re-verification.
 - `docs/production-smoke-runbook.md`: production smoke approval language and stop conditions.
 - `docs/incident-and-kv-failure-runbook.md`: KV/incident ownership and log boundaries.
-- `docs/deployment-plan.md`: Cloudflare settings, rate-limit policy, and unresolved operational items.
-- `docs/current-status.md`: current app status and remaining operation decisions.
-- `docs/privacy-policy-draft.md`: privacy draft and legal-review caveat.
-- `docs/support-page-draft.md`: support page draft and support-scope caveat.
+- `docs/archive/deployment-plan.md`: Cloudflare settings, rate-limit policy, and unresolved operational items.
+- `docs/archive/current-status.md`: current app status and remaining operation decisions.
+- `docs/archive/privacy-policy-draft.md`: privacy draft and legal-review caveat.
+- `docs/archive/support-page-draft.md`: support page draft and support-scope caveat.
