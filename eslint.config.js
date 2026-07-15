@@ -12,11 +12,12 @@ export default [
   },
   js.configs.recommended,
   {
-    // 既定はNode.js実行（server/・scripts/・各テストは node --test で動く）
+    // すべてのJavaScriptに共通する構文と検出ルールだけをここで定義する。
+    // 実行環境のglobalsは後続のpath別configで限定し、ブラウザやWorkersで
+    // Node.js専用APIを誤用したときに no-undef が検出できる境界を維持する。
     languageOptions: {
       ecmaVersion: "latest",
-      sourceType: "module",
-      globals: { ...globals.node }
+      sourceType: "module"
     },
     rules: {
       // 未使用の引数・変数は _ プレフィックスで意図的な無視を表現できるようにする
@@ -24,19 +25,29 @@ export default [
     }
   },
   {
-    // Web UI（apps/web/）はブラウザで動く。app.test.js は node --test から
-    // app.js を import するため、node グローバルも併せて許可する。
+    // Web UI本体はブラウザ専用。Node.jsで動く *.test.js はこの設定から除外し、
+    // process / Buffer などを本番コードへ誤って持ち込めないようにする。
     files: ["apps/web/**/*.js"],
+    ignores: ["apps/web/**/*.test.js"],
     languageOptions: {
-      globals: { ...globals.browser, ...globals.node }
+      globals: { ...globals.browser }
     }
   },
   {
-    // Cloudflare Pages Functions は Workers 実行環境（Service Worker 相当の
-    // グローバル: Response / Request / caches 等）。テストは node --test で動く。
+    // Cloudflare Pages Functions本体はWeb Worker相当の実行環境に限定する。
+    // Node.jsで動く *.test.js は除外し、WorkersにないNode.js APIを検出する。
     files: ["functions/**/*.js"],
+    ignores: ["functions/**/*.test.js"],
     languageOptions: {
-      globals: { ...globals.serviceworker, ...globals.node }
+      globals: { ...globals.worker }
+    }
+  },
+  {
+    // ローカルserver・保守script・lint設定・全testはNode.jsで実行する。
+    // testを最後に分離することで、隣接する本番browser/WorkersコードへNode globalsを漏らさない。
+    files: ["eslint.config.js", "server/**/*.js", "scripts/**/*.js", "**/*.test.js"],
+    languageOptions: {
+      globals: { ...globals.node }
     }
   }
 ];
