@@ -1,17 +1,17 @@
 # HANDOFF
 
-最終更新: 2026/07/12 JST（Claude Code → Codex 引き継ぎ）
+最終更新: 2026/07/15 JST（docs整理のmaster反映と現状同期）
 
 ## リポジトリの目的
 
 Xポスト共有URLから貼り付け用テキストを生成するWeb MVP（記録補助ツール）。Web UI、ローカルNodeサーバー、Cloudflare Pages Functions、BYOT X API v2連携（任意）、公式oEmbed fallback、記録画像の生成・R2アップロード（約7日保持）を含む。iOSアプリ、DB、独自ドメイン、Xスクレイピング、魚拓のサーバー取得は対象外。
 
-## 現状サマリ（2026-07-12）
+## 現状サマリ（2026-07-15）
 
 - バックログ CC-001〜CC-019 / HUM-001 はすべて完了・masterへ統合・本番反映済み。Issue #42 もクローズ済み。open issue はなし。
-- open PR は2件（いずれも Claude Code 作成・CI緑・merge待ち）:
-  - **PR #86**（`chore/cc008-eslint`）: CC-008 軽量lint導入。ESLint flat config（eslint:recommended のみ）、`lint` / `check:all` scripts、未使用import 1件の実修正、README追記。CIワークフローは未変更（ゲート①のため）。
-  - **PR #87**（`docs/handoff-to-codex-2026-07-11`）: 引き継ぎ資料＋docs全体整理。役目を終えた21文書を `docs/archive/` へ移動（索引 `docs/archive/README.md`）、READMEドキュメント節の再編、`docs/requirements.md` への製品位置づけ明記、`docs/DECISION_LOG.md` へ Decision 023〜026 追記、Issue #42 クローズの decision packet / guard（`scripts/verifyPostReleaseDocs.js`＋test）への反映。
+- open PR は1件:
+  - **PR #86**（`chore/cc008-eslint`）: CC-008 軽量lint導入。ESLint flat config（eslint:recommended のみ）、`lint` / `check:all` scripts、未使用import 1件の実修正、README追記。CIワークフローは未変更（ゲート①のため）。レビューと merge が次の担当の最初の作業。
+- docs全体整理（旧 PR #87、2026-07-12 作成）は 2026-07-15 に master へ merge 済み: 役目を終えた21文書を `docs/archive/` へ移動（索引 `docs/archive/README.md`）、READMEドキュメント節の再編、`docs/requirements.md` への製品位置づけ明記、`docs/DECISION_LOG.md` へ Decision 023〜026 追記、Issue #42 クローズの decision packet / guard 反映。
 - 検証基準は今後 `npm.cmd run check:all`（lint + test + post-release docs guard、PR #86 merge後に有効）を基本とする。
 - 一般公開(M3)済み。公開URL https://x-archive-link-tool.pages.dev、Production branch は `master`（merge = 本番反映）。
 - 記録画像アップロードはR2方式で本番E2E確認済み（CC-018/019、2026-07-11）。R2 lifecycle 7日削除はオーナー設定済み。
