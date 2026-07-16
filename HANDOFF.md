@@ -1,6 +1,6 @@
 # HANDOFF
 
-最終更新: 2026/07/16 JST（CC-022完了・UX改善候補v2反映）
+最終更新: 2026/07/16 JST（CC-023完了・Codex backlog消化）
 
 ## リポジトリの目的
 
@@ -8,10 +8,11 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVP（記
 
 ## 現状サマリ（2026-07-16）
 
-- バックログ CC-001〜CC-022 / HUM-001 はすべて完了。Issue #42 もクローズ済み。未完了はCC-023のみ。
+- バックログ CC-001〜CC-023 / HUM-001 はすべて完了。Issue #42 もクローズ済み。Codexが承認なしで着手できる登録済みタスクはない。
 - **CC-020完了**: PR #87（docs整備）は2026-07-15、PR #86（CC-008 lint）は2026-07-16にmerge済み。PR #86の独立レビューではbrowser / Workers本番コードへNode.js globalsが漏れる設定を検出し、`cbb404b`でpath別globalsへ修正した。merge commit `1a2c850` のGitHub `npm test` / Cloudflare Pages checksは成功。
 - **CC-021完了**: PR #50〜#53が`MERGED`、各headが`origin/master`の祖先、open PR headではないことを実測し、対応するmerge済みremote branch 4本を削除した。prune後のremote branchは`master`のみ。
 - **CC-022完了**: 現行UIを操作性、文言、アクセシビリティとレスポンシブ、出力形式で再監査し、`docs/ux-improvement-candidates.md`をv2へ更新した。390px、768px、1280pxのローカル画面と合成成功状態を確認し、改善候補9件を記録した。候補の実装はオーナーの優先度判断後に別タスクとして扱う。
+- **CC-023完了**: `docs/lint-ci-integration-proposal.md`を起草した。既存Actions/Node.js/trigger/権限を維持し、npm cache、`npm ci`、`npm run check:all`を追加する最小案、検証、受け入れ条件、rollbackを確定した。workflow実装はgate ①の採用判断後に別タスクとして扱う。
 - docs全体整理（旧 PR #87、2026-07-12 作成）は 2026-07-15 に master へ merge 済み: 役目を終えた21文書を `docs/archive/` へ移動（索引 `docs/archive/README.md`）、READMEドキュメント節の再編、`docs/requirements.md` への製品位置づけ明記、`docs/DECISION_LOG.md` へ Decision 023〜026 追記、Issue #42 クローズの decision packet / guard 反映。
 - 検証基準は `npm.cmd run check:all`（lint + test + post-release docs guard）を基本とする。
 - 一般公開(M3)済み。公開URL https://x-archive-link-tool.pages.dev、Production branch は `master`（merge = 本番反映）。
@@ -25,7 +26,7 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVP（記
 
 ## 引き継ぎタスク（Codex向け、優先順）
 
-1. **CC-023**: lintのCI組み込み提案書を起草する。実装は別タスクとして扱い、まず提案docsで変更範囲、install step、cache、検証方法を確定する。
+1. **オーナー判断待ち（gate ①）**: `docs/lint-ci-integration-proposal.md`を採用するか判断する。採用後に新しいCCタスクを登録し、`.github/workflows/ci.yml`を変更する。
 2. **オーナー判断待ち**: `docs/ux-improvement-candidates.md` v2の9候補から実装対象と順序を選ぶ。判断後に新しいCCタスクを台帳へ登録する。
 
 ## 停止境界
@@ -34,13 +35,11 @@ Xポスト共有URLから貼り付け用テキストを生成するWeb MVP（記
 - GitHub PR merge、通常のGitHub Actions、Pages自動デプロイは、それ自体を停止条件にしない。
 - 詳細は `docs/CODEX_HANDOFF.md`（運用契約の正）と `AGENTS.md` を参照。
 
-## 最新検証（2026-07-16、PR #86 merge後のmasterで実測）
+## 最新検証（2026-07-16、CC-023 docs branchで実測）
 
-- `npm.cmd run check:all`: lint成功、227 tests pass / 0 fail、post-release docs guard成功（markdown local links 44 checked / 4 skipped / 41 files）。
+- `npm.cmd run check:all`: lint成功、227 tests pass / 0 fail、post-release docs guard成功（markdown local links 46 checked / 7 skipped / 42 files）。
 - `git diff --check`: クリーン。
-- PR #86 review probe: browser内の`process`とWorkers内の`Buffer`を期待どおり`no-undef`で検出。
-- merge commit `1a2c850`: GitHub `npm test` / Cloudflare Pages checks成功。
-- CC-021 remote branch audit: PR #50〜#53の`MERGED`とmaster祖先を確認し、4本削除後に`origin/master`のみを実測。
+- GitHub API: `master`のbranch protectionは未設定、repository rulesetは0件。実装時に再確認する。
 - CC-022 UI audit: Playwrightで390×844、768×1024、1280×900を確認し、横スクロールなし。空入力エラー、合成取得成功、形式変更とコピー、合成画像アップロード成功、魚拓展開を確認。本番APIと実providerは未実行。
 
 ## Do not re-read

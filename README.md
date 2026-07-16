@@ -148,7 +148,8 @@ v0.1.0後の残タスクは、人間がX Developer Portal、billing、credits、
 - [人間確認結果テンプレート](docs/post-release-human-verification-template.md) / [記録](docs/post-release-human-verification-record.md)
 - [post-release operations判断パケット](docs/post-release-operations-decision-packet.md)（Issue #42・2026-07-07クローズ済みの記録）
 - [Issue #42 M3決定記録](docs/issue-42-mode-decision-packet.md)
-- [UX改善候補リスト](docs/ux-improvement-candidates.md)（12件全実装済み。次版はCC-022で作成予定）
+- [UX改善候補リスト v2](docs/ux-improvement-candidates.md)（CC-022で再監査済み。9候補の採否はオーナー判断待ち）
+- [lint の CI 組み込み提案](docs/lint-ci-integration-proposal.md)（CC-023。未実装、採用は gate ①）
 - [要件再検討記録 2026-07-03](docs/fable5-requirements-review-2026-07-03.md) / [メディアURL・魚拓調査 2026-07-04](docs/media-url-and-archive-research-2026-07-04.md)
 - [過去の承認タスク履歴](docs/CODEX_TASKS.md)
 
