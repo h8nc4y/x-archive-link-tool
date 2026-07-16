@@ -3,6 +3,7 @@ node_modules/
 Thumbs.db
 *.log
 tmp/
+output/playwright/
 .env
 .env.*
 !.env.example

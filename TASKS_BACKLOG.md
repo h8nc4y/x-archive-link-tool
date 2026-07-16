@@ -6,10 +6,11 @@
 
 ## 状態サマリ
 
-- CC-001〜CC-021 / HUM-001 はすべて完了・masterへ統合済み。Issue #42 もクローズ済み。
+- CC-001〜CC-022 / HUM-001 はすべて完了。Issue #42 もクローズ済み。
 - CC-008（軽量lint）はPR #86でmerge済み。Codexの独立レビューで実行環境別globalsを修正し、merge後masterの`npm.cmd run check:all`（lint + 227 tests + docs guard）まで成功を実測した。
 - CC-021でPR #50〜#53のmerge済みremote branch 4本を安全条件（MERGED・master祖先・open PR非該当）確認後に削除した。
-- 未完了タスクは CC-022〜CC-023（下表）。検証基準は `npm.cmd run check:all`（lint + test + docs guard）を基本とする。
+- CC-022で現行UIを4視点から再監査し、`docs/ux-improvement-candidates.md`をv2へ更新した。改善候補9件の実装はオーナーの優先度判断後に別タスク化する。
+- 未完了タスクはCC-023のみ。検証基準は `npm.cmd run check:all`（lint + test + docs guard）を基本とする。
 - 一般公開(M3)済み。位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
 - 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、Cloudflare write操作は引き続き停止条件です。
 
@@ -39,7 +40,7 @@
 | CC-019 | UX改善（自動アップロード/並べ替え/魚拓折りたたみ） | 2026-07-11 オーナーFB | 高 | M | done: PR #84（merged・本番反映）。本番E2Eで作成→自動アップロード→共有URL発行を確認（2026-07-11） |
 | CC-020 | PR #86（CC-008 lint）/ PR #87（docs整備）の独立レビューとmerge・backlog更新 | 2026-07-11 Claude→Codex引き継ぎ | 高 | S | done: PR #87は2026-07-15、PR #86は2026-07-16にmerge。PR #86はCodex敵対的レビューでglobals境界を修正（`cbb404b`）、CI / Pages / merge後`check:all`成功 |
 | CC-021 | merge済みremote branchの整理 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | done: PR #50〜#53の`MERGED`・master祖先・open PR非該当を実測し、remote branch 4本を削除。prune後は`master`のみ |
-| CC-022 | 現行UIのUX再レビュー（改善候補リスト v2 起草） | 2026-07-11 Claude→Codex引き継ぎ | 中 | M | todo: 4視点（操作性・文言・a11y/レスポンシブ・出力形式）で外部通信なしに再レビュー。実装着手はオーナーの優先度判断後 |
+| CC-022 | 現行UIのUX再レビュー（改善候補リスト v2 起草） | 2026-07-11 Claude→Codex引き継ぎ | 中 | M | done: 390px、768px、1280pxのローカルUIと合成成功状態を4視点で監査し、`docs/ux-improvement-candidates.md` v2へ改善候補9件と未確認範囲を記録。実装はオーナー判断後 |
 | CC-023 | lintのCI組み込み提案書の起草 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: lintをCIへ組み込む変更範囲・install step・cache・検証方法の提案docsを起草。実装は別タスクで扱う |
 
 ## 完了・skip済み（履歴）
