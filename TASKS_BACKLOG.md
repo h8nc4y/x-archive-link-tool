@@ -1,14 +1,14 @@
 # TASKS_BACKLOG
 
-最終更新: 2026/07/11 JST
+最終更新: 2026/07/16 JST
 
 このファイルは現在タスク一覧です。詳細な過去のCodex承認タスク履歴は `docs/CODEX_TASKS.md`、自律開発の現在ルールは `docs/CODEX_HANDOFF.md` を正として参照してください。
 
 ## 状態サマリ
 
-- CC-001〜CC-019 / HUM-001 はすべて完了・masterへ統合・本番反映済み。Issue #42 もクローズ済み。
-- 2026-07-11 に Claude Code が最後の残タスク CC-008（軽量lint）を実装し PR #86 としてレビュー待ち。以降の開発は Codex へ引き継ぎ（引き継ぎ状態の詳細は `HANDOFF.md`、運用契約は `docs/CODEX_HANDOFF.md`）。
-- 未完了タスクは CC-020〜CC-023（下表）。検証基準は `npm.cmd run check:all`（lint + test + docs guard）を基本とする（PR #86 merge後）。
+- CC-001〜CC-020 / HUM-001 はすべて完了・masterへ統合済み。Issue #42 もクローズ済み。
+- CC-008（軽量lint）はPR #86でmerge済み。Codexの独立レビューで実行環境別globalsを修正し、merge後masterの`npm.cmd run check:all`（lint + 227 tests + docs guard）まで成功を実測した。
+- 未完了タスクは CC-021〜CC-023（下表）。検証基準は `npm.cmd run check:all`（lint + test + docs guard）を基本とする。
 - 一般公開(M3)済み。位置づけ=記録補助ツール、魚拓導線=複数併記、API=oEmbed-first維持。
 - 本番 `/api/extract`、live X API/oEmbed、実X投稿URL送信、secret/OAuth読み取り、Cloudflare write操作は引き続き停止条件です。
 
@@ -23,7 +23,7 @@
 | CC-005 | PR4 出力形式拡張（C-07, C-12） | `docs/ux-improvement-candidates.md` | 高 | M | done: PR #55 |
 | CC-006 | PR5 入力寛容化・高コントラスト（C-09, C-08） | `docs/ux-improvement-candidates.md` | 中 | M | done: PR #57 / #58 |
 | CC-007 | Issue #42判断材料の整理docs作成（外部通信なし） | GitHub issue #42 | 中 | M | done: `docs/issue-42-mode-decision-packet.md`（公開範囲別3モード縮退案）を2026-07-03起草。決定はHUM-001 |
-| CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | in-review: PR #86（ESLint flat config + `lint`/`check:all` scripts。CIは未変更＝ゲート①）。mergeとdone更新はCC-020 |
+| CC-008 | 軽量lint導入の検討 | 旧 `HANDOFF.md` 既知の問題 | 低 | S | done: PR #86（ESLint flat config + `lint`/`check:all` scripts、実行環境別globals、未使用import修正。CIワークフローは変更なし） |
 | CC-009 | privacy.html degraded fallback短TTL注記（旧レビューL-01） | `docs/archive/CLAUDE_CODE_REVIEW_2026-06-21.md` | 低 | S | done: PR #63（merged） |
 | CC-010 | 要件再検討（価値仮説・質問リスト・市場調査） | `docs/archive/CLAUDECODE_FABLE5_PROMPT.md` | 高 | M | done: PR #64（merged）`docs/fable5-requirements-review-2026-07-03.md`。2026-07-04 オーナー回答受領（Q1=M3ほか） |
 | CC-011 | 「記録補助ツール」への文言整合＋スクショ/PDF併用案内のUI明記 | 2026-07-04 オーナー決定（Q2） | 高 | M | done: PR #66（merged） |
@@ -36,10 +36,10 @@
 | HUM-001 | Issue #42 post-release operations decisions | GitHub issue #42 | 高 | L | done: 全項目決着＋本番検証完了（2026-07-07）。Issue #42 クローズ |
 | CC-018 | 記録画像の作成・保存・アップロード | 2026-07-07 オーナー承認 | 高 | M | done: PR #78/#80/#81/#82（merged・本番反映）。R2方式・約7日自動削除。2026-07-11 オーナーのR2設定完了後、本番E2Eでアップロード→共有URL発行→配信（バイト一致）を確認 |
 | CC-019 | UX改善（自動アップロード/並べ替え/魚拓折りたたみ） | 2026-07-11 オーナーFB | 高 | M | done: PR #84（merged・本番反映）。本番E2Eで作成→自動アップロード→共有URL発行を確認（2026-07-11） |
-| CC-020 | PR #86（CC-008 lint）/ PR #87（docs整備）の独立レビューとmerge・backlog更新 | 2026-07-11 Claude→Codex引き継ぎ | 高 | S | todo: CI緑と `docs/CODEX_HANDOFF.md` §9 の観点で確認後にmergeし、CC-008 / CC-020 を done へ |
+| CC-020 | PR #86（CC-008 lint）/ PR #87（docs整備）の独立レビューとmerge・backlog更新 | 2026-07-11 Claude→Codex引き継ぎ | 高 | S | done: PR #87は2026-07-15、PR #86は2026-07-16にmerge。PR #86はCodex敵対的レビューでglobals境界を修正（`cbb404b`）、CI / Pages / merge後`check:all`成功 |
 | CC-021 | merge済みremote branchの整理 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: GitHubのmerged状態を実測確認して削除（master と open PR head は除く） |
 | CC-022 | 現行UIのUX再レビュー（改善候補リスト v2 起草） | 2026-07-11 Claude→Codex引き継ぎ | 中 | M | todo: 4視点（操作性・文言・a11y/レスポンシブ・出力形式）で外部通信なしに再レビュー。実装着手はオーナーの優先度判断後 |
-| CC-023 | lintのCI組み込み提案書の起草 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: 提案docsまで（`.github/workflows/` 変更はゲート①のため実施はオーナー承認後） |
+| CC-023 | lintのCI組み込み提案書の起草 | 2026-07-11 Claude→Codex引き継ぎ | 低 | S | todo: lintをCIへ組み込む変更範囲・install step・cache・検証方法の提案docsを起草。実装は別タスクで扱う |
 
 ## 完了・skip済み（履歴）
 
