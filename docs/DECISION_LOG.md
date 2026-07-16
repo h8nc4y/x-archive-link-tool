@@ -387,5 +387,5 @@ Use this template for future decisions:
 
 ## Open decisions
 
-- Priority and adoption of the next UX improvement candidates (to be drafted as v2 by CC-022; owner decides which to implement).
-- Whether to wire the local lint into CI (`.github/workflows/`); proposal drafted by CC-023, adoption is gate ① (human approval).
+- Priority and adoption of the nine UX improvement candidates documented as v2 by CC-022; owner decides which to implement.
+- Whether to wire the local lint into CI (`.github/workflows/`); CC-023の[提案書](lint-ci-integration-proposal.md)を起草済み。採用はgate ①（human approval）。
