@@ -4,10 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:all": "npm run lint && npm test && npm run check:post-release-docs",
     "check:post-release-docs": "node scripts/verifyPostReleaseDocs.js",
+    "lint": "eslint .",
     "manual:oembed-check": "node scripts/manualOEmbedCheck.js",
     "smoke:production-once": "node scripts/runProductionSmokeOnce.js",
     "start": "node server/extractServer.js",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0"
   }
 }
